@@ -193,6 +193,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/nodes/:id', async (req, res) => {
     try {
+      // Add cache headers for better performance
+      res.set('Cache-Control', 'public, max-age=300'); // 5 minutes
+      
       const node = await storage.getStoryNode(req.params.id);
       if (!node) {
         return res.status(404).json({ message: "Node not found" });
@@ -206,6 +209,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/nodes/:id/choices', async (req, res) => {
     try {
+      // Add cache headers for better performance
+      res.set('Cache-Control', 'public, max-age=300'); // 5 minutes
+      
       const choices = await storage.getChoicesFromNode(req.params.id);
       res.json(choices);
     } catch (error) {

@@ -442,7 +442,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getStoryNode(id: string): Promise<StoryNode | undefined> {
-    // Use story manager first
+    // Use story manager first (faster)
     const node = storyManager.getStoryNode(id);
     if (node) return node;
     
@@ -462,19 +462,29 @@ export class DatabaseStorage implements IStorage {
 
   // Story choice operations  
   async getChoicesFromNode(nodeId: string): Promise<StoryChoice[]> {
-    // Try database first for choices with diamond costs
-    const dbChoices = await db
+    // Use story manager first (faster, in-memory)
+    const managerChoices = storyManager.getStoryChoices(nodeId);
+    
+    // If story manager has choices, enhance with database data for diamond costs
+    if (managerChoices.length > 0) {
+      const dbChoices = await db
+        .select()
+        .from(storyChoices)
+        .where(eq(storyChoices.fromNodeId, nodeId));
+      
+      // Merge database premium data with manager choices
+      return managerChoices.map(choice => {
+        const dbChoice = dbChoices.find(db => db.id === choice.id);
+        return dbChoice ? { ...choice, isPremium: dbChoice.isPremium, diamondCost: dbChoice.diamondCost } : choice;
+      });
+    }
+    
+    // Fallback to database only
+    return await db
       .select()
       .from(storyChoices)
       .where(eq(storyChoices.fromNodeId, nodeId))
       .orderBy(storyChoices.order);
-    
-    if (dbChoices.length > 0) {
-      return dbChoices;
-    }
-    
-    // Fallback to story manager
-    return storyManager.getStoryChoices(nodeId);
   }
 
   async getStoryChoice(id: string): Promise<StoryChoice | undefined> {

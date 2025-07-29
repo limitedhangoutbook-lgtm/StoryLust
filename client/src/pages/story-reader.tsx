@@ -50,22 +50,28 @@ export default function StoryReader() {
     );
   }
 
-  // Fetch story details
+  // Fetch story details with caching
   const { data: story, isLoading: storyLoading } = useQuery<Story>({
     queryKey: ["/api/stories", storyId],
     enabled: !!storyId,
+    staleTime: 10 * 60 * 1000, // 10 minutes
+    cacheTime: 30 * 60 * 1000, // 30 minutes
   });
 
-  // Fetch current node
+  // Fetch current node with caching
   const { data: currentNode, isLoading: nodeLoading } = useQuery<StoryNode>({
     queryKey: ["/api/nodes", currentNodeId],
     enabled: !!currentNodeId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    cacheTime: 10 * 60 * 1000, // 10 minutes
   });
 
-  // Fetch choices for current node
+  // Fetch choices for current node with caching
   const { data: choices = [] } = useQuery<StoryChoice[]>({
     queryKey: ["/api/nodes", currentNodeId, "choices"],
     enabled: !!currentNodeId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    cacheTime: 10 * 60 * 1000, // 10 minutes
   });
 
   // Initialize story on load and handle position restoration
