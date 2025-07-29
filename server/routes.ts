@@ -9,8 +9,11 @@ import {
   insertStoryNodeSchema, 
   insertStoryChoiceSchema,
   insertReadingProgressSchema,
-  insertUserChoiceSchema 
+  insertUserChoiceSchema,
+  storyNodes
 } from "@shared/schema";
+import { db } from "./db";
+import { and, eq, gt } from "drizzle-orm";
 import { z } from "zod";
 
 if (!process.env.STRIPE_SECRET_KEY) {
