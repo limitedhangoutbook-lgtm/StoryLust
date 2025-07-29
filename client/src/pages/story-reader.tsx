@@ -57,7 +57,7 @@ export default function StoryReader() {
     queryKey: ["/api/stories", storyId],
     enabled: !!storyId,
     staleTime: 10 * 60 * 1000, // 10 minutes
-    cacheTime: 30 * 60 * 1000, // 30 minutes
+    gcTime: 30 * 60 * 1000, // 30 minutes
   });
 
   // Fetch current node with caching
@@ -65,7 +65,7 @@ export default function StoryReader() {
     queryKey: ["/api/nodes", currentNodeId],
     enabled: !!currentNodeId,
     staleTime: 5 * 60 * 1000, // 5 minutes
-    cacheTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
   });
 
   // Fetch choices for current node with caching
@@ -73,7 +73,7 @@ export default function StoryReader() {
     queryKey: ["/api/nodes", currentNodeId, "choices"],
     enabled: !!currentNodeId,
     staleTime: 5 * 60 * 1000, // 5 minutes
-    cacheTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
   });
 
   // Initialize story on load and handle position restoration
@@ -215,7 +215,12 @@ export default function StoryReader() {
       // Save local progress when going back
       saveLocalProgress(previousNodeId);
       setShowChoices(false);
+      // Show navigation temporarily when going back
+      showNavigationTemporarily();
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      // If no history, go back to homepage
+      setLocation("/");
     }
   };
 
@@ -273,7 +278,7 @@ export default function StoryReader() {
             description: "You've reached the end of this story path!",
           });
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error fetching next page:', error);
         // If it's a 404 (no next page), treat as story ending
         if (error.message?.includes('404')) {
@@ -809,11 +814,18 @@ export default function StoryReader() {
         }`}>
           <StoryNavigation
             storyTitle={story?.title || ""}
-            canGoBack={pageHistory.length > 0}
+            canGoBack={pageHistory.length > 0 || isStoryEnding}
             onGoBack={handleGoBack}
             onContinue={handleContinueReading}
             showChoices={showChoices}
           />
+        </div>
+      )}
+
+      {/* Navigation hint for story endings */}
+      {isStoryEnding && !showNavigation && (
+        <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-dark-secondary/80 backdrop-blur-sm text-kindle-secondary px-4 py-2 rounded-full text-sm">
+          💡 Tap to show navigation
         </div>
       )}
 
