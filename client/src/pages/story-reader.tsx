@@ -4,7 +4,7 @@ import { ArrowLeft, Gem, Heart, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StoryNavigation } from "@/components/story-navigation";
 import { TypographySettings } from "@/components/typography-settings";
-import { UnifiedStoryReader } from "@/components/unified-story-reader";
+
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation, useRoute } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
@@ -23,7 +23,7 @@ export default function StoryReader() {
   const [showChoices, setShowChoices] = useState(false);
   const [pageHistory, setPageHistory] = useState<string[]>([]);
   const [showTypographySettings, setShowTypographySettings] = useState(false);
-  const [useUnifiedReader, setUseUnifiedReader] = useState(false); // Using current system - navigation is perfect!
+
   const [showNavigation, setShowNavigation] = useState(true);
   
   // Touch gesture handling
