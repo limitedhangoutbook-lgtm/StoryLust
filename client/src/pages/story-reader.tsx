@@ -24,10 +24,12 @@ export default function StoryReader() {
   const [pageHistory, setPageHistory] = useState<string[]>([]);
   const [showTypographySettings, setShowTypographySettings] = useState(false);
   const [useUnifiedReader, setUseUnifiedReader] = useState(false); // Using current system - navigation is perfect!
+  const [showNavigation, setShowNavigation] = useState(true);
   
   // Touch gesture handling
   const touchStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
   const mainContentRef = useRef<HTMLDivElement>(null);
+  const hideNavTimeout = useRef<NodeJS.Timeout | null>(null);
 
   const storyId = params?.storyId;
 
@@ -291,7 +293,22 @@ export default function StoryReader() {
     }
   };
 
-  // Add touch event listeners for swipe gestures
+  // Auto-hide navigation after inactivity
+  const showNavigationTemporarily = () => {
+    setShowNavigation(true);
+    
+    // Clear existing timeout
+    if (hideNavTimeout.current) {
+      clearTimeout(hideNavTimeout.current);
+    }
+    
+    // Hide navigation after 3 seconds of inactivity
+    hideNavTimeout.current = setTimeout(() => {
+      setShowNavigation(false);
+    }, 3000);
+  };
+
+  // Add touch event listeners for swipe gestures and navigation control
   useEffect(() => {
     const mainElement = mainContentRef.current;
     if (!mainElement) return;
@@ -327,17 +344,37 @@ export default function StoryReader() {
           // Swipe left - continue reading
           handleContinueReading();
         }
+      } else if (!isHorizontalSwipe && Math.abs(deltaX) < 20 && Math.abs(deltaY) < 20) {
+        // Simple tap - show navigation temporarily
+        showNavigationTemporarily();
       }
       
       touchStartRef.current = null;
     };
 
+    // Show navigation on scroll
+    const handleScroll = () => {
+      showNavigationTemporarily();
+    };
+
+    // Show navigation on mouse movement
+    const handleMouseMove = () => {
+      showNavigationTemporarily();
+    };
+
     mainElement.addEventListener('touchstart', handleTouchStart, { passive: true });
     mainElement.addEventListener('touchend', handleTouchEnd, { passive: true });
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    document.addEventListener('mousemove', handleMouseMove, { passive: true });
 
     return () => {
       mainElement.removeEventListener('touchstart', handleTouchStart);
       mainElement.removeEventListener('touchend', handleTouchEnd);
+      window.removeEventListener('scroll', handleScroll);
+      document.removeEventListener('mousemove', handleMouseMove);
+      if (hideNavTimeout.current) {
+        clearTimeout(hideNavTimeout.current);
+      }
     };
   }, [showChoices, currentNodeId, pageHistory, handleContinueReading]);
 
@@ -765,15 +802,19 @@ export default function StoryReader() {
 
 
 
-      {/* Story Navigation - Clean and Simple */}
-      {!showChoices && (
-        <StoryNavigation
-          storyTitle={story?.title || ""}
-          canGoBack={pageHistory.length > 0}
-          onGoBack={handleGoBack}
-          onContinue={handleContinueReading}
-          showChoices={showChoices}
-        />
+      {/* Story Navigation - Contextual and Auto-hiding */}
+      {!showChoices && showNavigation && (
+        <div className={`fixed bottom-0 left-0 right-0 transition-all duration-300 ${
+          showNavigation ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'
+        }`}>
+          <StoryNavigation
+            storyTitle={story?.title || ""}
+            canGoBack={pageHistory.length > 0}
+            onGoBack={handleGoBack}
+            onContinue={handleContinueReading}
+            showChoices={showChoices}
+          />
+        </div>
       )}
 
 
