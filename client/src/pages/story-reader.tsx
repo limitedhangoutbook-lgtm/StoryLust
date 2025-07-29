@@ -730,10 +730,13 @@ export default function StoryReader() {
           
           {isAuthenticated && (
             <div className="flex items-center space-x-3">
-              <div className="flex items-center space-x-1 px-3 py-1 bg-dark-secondary/50 rounded-full">
+              <button
+                onClick={() => setLocation("/store")}
+                className="flex items-center space-x-1 px-3 py-1 bg-dark-secondary/50 rounded-full hover:bg-dark-secondary/70 transition-colors cursor-pointer"
+              >
                 <Gem className="w-4 h-4 text-rose-gold" />
                 <span className="text-sm font-medium text-kindle">{userDiamonds}</span>
-              </div>
+              </button>
               <Button
                 variant="ghost"
                 size="sm"

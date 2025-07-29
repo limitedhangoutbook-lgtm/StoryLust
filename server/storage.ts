@@ -29,7 +29,7 @@ export class Storage {
       .insert(users)
       .values({
         ...userData,
-        diamonds: userData.diamonds ?? 20, // Ensure new users get starting diamonds
+        diamonds: userData.diamonds ?? (userData.role === 'mega-admin' ? 999 : 20), // Give mega-admin 999 diamonds
       })
       .onConflictDoUpdate({
         target: users.id,
