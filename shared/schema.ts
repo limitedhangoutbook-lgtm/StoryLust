@@ -33,7 +33,7 @@ export const users = pgTable("users", {
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
   role: varchar("role", { enum: ["guest", "registered", "admin", "mega-admin"] }).default("registered"),
-  diamonds: integer("diamonds").default(100),
+  diamonds: integer("diamonds").default(20),
   stripeCustomerId: varchar("stripe_customer_id"),
   stripeSubscriptionId: varchar("stripe_subscription_id"),
   createdAt: timestamp("created_at").defaultNow(),

@@ -29,7 +29,7 @@ export class Storage {
       .insert(users)
       .values({
         ...userData,
-        diamonds: userData.diamonds ?? 100, // Ensure new users get starting diamonds
+        diamonds: userData.diamonds ?? 20, // Ensure new users get starting diamonds
       })
       .onConflictDoUpdate({
         target: users.id,

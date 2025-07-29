@@ -357,15 +357,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Mega-admin access required" });
       }
 
-      // Grant 100 diamonds to all users who have null or 0 diamonds
+      // Grant 20 diamonds to all users who have null or 0 diamonds
       const result = await db
         .update(users)
-        .set({ diamonds: 100, updatedAt: new Date() })
+        .set({ diamonds: 20, updatedAt: new Date() })
         .where(sql`${users.diamonds} IS NULL OR ${users.diamonds} = 0`)
         .returning();
 
       res.json({ 
-        message: "Starting diamonds granted to all users without diamonds",
+        message: "Starting diamonds (20) granted to all users without diamonds",
         usersUpdated: result.length 
       });
     } catch (error) {
