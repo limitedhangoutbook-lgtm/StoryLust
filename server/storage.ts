@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, sql } from "drizzle-orm";
 import {
   users,
   stories,
@@ -144,11 +144,110 @@ export class Storage {
         target: [readingProgress.userId, readingProgress.storyId],
         set: {
           currentNodeId: progressData.currentNodeId,
+          isBookmarked: progressData.isBookmarked,
+          isCompleted: progressData.isCompleted,
+          completedAt: progressData.completedAt,
           lastReadAt: new Date(),
         },
       })
       .returning();
     return progress;
+  }
+
+  async markStoryCompleted(userId: string, storyId: string): Promise<ReadingProgress> {
+    const [progress] = await db
+      .insert(readingProgress)
+      .values({
+        userId,
+        storyId,
+        currentNodeId: "", // Will be overridden by conflict update
+        isCompleted: true,
+        completedAt: new Date(),
+      })
+      .onConflictDoUpdate({
+        target: [readingProgress.userId, readingProgress.storyId],
+        set: {
+          isCompleted: true,
+          completedAt: new Date(),
+        },
+      })
+      .returning();
+    return progress;
+  }
+
+  async getUserStats(userId: string): Promise<{
+    storiesStarted: number;
+    storiesCompleted: number;
+    totalChoicesMade: number;
+    bookmarkedStories: number;
+    premiumChoicesUnlocked: number;
+    diamondsSpent: number;
+  }> {
+    // Count stories started (reading progress exists)
+    const [startedResult] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(readingProgress)
+      .where(eq(readingProgress.userId, userId));
+    
+    // Count stories completed  
+    const [completedResult] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(readingProgress)
+      .where(and(
+        eq(readingProgress.userId, userId),
+        eq(readingProgress.isCompleted, true)
+      ));
+
+    // Count bookmarked stories
+    const [bookmarkedResult] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(readingProgress)
+      .where(and(
+        eq(readingProgress.userId, userId),
+        eq(readingProgress.isBookmarked, true)
+      ));
+
+    // Count total choices made
+    const [choicesResult] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(userChoices)
+      .where(eq(userChoices.userId, userId));
+
+    // Count premium choices (join with story choices to check isPremium)
+    const [premiumResult] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(userChoices)
+      .innerJoin(storyChoices, eq(userChoices.choiceId, storyChoices.id))
+      .where(and(
+        eq(userChoices.userId, userId),
+        eq(storyChoices.isPremium, true)
+      ));
+
+    // Get user for diamonds spent (would need transaction history for real calculation)
+    const user = await this.getUser(userId);
+    
+    return {
+      storiesStarted: startedResult?.count || 0,
+      storiesCompleted: completedResult?.count || 0,
+      totalChoicesMade: choicesResult?.count || 0,
+      bookmarkedStories: bookmarkedResult?.count || 0,
+      premiumChoicesUnlocked: premiumResult?.count || 0,
+      diamondsSpent: 0, // Would need transaction history
+    };
+  }
+
+  async getUserReadingProgressWithStories(userId: string): Promise<Array<ReadingProgress & { story: Story }>> {
+    const progressData = await db
+      .select()
+      .from(readingProgress)
+      .innerJoin(stories, eq(readingProgress.storyId, stories.id))
+      .where(eq(readingProgress.userId, userId))
+      .orderBy(desc(readingProgress.lastReadAt));
+
+    return progressData.map(row => ({
+      ...row.reading_progress,
+      story: row.stories,
+    }));
   }
 
   // === USER CHOICE OPERATIONS ===

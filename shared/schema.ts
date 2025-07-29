@@ -86,6 +86,8 @@ export const readingProgress = pgTable("reading_progress", {
   storyId: varchar("story_id").notNull().references(() => stories.id, { onDelete: "cascade" }),
   currentNodeId: varchar("current_node_id").notNull().references(() => storyNodes.id, { onDelete: "cascade" }),
   isBookmarked: boolean("is_bookmarked").default(false),
+  isCompleted: boolean("is_completed").default(false),
+  completedAt: timestamp("completed_at"),
   lastReadAt: timestamp("last_read_at").defaultNow(),
   createdAt: timestamp("created_at").defaultNow(),
 }, (table) => [

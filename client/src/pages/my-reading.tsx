@@ -88,7 +88,8 @@ export default function MyReading() {
     bookmarkMutation.mutate(storyId);
   };
 
-  const continueReading = readingProgress.filter(p => !p.isBookmarked);
+  // Filter stories based on active tab and completion status
+  const continueReading = readingProgress.filter(p => !p.isCompleted && (!p.isBookmarked || new Date(p.lastReadAt) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)));
   const bookmarked = readingProgress.filter(p => p.isBookmarked);
 
   const currentList = activeTab === "continue" ? continueReading : bookmarked;
@@ -175,14 +176,20 @@ export default function MyReading() {
         ) : currentList.length > 0 ? (
           <div className="space-y-4">
             {currentList.map((progress) => (
-              <StoryCard
-                key={progress.id}
-                story={progress.story}
-                onRead={() => openStory(progress.storyId)}
-                onBookmark={() => handleBookmark(progress.storyId)}
-                showProgress={true}
-                progressPercent={Math.min(100, (progress.currentNodeId ? 50 : 10))}
-              />
+              <div key={progress.id} className="space-y-2">
+                <StoryCard
+                  story={progress.story}
+                  onRead={() => openStory(progress.storyId)}
+                  onBookmark={() => handleBookmark(progress.storyId)}
+                  showProgress={true}
+                  progressPercent={progress.isCompleted ? 100 : Math.min(100, (progress.currentNodeId ? 50 : 10))}
+                />
+                {progress.isCompleted && (
+                  <div className="px-3 py-2 bg-rose-gold/10 border border-rose-gold/20 rounded-lg">
+                    <p className="text-xs text-rose-gold font-medium">✓ Story Completed - Tap to restart from beginning</p>
+                  </div>
+                )}
+              </div>
             ))}
           </div>
         ) : (

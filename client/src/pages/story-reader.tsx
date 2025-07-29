@@ -118,10 +118,23 @@ export default function StoryReader() {
         queryKey: ["/api/reading-progress", storyId],
       }).then((progress: any) => {
         if (progress?.currentNodeId) {
-          setCurrentNodeId(progress.currentNodeId);
-          setIsBookmarked(!!progress.isBookmarked);
-          // Invalidate progress queries to ensure fresh data
-          queryClient.invalidateQueries({ queryKey: ["/api/reading-progress"] });
+          // Check if story is completed - if so, restart from beginning
+          if (progress.isCompleted) {
+            fetchStartingNode();
+            // Reset completion status
+            apiRequest("POST", "/api/reading-progress", {
+              storyId,
+              currentNodeId: "", // Will be set by fetchStartingNode
+              isBookmarked: progress.isBookmarked || false,
+              isCompleted: false,
+              completedAt: null,
+            }).catch(() => {});
+          } else {
+            setCurrentNodeId(progress.currentNodeId);
+            setIsBookmarked(!!progress.isBookmarked);
+            // Invalidate progress queries to ensure fresh data
+            queryClient.invalidateQueries({ queryKey: ["/api/reading-progress"] });
+          }
         } else {
           // Check local storage as fallback
           checkLocalProgress() || fetchStartingNode();
@@ -216,6 +229,15 @@ export default function StoryReader() {
       // This page has choices, show them
       setShowChoices(true);
     } else if (isStoryEnding) {
+      // Mark story as completed for authenticated users
+      if (isAuthenticated) {
+        try {
+          await apiRequest("POST", `/api/stories/${storyId}/complete`);
+        } catch (completionError) {
+          // Silently handle completion error
+        }
+      }
+      
       // This is a story ending, return to homepage
       setLocation("/");
       toast({
@@ -265,6 +287,15 @@ export default function StoryReader() {
 
         // If it's a 404 (no next page), treat as story ending
         if (error.message?.includes('404')) {
+          // Mark story as completed for authenticated users
+          if (isAuthenticated) {
+            try {
+              await apiRequest("POST", `/api/stories/${storyId}/complete`);
+            } catch (completionError) {
+              // Silently handle completion error
+            }
+          }
+          
           setLocation("/");
           toast({
             title: "Story Complete",

@@ -47,6 +47,7 @@ export default function Profile() {
   // Fetch real user stats
   const { data: userStats = {
     storiesStarted: 0,
+    storiesCompleted: 0,
     totalChoicesMade: 0,
     bookmarkedStories: 0,
     premiumChoicesUnlocked: 0,
@@ -155,13 +156,13 @@ export default function Profile() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="text-center p-4 bg-dark-tertiary rounded-lg">
                     <Settings className="w-6 h-6 text-rose-gold mx-auto mb-2" />
-                    <div className="text-2xl font-bold text-text-primary">{userStats.totalChoicesMade}</div>
-                    <div className="text-xs text-text-muted">Choices Made</div>
+                    <div className="text-2xl font-bold text-text-primary">{userStats.storiesCompleted}</div>
+                    <div className="text-xs text-text-muted">Completed</div>
                   </div>
                   <div className="text-center p-4 bg-dark-tertiary rounded-lg">
                     <Gem className="w-6 h-6 text-gold-accent mx-auto mb-2" />
-                    <div className="text-2xl font-bold text-text-primary">{userStats.diamondsSpent}</div>
-                    <div className="text-xs text-text-muted">Diamonds Spent</div>
+                    <div className="text-2xl font-bold text-text-primary">{userStats.totalChoicesMade}</div>
+                    <div className="text-xs text-text-muted">Choices Made</div>
                   </div>
                 </div>
               </div>

@@ -159,6 +159,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // === STORY COMPLETION ROUTES ===
+  app.post('/api/stories/:storyId/complete', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { storyId } = req.params;
+      
+      const progress = await storage.markStoryCompleted(userId, storyId);
+      res.json({ success: true, progress });
+    } catch (error) {
+      console.error("Error marking story completed:", error);
+      res.status(500).json({ message: "Failed to mark story completed" });
+    }
+  });
+
+  // === USER STATS ROUTES ===
+  app.get('/api/user/stats', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const stats = await storage.getUserStats(userId);
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching user stats:", error);
+      res.status(500).json({ message: "Failed to fetch user stats" });
+    }
+  });
+
+  // === READING PROGRESS WITH STORY DATA ===
+  app.get('/api/reading-progress', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const progressWithStories = await storage.getUserReadingProgressWithStories(userId);
+      res.json(progressWithStories);
+    } catch (error) {
+      console.error("Error fetching reading progress with stories:", error);
+      res.status(500).json({ message: "Failed to fetch reading progress" });
+    }
+  });
+
   // === USER MANAGEMENT ROUTES (MEGA-ADMIN ONLY) ===
   app.get('/api/admin/users', isAuthenticated, async (req: any, res) => {
     const currentUser = await storage.getUser(req.user.claims.sub);
