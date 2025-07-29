@@ -306,15 +306,20 @@ export default function StoryReader() {
     return null;
   }
 
-  if (storyLoading || nodeLoading) {
+  // Show loading state while critical data is loading OR while data doesn't exist yet
+  if (storyLoading || nodeLoading || (!story && storyId) || (!currentNode && currentNodeId)) {
     return (
       <div className="min-h-screen bg-dark-primary flex items-center justify-center">
-        <div className="animate-spin w-8 h-8 border-4 border-rose-gold border-t-transparent rounded-full" />
+        <div className="text-center">
+          <div className="animate-spin w-8 h-8 border-4 border-rose-gold border-t-transparent rounded-full mx-auto mb-4" />
+          <p className="text-text-muted">Loading story...</p>
+        </div>
       </div>
     );
   }
 
-  if (!story || !currentNode) {
+  // Only show error state if we definitively failed to load
+  if (storyId && !storyLoading && !story) {
     return (
       <div className="min-h-screen bg-dark-primary flex items-center justify-center text-center px-4">
         <div>
