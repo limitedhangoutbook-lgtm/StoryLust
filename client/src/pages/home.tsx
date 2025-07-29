@@ -78,7 +78,7 @@ export default function Home() {
             <h1 className="text-xl font-bold tracking-tight text-text-primary">TurnPage</h1>
           </div>
           <div className="flex items-center space-x-3">
-            {user && isAdmin(user as any) && (
+            {user && isAdmin(user) && (
               <Button
                 onClick={() => setLocation("/story-builder")}
                 size="sm"

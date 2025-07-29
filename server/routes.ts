@@ -201,6 +201,137 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // === PERSONAL BOOKMARK ROUTES ===
+  app.post('/api/bookmarks', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { storyId, nodeId, title, notes } = req.body;
+      
+      if (!storyId || !nodeId || !title) {
+        return res.status(400).json({ message: "storyId, nodeId, and title are required" });
+      }
+      
+      const bookmark = await storage.createPersonalBookmark({
+        userId,
+        storyId,
+        nodeId,
+        title,
+        notes,
+      });
+      res.json(bookmark);
+    } catch (error) {
+      console.error("Error creating bookmark:", error);
+      res.status(500).json({ message: "Failed to create bookmark" });
+    }
+  });
+
+  app.get('/api/bookmarks', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { storyId } = req.query;
+      const bookmarks = await storage.getPersonalBookmarks(userId, storyId as string);
+      res.json(bookmarks);
+    } catch (error) {
+      console.error("Error fetching bookmarks:", error);
+      res.status(500).json({ message: "Failed to fetch bookmarks" });
+    }
+  });
+
+  app.put('/api/bookmarks/:bookmarkId', isAuthenticated, async (req: any, res) => {
+    try {
+      const { bookmarkId } = req.params;
+      const { title, notes } = req.body;
+      
+      const bookmark = await storage.updatePersonalBookmark(bookmarkId, { title, notes });
+      res.json(bookmark);
+    } catch (error) {
+      console.error("Error updating bookmark:", error);
+      res.status(500).json({ message: "Failed to update bookmark" });
+    }
+  });
+
+  app.delete('/api/bookmarks/:bookmarkId', isAuthenticated, async (req: any, res) => {
+    try {
+      const { bookmarkId } = req.params;
+      await storage.deletePersonalBookmark(bookmarkId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting bookmark:", error);
+      res.status(500).json({ message: "Failed to delete bookmark" });
+    }
+  });
+
+  // === READING SESSION ROUTES ===
+  app.post('/api/reading-sessions/start', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { storyId, startNodeId } = req.body;
+      
+      if (!storyId || !startNodeId) {
+        return res.status(400).json({ message: "storyId and startNodeId are required" });
+      }
+      
+      const session = await storage.startReadingSession({
+        userId,
+        storyId,
+        startNodeId,
+      });
+      res.json(session);
+    } catch (error) {
+      console.error("Error starting reading session:", error);
+      res.status(500).json({ message: "Failed to start reading session" });
+    }
+  });
+
+  app.put('/api/reading-sessions/:sessionId', isAuthenticated, async (req: any, res) => {
+    try {
+      const { sessionId } = req.params;
+      const { pagesRead, choicesMade } = req.body;
+      
+      const session = await storage.updateReadingSession(sessionId, { pagesRead, choicesMade });
+      res.json(session);
+    } catch (error) {
+      console.error("Error updating reading session:", error);
+      res.status(500).json({ message: "Failed to update reading session" });
+    }
+  });
+
+  app.post('/api/reading-sessions/:sessionId/end', isAuthenticated, async (req: any, res) => {
+    try {
+      const { sessionId } = req.params;
+      const { endNodeId } = req.body;
+      
+      const session = await storage.endReadingSession(sessionId, endNodeId);
+      res.json(session);
+    } catch (error) {
+      console.error("Error ending reading session:", error);
+      res.status(500).json({ message: "Failed to end reading session" });
+    }
+  });
+
+  app.get('/api/reading-sessions', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const sessions = await storage.getUserReadingSessions(userId);
+      res.json(sessions);
+    } catch (error) {
+      console.error("Error fetching reading sessions:", error);
+      res.status(500).json({ message: "Failed to fetch reading sessions" });
+    }
+  });
+
+  // === READING ANALYTICS ROUTES ===
+  app.get('/api/analytics/reading-stats', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const stats = await storage.getReadingStats(userId);
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching reading stats:", error);
+      res.status(500).json({ message: "Failed to fetch reading stats" });
+    }
+  });
+
   // === USER MANAGEMENT ROUTES (MEGA-ADMIN ONLY) ===
   app.get('/api/admin/users', isAuthenticated, async (req: any, res) => {
     const currentUser = await storage.getUser(req.user.claims.sub);

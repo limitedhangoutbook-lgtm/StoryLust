@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Heart, Settings } from "lucide-react";
+import { ArrowLeft, Heart, Settings, Bookmark } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StoryNavigation } from "@/components/story-navigation";
 import { TypographySettings } from "@/components/typography-settings";
 import { VipMessageAuthor } from "@/components/vip-message-author";
+import { BookmarkManager } from "@/components/bookmark-manager";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation, useRoute } from "wouter";
@@ -26,6 +28,7 @@ export default function StoryReader() {
   const [pageHistory, setPageHistory] = useState<string[]>([]);
   const [showTypographySettings, setShowTypographySettings] = useState(false);
   const [showVipMessage, setShowVipMessage] = useState(false);
+  const [showBookmarkManager, setShowBookmarkManager] = useState(false);
 
 
   const [showNavigation, setShowNavigation] = useState(true);
@@ -738,6 +741,14 @@ export default function StoryReader() {
               <Button
                 variant="ghost"
                 size="sm"
+                onClick={() => setShowBookmarkManager(true)}
+                className="text-kindle-secondary hover:text-kindle"
+              >
+                <Bookmark className="w-5 h-5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => bookmarkMutation.mutate()}
                 className={isBookmarked ? "text-rose-gold" : "text-kindle-secondary hover:text-kindle"}
                 disabled={bookmarkMutation.isPending || false}
@@ -914,6 +925,24 @@ export default function StoryReader() {
           </div>
         </div>
       )}
+
+      {/* Bookmark Manager Sheet */}
+      <Sheet open={showBookmarkManager} onOpenChange={setShowBookmarkManager}>
+        <SheetContent side="right" className="w-[400px] sm:w-[540px]">
+          <SheetHeader>
+            <SheetTitle>Bookmarks</SheetTitle>
+          </SheetHeader>
+          <div className="mt-6">
+            {storyId && currentNodeId && currentNode && (
+              <BookmarkManager 
+                storyId={storyId}
+                nodeId={currentNodeId}
+                nodeTitle={currentNode.title}
+              />
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

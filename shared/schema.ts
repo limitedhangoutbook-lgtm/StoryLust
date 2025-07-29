@@ -65,7 +65,7 @@ export const storyNodes = pgTable("story_nodes", {
   content: text("content").notNull(),
   isStarting: boolean("is_starting").default(false),
   order: integer("order").notNull(),
-  nextNodeId: varchar("next_node_id").references(() => storyNodes.id),
+  nextNodeId: varchar("next_node_id"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -91,10 +91,41 @@ export const readingProgress = pgTable("reading_progress", {
   isCompleted: boolean("is_completed").default(false),
   completedAt: timestamp("completed_at"),
   lastReadAt: timestamp("last_read_at").defaultNow(),
+  totalReadingTimeMinutes: integer("total_reading_time_minutes").default(0),
+  pagesRead: integer("pages_read").default(0),
+  choicesMade: integer("choices_made").default(0),
   createdAt: timestamp("created_at").defaultNow(),
 }, (table) => [
   unique().on(table.userId, table.storyId),
 ]);
+
+// Personal bookmarks for specific story moments
+export const personalBookmarks = pgTable("personal_bookmarks", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  storyId: varchar("story_id").notNull().references(() => stories.id, { onDelete: "cascade" }),
+  nodeId: varchar("node_id").notNull().references(() => storyNodes.id, { onDelete: "cascade" }),
+  title: text("title").notNull(), // User's custom bookmark title
+  notes: text("notes"), // Optional personal notes
+  isPrivate: boolean("is_private").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Reading sessions for detailed analytics
+export const readingSessions = pgTable("reading_sessions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  storyId: varchar("story_id").notNull().references(() => stories.id, { onDelete: "cascade" }),
+  startNodeId: varchar("start_node_id").notNull().references(() => storyNodes.id),
+  endNodeId: varchar("end_node_id").references(() => storyNodes.id),
+  startTime: timestamp("start_time").defaultNow(),
+  endTime: timestamp("end_time"),
+  pagesRead: integer("pages_read").default(0),
+  choicesMade: integer("choices_made").default(0),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
 
 // User choice history
 export const userChoices = pgTable("user_choices", {
@@ -149,6 +180,38 @@ export const storyChoicesRelations = relations(storyChoices, ({ one }) => ({
 export const usersRelations = relations(users, ({ many }) => ({
   readingProgress: many(readingProgress),
   userChoices: many(userChoices),
+  personalBookmarks: many(personalBookmarks),
+  readingSessions: many(readingSessions),
+}));
+
+export const personalBookmarksRelations = relations(personalBookmarks, ({ one }) => ({
+  user: one(users, {
+    fields: [personalBookmarks.userId],
+    references: [users.id],
+  }),
+  story: one(stories, {
+    fields: [personalBookmarks.storyId],
+    references: [stories.id],
+  }),
+  node: one(storyNodes, {
+    fields: [personalBookmarks.nodeId],
+    references: [storyNodes.id],
+  }),
+}));
+
+export const readingSessionsRelations = relations(readingSessions, ({ one }) => ({
+  user: one(users, {
+    fields: [readingSessions.userId],
+    references: [users.id],
+  }),
+  story: one(stories, {
+    fields: [readingSessions.storyId],
+    references: [stories.id],
+  }),
+  startNode: one(storyNodes, {
+    fields: [readingSessions.startNodeId],
+    references: [storyNodes.id],
+  }),
 }));
 
 export const readingProgressRelations = relations(readingProgress, ({ one }) => ({
@@ -199,21 +262,35 @@ export const insertUserChoiceSchema = createInsertSchema(userChoices).omit({
   createdAt: true,
 });
 
+export const insertPersonalBookmarkSchema = createInsertSchema(personalBookmarks).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertReadingSessionSchema = createInsertSchema(readingSessions).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types
-
-
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
 export type Story = typeof stories.$inferSelect;
 export type StoryNode = typeof storyNodes.$inferSelect;
 export type StoryChoice = typeof storyChoices.$inferSelect;
 export type ReadingProgress = typeof readingProgress.$inferSelect;
+export type InsertReadingProgress = typeof readingProgress.$inferInsert;
 export type UserChoice = typeof userChoices.$inferSelect;
+export type InsertUserChoice = typeof userChoices.$inferInsert;
+export type PersonalBookmark = typeof personalBookmarks.$inferSelect;
+export type InsertPersonalBookmark = typeof personalBookmarks.$inferInsert;
+export type ReadingSession = typeof readingSessions.$inferSelect;
+export type InsertReadingSession = typeof readingSessions.$inferInsert;
 export type AuthorMessage = typeof authorMessages.$inferSelect;
 export type InsertAuthorMessage = typeof authorMessages.$inferInsert;
 
 export type InsertStory = z.infer<typeof insertStorySchema>;
 export type InsertStoryNode = z.infer<typeof insertStoryNodeSchema>;
 export type InsertStoryChoice = z.infer<typeof insertStoryChoiceSchema>;
-export type InsertReadingProgress = z.infer<typeof insertReadingProgressSchema>;
 export type InsertUserChoice = z.infer<typeof insertUserChoiceSchema>;

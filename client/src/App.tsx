@@ -17,6 +17,7 @@ import StoryManagement from "@/pages/story-management";
 import StoryBuilder from "@/pages/story-builder-new";
 import UserManagement from "@/pages/user-management";
 import DiamondStore from "@/pages/diamond-store";
+import { Bookmarks } from "@/pages/bookmarks";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -26,6 +27,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/story/:storyId" component={StoryReader} />
       <Route path="/my-reading" component={MyReading} />
+      <Route path="/bookmarks" component={Bookmarks} />
       <Route path="/profile" component={Profile} />
       <Route path="/store" component={Store} />
       <Route path="/diamonds" component={DiamondStore} />
