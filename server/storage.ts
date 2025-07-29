@@ -101,9 +101,15 @@ const sampleNodes = {
       id: "start",
       storyId: "campus-encounter",
       title: "The Library",
-      content: `The rain drummed against the library windows as Jake hunched over his economics textbook. It was nearly midnight, and the building was almost empty except for the soft footsteps of someone approaching his table.
+      content: `The rain drummed against the library windows as Jake hunched over his economics textbook. It was nearly midnight, and the building was almost empty except for the occasional rustle of pages turning or the soft footsteps of the security guard making his rounds.
+
+Jake had been there for hours, trying to make sense of market equilibrium theories, but his mind kept wandering. Tomorrow's exam felt like a mountain he couldn't climb, and the stress was making it hard to focus on anything.
+
+That's when he heard the footsteps approaching his table—different from the guard's heavy boots. These were lighter, more purposeful.
 
 "Mind if I sit here?" The voice was warm, confident. Jake looked up to see Alex—someone he'd noticed in his philosophy class but never had the courage to talk to.
+
+Alex had striking eyes and an easy smile that made Jake's heart skip. They were carrying a worn copy of Camus and what looked like a thermos of coffee.
 
 The library felt suddenly smaller, the air charged with possibility.`,
       isStartNode: true,
@@ -251,9 +257,15 @@ They moved their chairs closer together, the space between them charged with pos
       id: "start",
       storyId: "midnight-coffee",
       title: "Last Call",
-      content: `Sam wiped down the counter for the hundredth time, glancing at the clock. 11:47 PM. Just thirteen more minutes until closing, and then they could finally—
+      content: `The coffee shop felt different at night. During the day, it buzzed with students typing frantically on laptops and business people grabbing quick caffeine fixes. But after 11 PM, it transformed into something quieter, more intimate.
 
-The bell chimed. Sam looked up to see River, the regular who always ordered a double espresso no matter the hour. Tonight, though, River looked different. Nervous. Hesitant.
+Sam loved these late hours. The soft jazz playing from the speakers, the warm glow of the pendant lights, the way the street looked through the rain-streaked windows. It was peaceful in a way that the busy daytime never allowed.
+
+Sam wiped down the counter for the hundredth time, glancing at the clock. 11:47 PM. Just thirteen more minutes until closing, and then they could finally head home to their small apartment and maybe catch up on some reading.
+
+The bell chimed, interrupting their thoughts. Sam looked up to see River, the regular who always ordered a double espresso no matter the hour. River had been coming here for months—always polite, always alone, always with that same tired but determined expression.
+
+Tonight, though, River looked different. Nervous. Hesitant. Their usual confident stride had been replaced by uncertain steps.
 
 "Hey," River said softly, approaching the counter. "I know you're about to close, but..."`,
       isStartNode: true,
@@ -473,10 +485,10 @@ export class DatabaseStorage implements IStorage {
           id: choice.id,
           fromNodeId: nodeId,
           toNodeId: choice.nextNodeId,
-          text: choice.text,
+          choiceText: choice.text,
           order: index + 1,
-          isPremium: choice.isPremium || false,
-          diamondCost: choice.cost || 0,
+          isPremium: (choice as any).isPremium || false,
+          diamondCost: (choice as any).cost || 0,
           createdAt: new Date()
         }));
       }
