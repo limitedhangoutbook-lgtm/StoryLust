@@ -217,11 +217,21 @@ export default function StoryReader() {
     }
   };
 
+  // Check if current node is a story ending
+  const isStoryEnding = currentNode?.content?.includes("**THE END**") || false;
+
   // Continue reading handler
   const handleContinueReading = async () => {
     if (choices.length > 0) {
       // This page has choices, show them
       setShowChoices(true);
+    } else if (isStoryEnding) {
+      // This is a story ending, return to homepage
+      setLocation("/");
+      toast({
+        title: "Story Complete",
+        description: "Thank you for reading! Check out more stories.",
+      });
     } else {
       // This page doesn't have choices, try to get next page from server
       try {
@@ -254,7 +264,8 @@ export default function StoryReader() {
           // Scroll to top for new page
           window.scrollTo({ top: 0, behavior: 'smooth' });
         } else {
-          // Story ended
+          // Story ended - no next node found
+          setLocation("/");
           toast({
             title: "Story Complete",
             description: "You've reached the end of this story path!",
@@ -262,11 +273,20 @@ export default function StoryReader() {
         }
       } catch (error) {
         console.error('Error fetching next page:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load next page. Please try again.",
-          variant: "destructive",
-        });
+        // If it's a 404 (no next page), treat as story ending
+        if (error.message?.includes('404')) {
+          setLocation("/");
+          toast({
+            title: "Story Complete",
+            description: "You've reached the end of this story path!",
+          });
+        } else {
+          toast({
+            title: "Error",
+            description: "Failed to load next page. Please try again.",
+            variant: "destructive",
+          });
+        }
       }
     }
   };
@@ -575,12 +595,17 @@ export default function StoryReader() {
       return "Start Reading";
     }
     
+    // Check if this is a story ending
+    if (isStoryEnding) {
+      return "Return to Stories";
+    }
+    
     const nextPageId = getNextPageId(currentId);
     if (nextPageId) {
       return "Continue Reading";
     }
     
-    return "Story Complete";
+    return "Return to Stories";
   };
 
   const handleBookmark = () => {
