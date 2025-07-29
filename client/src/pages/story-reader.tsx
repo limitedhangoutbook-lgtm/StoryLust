@@ -468,8 +468,9 @@ export default function StoryReader() {
         }
         
         toast({
-          title: "Choice Made",
-          description: "Continuing your story...",
+          title: "🍆✨ Choice Made! ✨🍆", 
+          description: "Your story path unfolds...",
+          duration: 1000, // Disappear after 1 second to avoid blocking navigation
         });
       } else {
 
@@ -775,12 +776,6 @@ export default function StoryReader() {
         {/* Choices section - integrated with story text */}
         {showChoices && choices.length > 0 && (
           <div className="mt-8 mb-16">
-            {/* Choice instructions */}
-            <div className="text-center mb-8">
-              <p className="text-kindle-secondary text-sm mb-2">What do you choose?</p>
-              <p className="text-text-muted text-xs">💡 You can use the back button to return to previous pages</p>
-            </div>
-            
             <div className="space-y-6">
               {choices.map((choice, index) => {
                 return (
