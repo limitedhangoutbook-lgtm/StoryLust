@@ -169,10 +169,10 @@ export default function Home() {
                 <p className="text-xs text-text-muted mt-1">Visual story editor for creators</p>
               </div>
               <Button
-                onClick={() => setLocation("/story-creator")}
+                onClick={() => setLocation("/story-management")}
                 className="bg-rose-gold text-dark-primary hover:bg-rose-gold/90 text-sm px-4 py-2 h-8"
               >
-                ✍️ Create
+                ✍️ Manage Stories
               </Button>
             </div>
           </section>

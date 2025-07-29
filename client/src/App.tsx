@@ -13,6 +13,7 @@ import MyReading from "@/pages/my-reading";
 import Profile from "@/pages/profile";
 import Store from "@/pages/store";
 import StoryCreator from "@/pages/story-creator";
+import StoryManagement from "@/pages/story-management";
 import UserManagement from "@/pages/user-management";
 
 function Router() {
@@ -26,6 +27,7 @@ function Router() {
       <Route path="/profile" component={Profile} />
       <Route path="/store" component={Store} />
       <Route path="/story-creator" component={StoryCreator} />
+      <Route path="/story-management" component={StoryManagement} />
       <Route path="/user-management" component={UserManagement} />
       <Route path="/landing" component={Landing} />
       <Route component={NotFound} />

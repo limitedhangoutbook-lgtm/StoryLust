@@ -3,8 +3,8 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./auth";
 import { db } from "./db";
-import { and, eq, gt } from "drizzle-orm";
-import { storyNodes } from "@shared/schema";
+import { and, eq, gt, sql } from "drizzle-orm";
+import { storyNodes, users } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth setup
@@ -346,6 +346,195 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error spending diamonds:", error);
       res.status(500).json({ message: "Failed to spend diamonds" });
+    }
+  });
+
+  // === ADMIN STORY ROUTES ===
+  app.get('/api/admin/stories', isAuthenticated, async (req: any, res) => {
+    try {
+      const currentUser = await storage.getUser(req.user.claims.sub);
+      if (currentUser?.role !== 'admin' && currentUser?.role !== 'mega-admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const allStories = await storage.getAllStoriesForAdmin();
+      res.json(allStories);
+    } catch (error) {
+      console.error("Error fetching admin stories:", error);
+      res.status(500).json({ message: "Failed to fetch stories" });
+    }
+  });
+
+  app.get('/api/stories/:storyId/nodes', isAuthenticated, async (req: any, res) => {
+    try {
+      const currentUser = await storage.getUser(req.user.claims.sub);
+      if (currentUser?.role !== 'admin' && currentUser?.role !== 'mega-admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const { storyId } = req.params;
+      const nodes = await storage.getStoryNodes(storyId);
+      res.json(nodes);
+    } catch (error) {
+      console.error("Error fetching story nodes:", error);
+      res.status(500).json({ message: "Failed to fetch story nodes" });
+    }
+  });
+
+  // === STORY CREATION ROUTES (ADMIN ONLY) ===
+  app.post('/api/stories', isAuthenticated, async (req: any, res) => {
+    try {
+      const currentUser = await storage.getUser(req.user.claims.sub);
+      if (currentUser?.role !== 'admin' && currentUser?.role !== 'mega-admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const { title, description, imageUrl, spiceLevel, category, wordCount, pathCount } = req.body;
+      
+      if (!title || !description || !imageUrl || !spiceLevel || !category) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+
+      const story = await storage.createStory({
+        title,
+        description,
+        imageUrl,
+        spiceLevel,
+        category,
+        wordCount,
+        pathCount,
+      });
+
+      res.status(201).json(story);
+    } catch (error) {
+      console.error("Error creating story:", error);
+      res.status(500).json({ message: "Failed to create story" });
+    }
+  });
+
+  app.put('/api/stories/:storyId', isAuthenticated, async (req: any, res) => {
+    try {
+      const currentUser = await storage.getUser(req.user.claims.sub);
+      if (currentUser?.role !== 'admin' && currentUser?.role !== 'mega-admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const { storyId } = req.params;
+      const updates = req.body;
+      
+      const story = await storage.updateStory(storyId, updates);
+      res.json(story);
+    } catch (error) {
+      console.error("Error updating story:", error);
+      res.status(500).json({ message: "Failed to update story" });
+    }
+  });
+
+  app.delete('/api/stories/:storyId', isAuthenticated, async (req: any, res) => {
+    try {
+      const currentUser = await storage.getUser(req.user.claims.sub);
+      if (currentUser?.role !== 'mega-admin') {
+        return res.status(403).json({ message: "Mega-admin access required" });
+      }
+
+      const { storyId } = req.params;
+      await storage.deleteStory(storyId);
+      res.json({ message: "Story deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting story:", error);
+      res.status(500).json({ message: "Failed to delete story" });
+    }
+  });
+
+  app.post('/api/stories/:storyId/nodes', isAuthenticated, async (req: any, res) => {
+    try {
+      const currentUser = await storage.getUser(req.user.claims.sub);
+      if (currentUser?.role !== 'admin' && currentUser?.role !== 'mega-admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const { storyId } = req.params;
+      const { title, content, order, isStarting } = req.body;
+      
+      if (!title || !content || order === undefined) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+
+      const node = await storage.createStoryNode({
+        storyId,
+        title,
+        content,
+        order,
+        isStarting,
+      });
+
+      res.status(201).json(node);
+    } catch (error) {
+      console.error("Error creating story node:", error);
+      res.status(500).json({ message: "Failed to create story node" });
+    }
+  });
+
+  app.put('/api/nodes/:nodeId', isAuthenticated, async (req: any, res) => {
+    try {
+      const currentUser = await storage.getUser(req.user.claims.sub);
+      if (currentUser?.role !== 'admin' && currentUser?.role !== 'mega-admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const { nodeId } = req.params;
+      const updates = req.body;
+      
+      const node = await storage.updateStoryNode(nodeId, updates);
+      res.json(node);
+    } catch (error) {
+      console.error("Error updating story node:", error);
+      res.status(500).json({ message: "Failed to update story node" });
+    }
+  });
+
+  app.delete('/api/nodes/:nodeId', isAuthenticated, async (req: any, res) => {
+    try {
+      const currentUser = await storage.getUser(req.user.claims.sub);
+      if (currentUser?.role !== 'mega-admin') {
+        return res.status(403).json({ message: "Mega-admin access required" });
+      }
+
+      const { nodeId } = req.params;
+      await storage.deleteStoryNode(nodeId);
+      res.json({ message: "Story node deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting story node:", error);
+      res.status(500).json({ message: "Failed to delete story node" });
+    }
+  });
+
+  app.post('/api/nodes/:fromNodeId/choices', isAuthenticated, async (req: any, res) => {
+    try {
+      const currentUser = await storage.getUser(req.user.claims.sub);
+      if (currentUser?.role !== 'admin' && currentUser?.role !== 'mega-admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const { fromNodeId } = req.params;
+      const { toNodeId, choiceText, isPremium, diamondCost } = req.body;
+      
+      if (!toNodeId || !choiceText) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+
+      const choice = await storage.createStoryChoice({
+        fromNodeId,
+        toNodeId,
+        choiceText,
+        isPremium,
+        diamondCost,
+      });
+
+      res.status(201).json(choice);
+    } catch (error) {
+      console.error("Error creating story choice:", error);
+      res.status(500).json({ message: "Failed to create story choice" });
     }
   });
 
