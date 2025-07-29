@@ -423,7 +423,9 @@ export default function StoryReader() {
       {/* Story Content - Full screen like Kindle with touch area */}
       <main 
         ref={mainContentRef} 
-        className="pt-16 pb-20 px-6 max-w-3xl mx-auto min-h-screen touch-manipulation select-none"
+        className={`pt-16 px-6 max-w-3xl mx-auto min-h-screen touch-manipulation select-none ${
+          showChoices ? 'pb-32' : 'pb-20'
+        }`}
         style={{ touchAction: 'pan-y' }}
       >
         {/* Swipe hint for first time users */}
@@ -444,31 +446,31 @@ export default function StoryReader() {
 
         {/* Choices section - inline with content */}
         {showChoices && choices.length > 0 && (
-          <div className="mt-12 pt-8 border-t border-dark-tertiary/30">
-            <div className="text-center mb-8">
-              <h3 className="text-kindle text-xl font-medium mb-3">Choose Your Path</h3>
-              <div className="w-16 h-0.5 bg-rose-gold mx-auto"></div>
+          <div className="mt-16 pt-12 border-t border-dark-tertiary/30 mb-16">
+            <div className="text-center mb-10">
+              <h3 className="text-kindle text-2xl font-medium mb-4">Choose Your Path</h3>
+              <div className="w-20 h-0.5 bg-rose-gold mx-auto"></div>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-5">
               {choices.map((choice) => (
                 <button
                   key={choice.id}
                   onClick={() => handleChoiceSelect(choice.id, choice.isPremium, choice.diamondCost)}
                   disabled={selectChoiceMutation.isPending}
-                  className={`w-full p-5 text-left text-kindle transition-all duration-200 border rounded-xl group ${
+                  className={`w-full p-6 text-left text-kindle transition-all duration-200 border rounded-xl group shadow-lg ${
                     choice.isPremium 
-                      ? 'bg-gradient-to-r from-dark-secondary/80 to-rose-gold/20 border-rose-gold/50 hover:border-rose-gold/80 hover:from-dark-secondary/90 hover:to-rose-gold/30' 
-                      : 'bg-dark-secondary/60 hover:bg-dark-secondary/80 border-dark-tertiary/50 hover:border-kindle-secondary/50'
+                      ? 'bg-gradient-to-r from-dark-secondary to-rose-gold/25 border-rose-gold/60 hover:border-rose-gold hover:from-dark-secondary hover:to-rose-gold/35 shadow-rose-gold/10' 
+                      : 'bg-dark-secondary/80 hover:bg-dark-secondary border-dark-tertiary/60 hover:border-kindle-secondary/60 shadow-dark-tertiary/20'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-4">
-                    <span className="text-base leading-relaxed flex-1 kindle-text">
+                    <span className="text-lg leading-relaxed flex-1 kindle-text">
                       {choice.choiceText}
                     </span>
                     {choice.isPremium && (
-                      <div className="flex items-center gap-2 text-rose-gold bg-rose-gold/15 px-3 py-1.5 rounded-full border border-rose-gold/30">
+                      <div className="flex items-center gap-2 text-rose-gold bg-rose-gold/20 px-4 py-2 rounded-full border border-rose-gold/40 shadow-sm">
                         <Gem className="w-4 h-4 fill-current" />
-                        <span className="text-sm font-medium">{choice.diamondCost || 5}</span>
+                        <span className="text-sm font-semibold">{choice.diamondCost || 5}</span>
                       </div>
                     )}
                   </div>
