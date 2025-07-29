@@ -47,6 +47,39 @@ export async function registerSimpleRoutes(app: Express): Promise<Server> {
     res.json(choices);
   });
 
+  // Get next page in story progression
+  app.get('/api/stories/:storyId/next/:currentNodeId', async (req, res) => {
+    try {
+      const { storyId, currentNodeId } = req.params;
+      
+      // Get current node's order to find the next sequential node
+      const currentNode = await storage.getStoryNode(currentNodeId);
+      if (!currentNode) {
+        return res.status(404).json({ message: "Current node not found" });
+      }
+      
+      // Find next node in sequence
+      const [nextNode] = await db
+        .select()
+        .from(storyNodes)
+        .where(and(
+          eq(storyNodes.storyId, storyId),
+          gt(storyNodes.order, currentNode.order)
+        ))
+        .orderBy(storyNodes.order)
+        .limit(1);
+      
+      if (nextNode) {
+        res.json(nextNode);
+      } else {
+        res.status(404).json({ message: "No next page found" });
+      }
+    } catch (error) {
+      console.error("Error fetching next page:", error);
+      res.status(500).json({ message: "Failed to fetch next page" });
+    }
+  });
+
   // === CHOICE SELECTION ===
   app.post('/api/choices/:choiceId/select', async (req: any, res) => {
     try {
