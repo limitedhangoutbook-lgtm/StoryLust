@@ -27,6 +27,8 @@ export interface IStorage {
   updateUserDiamonds(userId: string, diamonds: number): Promise<User>;
   addUserDiamonds(userId: string, diamonds: number): Promise<User>;
   updateUserStripeInfo(userId: string, stripeCustomerId: string, stripeSubscriptionId?: string): Promise<User>;
+  updateUserRole(userId: string, role: string): Promise<User>;
+  getAllUsers(): Promise<User[]>;
 
   // Story operations
   getAllStories(category?: string): Promise<Story[]>;
@@ -380,6 +382,22 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, userId))
       .returning();
     return user;
+  }
+
+  async updateUserRole(userId: string, role: string): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ 
+        role: role as any,
+        updatedAt: new Date() 
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return await db.select().from(users).orderBy(desc(users.createdAt));
   }
 
   async updateUserStripeInfo(userId: string, stripeCustomerId: string, stripeSubscriptionId?: string): Promise<User> {

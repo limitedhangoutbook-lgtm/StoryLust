@@ -120,14 +120,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/stories/create', isAuthenticated, async (req, res) => {
     try {
       // Check if user is admin
-      const userEmail = (req.user as any)?.claims?.email;
-      const adminEmails = [
-        "evyatar.perel@gmail.com", // Your email
-        // Add partner emails here as needed
-      ];
+      const userId = (req.user as any)?.claims?.sub;
+      const user = await storage.getUser(userId);
       
-      if (!adminEmails.includes(userEmail)) {
-        return res.status(403).json({ message: "Access denied: Admin only" });
+      if (!user || (user.role !== "admin" && user.role !== "mega-admin")) {
+        return res.status(403).json({ message: "Access denied: Admin writers only" });
       }
 
       const validation = storyCreationManager.validateStoryStructure(req.body);
@@ -472,6 +469,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error adding diamonds:", error);
       res.status(500).json({ message: "Failed to add diamonds" });
+    }
+  });
+
+  // User management endpoints - Mega-Admin only
+  app.get('/api/users', isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req.user as any)?.claims?.sub;
+      const currentUser = await storage.getUser(userId);
+      
+      if (!currentUser || currentUser.role !== "mega-admin") {
+        return res.status(403).json({ message: "Access denied: Mega-admin only" });
+      }
+
+      const users = await storage.getAllUsers();
+      res.json(users);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+
+  app.put('/api/users/:userId/role', isAuthenticated, async (req, res) => {
+    try {
+      const currentUserId = (req.user as any)?.claims?.sub;
+      const currentUser = await storage.getUser(currentUserId);
+      
+      if (!currentUser || currentUser.role !== "mega-admin") {
+        return res.status(403).json({ message: "Access denied: Mega-admin only" });
+      }
+
+      const { userId } = req.params;
+      const { role } = req.body;
+
+      // Validate role
+      const validRoles = ["guest", "registered", "admin", "mega-admin"];
+      if (!validRoles.includes(role)) {
+        return res.status(400).json({ message: "Invalid role" });
+      }
+
+      // Prevent changing own role
+      if (userId === currentUserId) {
+        return res.status(400).json({ message: "Cannot change your own role" });
+      }
+
+      const updatedUser = await storage.updateUserRole(userId, role);
+      res.json(updatedUser);
+    } catch (error) {
+      console.error("Error updating user role:", error);
+      res.status(500).json({ message: "Failed to update user role" });
     }
   });
 

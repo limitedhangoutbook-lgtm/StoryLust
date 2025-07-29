@@ -91,7 +91,9 @@ User feedback: Very appreciative of thorough help and comprehensive solutions.
 - **Settings Panel**: Typography customization with font family, size, and line spacing controls
 - **Swipe Implementation**: Successfully completed touch gesture system with proper event handling and responsive design
 - **Story Creation System**: Built visual story creator based on user sketches with choice nodes (circles) and ending nodes (squares)
-- **Admin-Only Access**: Restricted story creation to authorized partners only via email whitelist
+- **Four-Tier User System**: Implemented guest, registered, admin, and mega-admin roles with appropriate permissions
+- **User Management**: Mega-admin interface to promote users to admin writer status
+- **Role-Based Access Control**: Story creation restricted to admin writers, user management to mega-admin only
 - **Choice Node Architecture**: Implemented foundation for endless branching story structures without coding required
 
 ## External Dependencies

@@ -13,6 +13,7 @@ import MyReading from "@/pages/my-reading";
 import Profile from "@/pages/profile";
 import Store from "@/pages/store";
 import StoryCreator from "@/pages/story-creator";
+import UserManagement from "@/pages/user-management";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -25,6 +26,7 @@ function Router() {
       <Route path="/profile" component={Profile} />
       <Route path="/store" component={Store} />
       <Route path="/story-creator" component={StoryCreator} />
+      <Route path="/user-management" component={UserManagement} />
       <Route path="/landing" component={Landing} />
       <Route component={NotFound} />
     </Switch>

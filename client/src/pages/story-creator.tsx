@@ -10,6 +10,7 @@ import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
+import { isAdmin } from "@shared/userRoles";
 
 interface StoryNode {
   id: string;
@@ -43,17 +44,8 @@ export default function StoryCreator() {
   const { toast } = useToast();
   const { user } = useAuth();
 
-  // Admin access check
-  const isAdminUser = (user: any) => {
-    const adminEmails = [
-      "evyatar.perel@gmail.com", // Your email
-      // Add partner emails here as needed
-    ];
-    return adminEmails.includes(user?.email);
-  };
-
   // Redirect if not admin
-  if (!user || !isAdminUser(user)) {
+  if (!user || !isAdmin(user)) {
     return (
       <div className="min-h-screen bg-kindle flex items-center justify-center">
         <div className="text-center p-8">

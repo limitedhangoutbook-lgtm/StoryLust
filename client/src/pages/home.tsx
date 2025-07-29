@@ -8,15 +8,7 @@ import { Button } from "@/components/ui/button";
 import { BottomNavigation } from "@/components/bottom-navigation";
 import { StoryCard } from "@/components/story-card";
 import type { Story } from "@shared/schema";
-
-// Admin check function - centralized for reuse
-const isAdminUser = (user: any) => {
-  const adminEmails = [
-    "evyatar.perel@gmail.com", // Your email
-    // Add partner emails here as needed
-  ];
-  return adminEmails.includes(user?.email);
-};
+import { isAdmin, isMegaAdmin, getUserPermissions } from "@shared/userRoles";
 
 export default function Home() {
   const { user } = useAuth();
@@ -164,18 +156,39 @@ export default function Home() {
         </section>
 
         {/* Admin Create Story Section */}
-        {user && isAdminUser(user) && (
+        {user && isAdmin(user) && (
           <section className="p-4 bg-dark-secondary/50 rounded-xl border border-dark-tertiary/30">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-sm font-semibold text-text-primary">Admin: Create Story</h3>
-                <p className="text-xs text-text-muted mt-1">Visual story editor for partners</p>
+                <h3 className="text-sm font-semibold text-text-primary">
+                  {isMegaAdmin(user) ? "Mega-Admin" : "Writer"}: Create Story
+                </h3>
+                <p className="text-xs text-text-muted mt-1">Visual story editor for creators</p>
               </div>
               <Button
                 onClick={() => setLocation("/story-creator")}
                 className="bg-rose-gold text-dark-primary hover:bg-rose-gold/90 text-sm px-4 py-2 h-8"
               >
                 ✍️ Create
+              </Button>
+            </div>
+          </section>
+        )}
+
+        {/* User Management Section - Mega-Admin Only */}
+        {user && isMegaAdmin(user) && (
+          <section className="p-4 bg-purple-500/20 rounded-xl border border-purple-500/30">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-semibold text-text-primary">User Management</h3>
+                <p className="text-xs text-text-muted mt-1">Promote users to admin writers</p>
+              </div>
+              <Button
+                onClick={() => setLocation("/user-management")}
+                variant="outline"
+                className="text-purple-400 border-purple-500/50 hover:bg-purple-500/20 text-sm px-4 py-2 h-8"
+              >
+                👥 Manage
               </Button>
             </div>
           </section>
