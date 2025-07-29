@@ -46,6 +46,7 @@ export const stories = pgTable("stories", {
   title: text("title").notNull(),
   description: text("description").notNull(),
   imageUrl: text("image_url").notNull(),
+
   spiceLevel: integer("spice_level").notNull(), // 1-3 (🌶️ to 🌶️🌶️🌶️)
   category: varchar("category").notNull(), // 'straight', 'lgbt', 'all'
   wordCount: integer("word_count").notNull(),
@@ -100,6 +101,19 @@ export const userChoices = pgTable("user_choices", {
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   storyId: varchar("story_id").notNull().references(() => stories.id, { onDelete: "cascade" }),
   choiceId: varchar("choice_id").notNull().references(() => storyChoices.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// VIP Author Messages table (simple implementation)
+export const authorMessages = pgTable("author_messages", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  fromUserId: varchar("from_user_id").notNull(),
+  fromUserEmail: varchar("from_user_email").notNull(),
+  authorEmail: varchar("author_email").notNull(), // Author's email 
+  storyTitle: text("story_title"), // Optional story context
+  subject: text("subject").notNull(),
+  message: text("message").notNull(),
+  isRead: boolean("is_read").default(false),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -185,6 +199,8 @@ export const insertUserChoiceSchema = createInsertSchema(userChoices).omit({
 });
 
 // Types
+
+
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
 export type Story = typeof stories.$inferSelect;
@@ -192,6 +208,8 @@ export type StoryNode = typeof storyNodes.$inferSelect;
 export type StoryChoice = typeof storyChoices.$inferSelect;
 export type ReadingProgress = typeof readingProgress.$inferSelect;
 export type UserChoice = typeof userChoices.$inferSelect;
+export type AuthorMessage = typeof authorMessages.$inferSelect;
+export type InsertAuthorMessage = typeof authorMessages.$inferInsert;
 
 export type InsertStory = z.infer<typeof insertStorySchema>;
 export type InsertStoryNode = z.infer<typeof insertStoryNodeSchema>;

@@ -283,6 +283,42 @@ export default function DiamondStore() {
           </div>
         </div>
 
+        {/* VIP Benefits Section */}
+        <div className="mt-6 p-6 bg-gradient-to-r from-yellow-500/10 to-yellow-600/10 rounded-lg border border-yellow-500/30">
+          <h3 className="text-lg font-semibold text-text-primary mb-4 flex items-center">
+            <Crown className="w-5 h-5 text-yellow-400 mr-2" />
+            VIP Exclusive Benefits
+          </h3>
+          <div className="grid md:grid-cols-2 gap-4 text-sm">
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <Crown className="w-4 h-4 text-yellow-400" />
+                <span className="font-medium text-text-primary">Direct Author Contact</span>
+              </div>
+              <p className="text-text-muted ml-6">Message authors directly about their stories at story endings</p>
+              
+              <div className="flex items-center space-x-2">
+                <Star className="w-4 h-4 text-yellow-400" />
+                <span className="font-medium text-text-primary">VIP Badge & Status</span>
+              </div>
+              <p className="text-text-muted ml-6">Show your VIP status throughout the platform</p>
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <Diamond className="w-4 h-4 text-yellow-400" />
+                <span className="font-medium text-text-primary">Unlimited Story Access</span>
+              </div>
+              <p className="text-text-muted ml-6">Never worry about diamond costs again</p>
+              
+              <div className="flex items-center space-x-2">
+                <Gift className="w-4 h-4 text-yellow-400" />
+                <span className="font-medium text-text-primary">Priority Feature Access</span>
+              </div>
+              <p className="text-text-muted ml-6">Get early access to new features and stories</p>
+            </div>
+          </div>
+        </div>
+
         {!isAuthenticated && (
           <div className="mt-6 text-center">
             <Card className="bg-dark-secondary border-dark-tertiary">

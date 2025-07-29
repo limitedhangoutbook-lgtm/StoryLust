@@ -7,6 +7,7 @@ export interface UserPermissions {
   canCreateStories: boolean;
   canManageUsers: boolean;
   canManageSystem: boolean;
+  canMessageAuthors: boolean;
 }
 
 // Role definitions
@@ -17,6 +18,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, UserPermissions> = {
     canCreateStories: false,
     canManageUsers: false,
     canManageSystem: false,
+    canMessageAuthors: false,
   },
   registered: {
     canRead: true,
@@ -24,6 +26,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, UserPermissions> = {
     canCreateStories: false,
     canManageUsers: false,
     canManageSystem: false,
+    canMessageAuthors: false,
   },
   admin: {
     canRead: true,
@@ -31,6 +34,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, UserPermissions> = {
     canCreateStories: true, // Writers who can create stories
     canManageUsers: false,
     canManageSystem: false,
+    canMessageAuthors: true, // Authors can receive and send messages
   },
   "mega-admin": {
     canRead: true,
@@ -38,6 +42,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, UserPermissions> = {
     canCreateStories: true,
     canManageUsers: true, // Can promote users to admin
     canManageSystem: true, // Full system access
+    canMessageAuthors: true,
   },
 };
 
@@ -71,4 +76,9 @@ export function isAdmin(user: any): boolean {
 export function isRegistered(user: any): boolean {
   const role = getUserRole(user);
   return role === "registered" || role === "admin" || role === "mega-admin";
+}
+
+// VIP users (have purchased VIP package)
+export function isVip(user: any): boolean {
+  return user?.diamonds >= 9999 || user?.role === "mega-admin";
 }

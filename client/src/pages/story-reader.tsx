@@ -4,12 +4,14 @@ import { ArrowLeft, Gem, Heart, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StoryNavigation } from "@/components/story-navigation";
 import { TypographySettings } from "@/components/typography-settings";
+import { VipMessageAuthor } from "@/components/vip-message-author";
 
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation, useRoute } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
+import { isVip } from "@shared/userRoles";
 import type { Story, StoryNode, StoryChoice } from "@shared/schema";
 
 export default function StoryReader() {
@@ -851,6 +853,15 @@ export default function StoryReader() {
           </div>
         )}
 
+        {/* VIP Author Contact - Show at story endings for VIP users */}
+        {isStoryEnding && user && isVip(user) && (
+          <div className="mt-12 mb-8">
+            <VipMessageAuthor 
+              storyTitle={story?.title}
+              onClose={() => {}}
+            />
+          </div>
+        )}
 
       </main>
 
