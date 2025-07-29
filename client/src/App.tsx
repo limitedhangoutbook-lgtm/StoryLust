@@ -14,6 +14,7 @@ import Profile from "@/pages/profile";
 import Store from "@/pages/store";
 import StoryCreator from "@/pages/story-creator";
 import StoryManagement from "@/pages/story-management";
+import StoryBuilder from "@/pages/story-builder";
 import UserManagement from "@/pages/user-management";
 
 function Router() {
@@ -28,6 +29,7 @@ function Router() {
       <Route path="/store" component={Store} />
       <Route path="/story-creator" component={StoryCreator} />
       <Route path="/story-management" component={StoryManagement} />
+      <Route path="/story-builder" component={StoryBuilder} />
       <Route path="/user-management" component={UserManagement} />
       <Route path="/landing" component={Landing} />
       <Route component={NotFound} />

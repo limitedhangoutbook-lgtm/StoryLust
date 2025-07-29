@@ -254,13 +254,22 @@ export default function StoryManagement() {
             </Button>
             <h1 className="text-xl font-bold tracking-tight text-text-primary">Story Management</h1>
           </div>
-          <Button
-            onClick={() => setShowStoryForm(true)}
-            className="bg-rose-gold text-dark-primary hover:bg-rose-gold/90"
-          >
-            <Plus size={16} className="mr-2" />
-            New Story
-          </Button>
+          <div className="flex items-center space-x-2">
+            <Button
+              onClick={() => setLocation("/story-builder")}
+              className="bg-rose-gold text-dark-primary hover:bg-rose-gold/90"
+            >
+              <Plus size={16} className="mr-2" />
+              Story Builder
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setShowStoryForm(true)}
+              className="border-dark-tertiary text-text-muted hover:bg-dark-tertiary"
+            >
+              Quick Story
+            </Button>
+          </div>
         </div>
       </header>
 

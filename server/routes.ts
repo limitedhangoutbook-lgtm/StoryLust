@@ -412,6 +412,82 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Create complete story with pages and choices
+  app.post('/api/stories/complete', isAuthenticated, async (req: any, res) => {
+    try {
+      const currentUser = await storage.getUser(req.user.claims.sub);
+      if (currentUser?.role !== 'admin' && currentUser?.role !== 'mega-admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const { title, description, imageUrl, spiceLevel, category, isPublished, isFeatured, pages, wordCount, pathCount } = req.body;
+      
+      if (!title || !description || !pages || pages.length === 0) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+
+      // Create the story
+      const story = await storage.createStory({
+        title,
+        description,
+        imageUrl: imageUrl || '',
+        spiceLevel,
+        category,
+        wordCount: wordCount || 0,
+        pathCount: pathCount || 1,
+      });
+
+      // Create all pages/nodes
+      const nodeMap: { [key: string]: string } = {}; // Map old IDs to new IDs
+      
+      for (const page of pages) {
+        const node = await storage.createStoryNode({
+          storyId: story.id,
+          title: page.title,
+          content: page.content,
+          order: page.order,
+          isStarting: page.order === 1,
+        });
+        nodeMap[page.id] = node.id;
+      }
+
+      // Create all choices
+      for (const page of pages) {
+        if (page.choices && page.choices.length > 0) {
+          for (let i = 0; i < page.choices.length; i++) {
+            const choice = page.choices[i];
+            if (choice.text && choice.targetPageId && nodeMap[choice.targetPageId]) {
+              await storage.createStoryChoice({
+                fromNodeId: nodeMap[page.id],
+                toNodeId: nodeMap[choice.targetPageId],
+                choiceText: choice.text,
+                order: i,
+                isPremium: choice.isPremium || false,
+                diamondCost: choice.diamondCost || 0,
+              });
+            }
+          }
+        }
+      }
+
+      // Update story publish status if needed
+      if (isPublished || isFeatured) {
+        await storage.updateStory(story.id, {
+          isPublished: isPublished || false,
+          isFeatured: isFeatured || false,
+        });
+      }
+
+      res.status(201).json({
+        story,
+        message: "Story created successfully with all pages and choices"
+      });
+    } catch (error) {
+      console.error("Error creating complete story:", error);
+      res.status(500).json({ message: "Failed to create complete story" });
+    }
+  });
+
   app.put('/api/stories/:storyId', isAuthenticated, async (req: any, res) => {
     try {
       const currentUser = await storage.getUser(req.user.claims.sub);
