@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Gem, Heart } from "lucide-react";
+import { ArrowLeft, Gem, Heart, Settings } from "lucide-react";
 import { StoryNavigation } from "@/components/story-navigation";
+import { TypographySettings } from "@/components/typography-settings";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation, useRoute } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,7 @@ export default function StoryReader() {
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [showChoices, setShowChoices] = useState(false);
   const [pageHistory, setPageHistory] = useState<string[]>([]);
+  const [showTypographySettings, setShowTypographySettings] = useState(false);
   
   // Touch gesture handling
   const touchStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
@@ -398,6 +400,14 @@ export default function StoryReader() {
               <Button
                 variant="ghost"
                 size="sm"
+                onClick={() => setShowTypographySettings(true)}
+                className="text-kindle-secondary hover:text-kindle"
+              >
+                <Settings className="w-5 h-5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={handleBookmark}
                 className={isBookmarked ? "text-rose-gold" : "text-kindle-secondary hover:text-kindle"}
                 disabled={bookmarkMutation.isPending || false}
@@ -493,6 +503,12 @@ export default function StoryReader() {
         onGoBack={handleGoBack}
         onContinue={handleContinueReading}
         showChoices={showChoices}
+      />
+
+      {/* Typography Settings Modal */}
+      <TypographySettings
+        isOpen={showTypographySettings}
+        onClose={() => setShowTypographySettings(false)}
       />
     </div>
   );
