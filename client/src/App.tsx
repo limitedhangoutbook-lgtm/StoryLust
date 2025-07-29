@@ -16,6 +16,7 @@ import StoryCreator from "@/pages/story-creator";
 import StoryManagement from "@/pages/story-management";
 import StoryBuilder from "@/pages/story-builder-new";
 import UserManagement from "@/pages/user-management";
+import DiamondStore from "@/pages/diamond-store";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -27,6 +28,7 @@ function Router() {
       <Route path="/my-reading" component={MyReading} />
       <Route path="/profile" component={Profile} />
       <Route path="/store" component={Store} />
+      <Route path="/diamonds" component={DiamondStore} />
       <Route path="/story-creator" component={StoryCreator} />
       <Route path="/story-management" component={StoryManagement} />
       <Route path="/story-builder" component={StoryBuilder} />

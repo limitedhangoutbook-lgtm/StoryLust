@@ -1,10 +1,18 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import Stripe from "stripe";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./auth";
 import { db } from "./db";
 import { and, eq, gt, sql } from "drizzle-orm";
 import { storyNodes, users } from "@shared/schema";
+
+if (!process.env.STRIPE_SECRET_KEY) {
+  throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
+}
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: "2025-06-30.basil",
+});
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth setup
@@ -637,6 +645,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Error granting starting diamonds:", error);
       res.status(500).json({ message: "Failed to grant starting diamonds" });
     }
+  });
+
+  // === DIAMOND PURCHASE ROUTES ===
+  app.post('/api/diamonds/create-payment', isAuthenticated, async (req: any, res) => {
+    try {
+      const { packageId, amount, diamonds } = req.body;
+      const userId = req.user.claims.sub;
+
+      // Create Stripe payment intent
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: Math.round(amount * 100), // Convert to cents
+        currency: 'usd',
+        metadata: {
+          userId,
+          packageId,
+          diamonds: diamonds.toString()
+        },
+        description: `Diamond Purchase: ${diamonds} diamonds`
+      });
+
+      res.json({ 
+        clientSecret: paymentIntent.client_secret,
+        paymentIntentId: paymentIntent.id
+      });
+    } catch (error: any) {
+      console.error("Error creating diamond payment:", error);
+      res.status(500).json({ message: "Error creating payment: " + error.message });
+    }
+  });
+
+  // Stripe webhook to handle successful payments
+  app.post('/api/diamonds/webhook', async (req, res) => {
+    const sig = req.headers['stripe-signature'];
+    let event;
+
+    try {
+      // In production, you'd set this as an environment variable
+      const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || 'whsec_test';
+      event = stripe.webhooks.constructEvent(req.body, sig as string, webhookSecret);
+    } catch (err: any) {
+      console.error('Webhook signature verification failed:', err.message);
+      return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+
+    // Handle the payment_intent.succeeded event
+    if (event.type === 'payment_intent.succeeded') {
+      const paymentIntent = event.data.object as Stripe.PaymentIntent;
+      const { userId, diamonds } = paymentIntent.metadata;
+
+      if (userId && diamonds) {
+        try {
+          // Add diamonds to user account
+          await storage.addDiamondsToUser(userId, parseInt(diamonds));
+          console.log(`Added ${diamonds} diamonds to user ${userId}`);
+        } catch (error) {
+          console.error('Error adding diamonds to user:', error);
+        }
+      }
+    }
+
+    res.json({ received: true });
   });
 
   const httpServer = createServer(app);

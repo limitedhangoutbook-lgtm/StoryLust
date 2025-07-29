@@ -57,6 +57,18 @@ export class Storage {
     return user;
   }
 
+  async addDiamondsToUser(userId: string, diamondsToAdd: number): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ 
+        diamonds: sql`COALESCE(${users.diamonds}, 0) + ${diamondsToAdd}`,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
+  }
+
   async updateUserRole(userId: string, role: "guest" | "registered" | "admin" | "mega-admin"): Promise<User> {
     const [user] = await db
       .update(users)
