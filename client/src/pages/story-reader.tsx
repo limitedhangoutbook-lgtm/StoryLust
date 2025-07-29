@@ -423,7 +423,9 @@ export default function StoryReader() {
       {/* Story Content - Full screen like Kindle with touch area */}
       <main 
         ref={mainContentRef} 
-        className="pt-16 pb-20 px-6 max-w-3xl mx-auto min-h-screen touch-manipulation select-none"
+        className={`pt-16 px-6 max-w-3xl mx-auto min-h-screen touch-manipulation select-none ${
+          showChoices ? 'pb-80' : 'pb-20'
+        }`}
         style={{ touchAction: 'pan-y' }}
       >
         {/* Swipe hint for first time users */}
@@ -458,27 +460,32 @@ export default function StoryReader() {
 
       {/* Choices overlay when available */}
       {showChoices && choices.length > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 bg-kindle border-t border-dark-tertiary/30 px-6 py-4 z-50">
+        <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-kindle via-kindle/95 to-kindle/80 border-t border-dark-tertiary/30 px-6 py-6 z-50">
           <div className="max-w-3xl mx-auto">
-            <div className="space-y-3">
-              <p className="text-center text-kindle-secondary text-sm mb-4">
-                Choose your path:
-              </p>
+            <div className="space-y-4">
+              <div className="text-center">
+                <h3 className="text-kindle text-lg font-medium mb-2">Choose Your Path</h3>
+                <div className="w-12 h-0.5 bg-rose-gold mx-auto"></div>
+              </div>
               {choices.map((choice) => (
                 <button
                   key={choice.id}
                   onClick={() => handleChoiceSelect(choice.id, choice.isPremium, choice.diamondCost)}
-                  disabled={selectChoiceMutation.isPending || false}
-                  className="w-full p-3 text-left text-kindle bg-dark-secondary/30 hover:bg-dark-secondary/50 transition-colors border border-dark-tertiary/50 hover:border-rose-gold/30 rounded-lg"
+                  disabled={selectChoiceMutation.isPending}
+                  className={`w-full p-4 text-left text-kindle transition-all duration-200 border rounded-lg group ${
+                    choice.isPremium 
+                      ? 'bg-gradient-to-r from-dark-secondary/50 to-rose-gold/10 border-rose-gold/30 hover:border-rose-gold/60 hover:from-dark-secondary/70 hover:to-rose-gold/20' 
+                      : 'bg-dark-secondary/30 hover:bg-dark-secondary/50 border-dark-tertiary/50 hover:border-kindle-secondary/30'
+                  }`}
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm">
+                  <div className="flex items-start justify-between gap-3">
+                    <span className="text-sm leading-relaxed flex-1">
                       {choice.choiceText}
                     </span>
                     {choice.isPremium && (
-                      <div className="flex items-center gap-1 text-rose-gold">
-                        <Gem className="w-3 h-3" />
-                        <span className="text-xs">{choice.diamondCost}</span>
+                      <div className="flex items-center gap-1.5 text-rose-gold bg-rose-gold/10 px-2 py-1 rounded-full border border-rose-gold/20">
+                        <Gem className="w-3.5 h-3.5 fill-current" />
+                        <span className="text-xs font-medium">{choice.diamondCost || 5}</span>
                       </div>
                     )}
                   </div>
