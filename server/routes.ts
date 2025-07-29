@@ -239,22 +239,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Target node not found" });
       }
       
-      // Handle premium choice diamond deduction
-      if (choice.isPremium && (choice.diamondCost || 0) > 0) {
+      // Handle premium choice arrow deduction
+      if (choice.isPremium && (choice.arrowCost || 0) > 0) {
         if (!req.isAuthenticated?.()) {
           return res.status(401).json({ message: "Authentication required for premium choices" });
         }
         
         const userId = (req as any).user.claims.sub;
         const user = await storage.getUser(userId);
-        const cost = choice.diamondCost || 0;
+        const cost = choice.arrowCost || 0;
         
-        if (!user || (user.diamonds || 0) < cost) {
-          return res.status(400).json({ message: "Insufficient diamonds for this premium choice" });
+        if (!user || (user.arrows || 0) < cost) {
+          return res.status(400).json({ message: "Insufficient arrows for this premium choice" });
         }
         
-        // Deduct diamonds
-        await storage.updateUserDiamonds(userId, (user.diamonds || 0) - cost);
+        // Deduct arrows
+        await storage.updateUserArrows(userId, (user.arrows || 0) - cost);
       }
       
       // Save user choice if authenticated
@@ -330,22 +330,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // === DIAMOND ROUTES ===
-  app.post('/api/diamonds/spend', isAuthenticated, async (req: any, res) => {
+  // === ARROW ROUTES ===
+  app.post('/api/arrows/spend', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const { amount } = req.body;
       
       const user = await storage.getUser(userId);
-      if (!user || (user.diamonds || 0) < amount) {
-        return res.status(400).json({ message: "Insufficient diamonds" });
+      if (!user || (user.arrows || 0) < amount) {
+        return res.status(400).json({ message: "Insufficient arrows" });
       }
       
-      const updatedUser = await storage.updateUserDiamonds(userId, (user.diamonds || 0) - amount);
+      const updatedUser = await storage.updateUserArrows(userId, (user.arrows || 0) - amount);
       res.json(updatedUser);
     } catch (error) {
-      console.error("Error spending diamonds:", error);
-      res.status(500).json({ message: "Failed to spend diamonds" });
+      console.error("Error spending arrows:", error);
+      res.status(500).json({ message: "Failed to spend arrows" });
     }
   });
 
@@ -517,7 +517,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const { fromNodeId } = req.params;
-      const { toNodeId, choiceText, isPremium, diamondCost } = req.body;
+      const { toNodeId, choiceText, isPremium, arrowCost } = req.body;
       
       if (!toNodeId || !choiceText) {
         return res.status(400).json({ message: "Missing required fields" });
@@ -528,7 +528,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         toNodeId,
         choiceText,
         isPremium,
-        diamondCost,
+        arrowCost: arrowCost,
       });
 
       res.status(201).json(choice);
@@ -538,28 +538,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // === ADMIN DIAMOND MANAGEMENT ===
-  app.post('/api/admin/grant-starting-diamonds', isAuthenticated, async (req: any, res) => {
+  // === ADMIN ARROW MANAGEMENT ===
+  app.post('/api/admin/grant-starting-arrows', isAuthenticated, async (req: any, res) => {
     try {
       const currentUser = await storage.getUser(req.user.claims.sub);
       if (currentUser?.role !== 'mega-admin') {
         return res.status(403).json({ message: "Mega-admin access required" });
       }
 
-      // Grant 20 diamonds to all users who have null or 0 diamonds
+      // Grant 20 arrows to all users who have null or 0 arrows
       const result = await db
         .update(users)
-        .set({ diamonds: 20, updatedAt: new Date() })
-        .where(sql`${users.diamonds} IS NULL OR ${users.diamonds} = 0`)
+        .set({ arrows: 20, updatedAt: new Date() })
+        .where(sql`${users.arrows} IS NULL OR ${users.arrows} = 0`)
         .returning();
 
       res.json({ 
-        message: "Starting diamonds (20) granted to all users without diamonds",
+        message: "Starting arrows (20) granted to all users without arrows",
         usersUpdated: result.length 
       });
     } catch (error) {
-      console.error("Error granting starting diamonds:", error);
-      res.status(500).json({ message: "Failed to grant starting diamonds" });
+      console.error("Error granting starting arrows:", error);
+      res.status(500).json({ message: "Failed to grant starting arrows" });
     }
   });
 
