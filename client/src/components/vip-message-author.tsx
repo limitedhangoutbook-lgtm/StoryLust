@@ -46,8 +46,8 @@ ${message}
 This message was sent by a VIP member through TurnPage.
       `.trim();
 
-      // Use mailto link for now (can be upgraded to proper email service later)
-      const authorEmail = "evyatar.perel@gmail.com"; // Your author email
+      // Use dedicated author email for professional communication
+      const authorEmail = "author@limitedhangoutbook.com"; // Professional author email
       const mailtoLink = `mailto:${authorEmail}?subject=${encodeURIComponent(`VIP Message: ${subject}`)}&body=${encodeURIComponent(emailBody)}`;
       
       window.open(mailtoLink, '_blank');
