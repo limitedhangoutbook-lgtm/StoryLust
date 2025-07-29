@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { BookOpen, Heart, Gem, Star } from "lucide-react";
-import featuredImage from "@assets/davidbook_1753815404952.png";
 
 export default function Landing() {
   return (
@@ -11,7 +10,7 @@ export default function Landing() {
         {/* Featured Image Background */}
         <div className="absolute inset-0">
           <img 
-            src={featuredImage} 
+            src="/davidbook_1753815404952.png" 
             alt="Featured model for TurnPage stories" 
             className="w-full h-full object-cover"
           />
