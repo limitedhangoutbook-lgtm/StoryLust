@@ -127,7 +127,7 @@ export default function StoryReader() {
       sessionStorage.removeItem('pendingChoice');
     }
 
-    // Normal initialization - get progress for authenticated users
+    // Normal initialization - get progress for authenticated users or local storage for guests
     if (isAuthenticated) {
       queryClient.fetchQuery({
         queryKey: ["/api/reading-progress", storyId],
@@ -138,15 +138,33 @@ export default function StoryReader() {
           // Invalidate progress queries to ensure fresh data
           queryClient.invalidateQueries({ queryKey: ["/api/reading-progress"] });
         } else {
-          // Start from beginning
-          fetchStartingNode();
+          // Check local storage as fallback
+          checkLocalProgress() || fetchStartingNode();
         }
       }).catch(() => {
-        // If no progress found, start from beginning
-        fetchStartingNode();
+        // If no progress found, check local storage or start from beginning
+        checkLocalProgress() || fetchStartingNode();
       });
     } else {
-      fetchStartingNode();
+      // For guests, check local storage first
+      checkLocalProgress() || fetchStartingNode();
+    }
+
+    function checkLocalProgress(): boolean {
+      try {
+        const localProgress = localStorage.getItem(`story-progress-${storyId}`);
+        if (localProgress) {
+          const progress = JSON.parse(localProgress);
+          if (progress.nodeId && progress.timestamp && Date.now() - progress.timestamp < 7 * 24 * 60 * 60 * 1000) { // 7 days
+            setCurrentNodeId(progress.nodeId);
+            console.log('Restored from local storage:', progress.nodeId);
+            return true;
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to parse local progress:', e);
+      }
+      return false;
     }
 
     function fetchStartingNode() {
@@ -172,12 +190,28 @@ export default function StoryReader() {
     setShowChoices(choices.length > 0);
   }, [choices]);
 
+  // Save local progress helper
+  const saveLocalProgress = (nodeId: string) => {
+    try {
+      const progress = {
+        nodeId,
+        timestamp: Date.now()
+      };
+      localStorage.setItem(`story-progress-${storyId}`, JSON.stringify(progress));
+      console.log('Saved local progress:', nodeId);
+    } catch (e) {
+      console.warn('Failed to save local progress:', e);
+    }
+  };
+
   // Go back handler  
   const handleGoBack = () => {
     if (pageHistory.length > 0) {
       const previousNodeId = pageHistory[pageHistory.length - 1];
       setPageHistory(prev => prev.slice(0, -1));
       setCurrentNodeId(previousNodeId);
+      // Save local progress when going back
+      saveLocalProgress(previousNodeId);
       setShowChoices(false);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -201,7 +235,7 @@ export default function StoryReader() {
           
           setCurrentNodeId(nextNode.id);
           
-          // Save reading progress for authenticated users
+          // Save reading progress for authenticated users and local storage for guests
           if (isAuthenticated) {
             apiRequest("POST", "/api/reading-progress", {
               storyId,
@@ -211,6 +245,8 @@ export default function StoryReader() {
               console.warn('Failed to save reading progress:', error);
             });
           }
+          // Always save to local storage as backup
+          saveLocalProgress(nextNode.id);
           
           // Reset choices state for new page
           setShowChoices(false);
@@ -310,15 +346,20 @@ export default function StoryReader() {
         // Scroll to top for new content
         window.scrollTo({ top: 0, behavior: 'smooth' });
         
-        // Save reading progress for authenticated users
-        if (isAuthenticated && data.targetNode?.id) {
-          apiRequest("POST", "/api/reading-progress", {
-            storyId,
-            currentNodeId: data.targetNode.id,
-            isBookmarked: isBookmarked
-          }).catch(error => {
-            console.warn('Failed to save reading progress:', error);
-          });
+        // Save reading progress for authenticated users and local storage for guests
+        if (data.targetNode?.id) {
+          if (isAuthenticated) {
+            apiRequest("POST", "/api/reading-progress", {
+              storyId,
+              currentNodeId: data.targetNode.id,
+              isBookmarked: isBookmarked
+            }).catch(error => {
+              console.warn('Failed to save reading progress:', error);
+            });
+          }
+          
+          // Always save to local storage as backup
+          saveLocalProgress(data.targetNode.id);
         }
         
         toast({
