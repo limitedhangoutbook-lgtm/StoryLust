@@ -169,6 +169,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(user);
   });
 
+  // === CHOICE SELECTION ROUTES ===
+  app.post('/api/choices/:choiceId/select', async (req, res) => {
+    try {
+      const { choiceId } = req.params;
+      const { storyId, currentNodeId } = req.body;
+      
+      // Get the choice details
+      const choice = await storage.getChoice(choiceId);
+      if (!choice) {
+        return res.status(404).json({ message: "Choice not found" });
+      }
+      
+      // Get the target node
+      const targetNode = await storage.getStoryNode(choice.toNodeId);
+      if (!targetNode) {
+        return res.status(404).json({ message: "Target node not found" });
+      }
+      
+      // Save user choice if authenticated
+      if (req.isAuthenticated?.()) {
+        const userId = (req as any).user.claims.sub;
+        await storage.saveUserChoice({
+          userId,
+          storyId,
+          choiceId,
+          fromNodeId: currentNodeId,
+          toNodeId: choice.toNodeId,
+        });
+        
+        // Save reading progress
+        await storage.saveReadingProgress({
+          userId,
+          storyId,
+          currentNodeId: choice.toNodeId,
+          isBookmarked: false,
+        });
+      }
+      
+      res.json({
+        targetNode,
+        choice,
+        success: true
+      });
+    } catch (error) {
+      console.error("Error processing choice selection:", error);
+      res.status(500).json({ message: "Failed to process your choice" });
+    }
+  });
+
   // === DIAMOND ROUTES ===
   app.post('/api/diamonds/spend', isAuthenticated, async (req: any, res) => {
     try {

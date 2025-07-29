@@ -114,6 +114,11 @@ export class Storage {
       .orderBy(storyChoices.order);
   }
 
+  async getChoice(choiceId: string): Promise<StoryChoice | undefined> {
+    const [choice] = await db.select().from(storyChoices).where(eq(storyChoices.id, choiceId));
+    return choice;
+  }
+
   async getStoryChoice(choiceId: string): Promise<StoryChoice | undefined> {
     const [choice] = await db.select().from(storyChoices).where(eq(storyChoices.id, choiceId));
     return choice;
