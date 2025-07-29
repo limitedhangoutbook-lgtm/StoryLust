@@ -444,37 +444,42 @@ export default function StoryReader() {
           ))}
         </div>
 
-        {/* Choices section - inline with content */}
+        {/* Choices section - integrated with story text */}
         {showChoices && choices.length > 0 && (
-          <div className="mt-16 pt-12 border-t border-dark-tertiary/30 mb-16">
-            <div className="text-center mb-10">
-              <h3 className="text-kindle text-2xl font-medium mb-4">Choose Your Path</h3>
-              <div className="w-20 h-0.5 bg-rose-gold mx-auto"></div>
-            </div>
-            <div className="space-y-5">
-              {choices.map((choice) => (
-                <button
-                  key={choice.id}
-                  onClick={() => handleChoiceSelect(choice.id, choice.isPremium, choice.diamondCost)}
-                  disabled={selectChoiceMutation.isPending}
-                  className={`w-full p-6 text-left text-kindle transition-all duration-200 border rounded-xl group shadow-lg ${
-                    choice.isPremium 
-                      ? 'bg-gradient-to-r from-dark-secondary to-rose-gold/25 border-rose-gold/60 hover:border-rose-gold hover:from-dark-secondary hover:to-rose-gold/35 shadow-rose-gold/10' 
-                      : 'bg-dark-secondary/80 hover:bg-dark-secondary border-dark-tertiary/60 hover:border-kindle-secondary/60 shadow-dark-tertiary/20'
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <span className="text-lg leading-relaxed flex-1 kindle-text">
-                      {choice.choiceText}
-                    </span>
-                    {choice.isPremium && (
-                      <div className="flex items-center gap-2 text-rose-gold bg-rose-gold/20 px-4 py-2 rounded-full border border-rose-gold/40 shadow-sm">
-                        <Gem className="w-4 h-4 fill-current" />
-                        <span className="text-sm font-semibold">{choice.diamondCost || 5}</span>
-                      </div>
-                    )}
-                  </div>
-                </button>
+          <div className="mt-8 mb-16">
+            <div className="space-y-6">
+              {choices.map((choice, index) => (
+                <div key={choice.id} className="kindle-text">
+                  <button
+                    onClick={() => {
+                      console.log('Choice clicked:', choice.id, choice.isPremium, choice.diamondCost);
+                      handleChoiceSelect(choice.id, choice.isPremium, choice.diamondCost);
+                    }}
+                    disabled={selectChoiceMutation.isPending}
+                    className={`w-full text-left transition-all duration-200 group ${
+                      choice.isPremium 
+                        ? 'hover:text-rose-gold' 
+                        : 'hover:text-kindle-secondary'
+                    }`}
+                  >
+                    <p className="kindle-paragraph relative pl-8">
+                      <span className={`absolute left-0 top-0 font-bold ${
+                        choice.isPremium ? 'text-rose-gold' : 'text-kindle-secondary'
+                      }`}>
+                        {String.fromCharCode(65 + index)}.
+                      </span>
+                      <span className="underline decoration-dotted decoration-1 underline-offset-4 group-hover:decoration-solid">
+                        {choice.choiceText}
+                      </span>
+                      {choice.isPremium && (
+                        <span className="ml-2 inline-flex items-center gap-1 text-rose-gold">
+                          <Gem className="w-3 h-3 fill-current" />
+                          <span className="text-sm font-medium">{choice.diamondCost || 5}</span>
+                        </span>
+                      )}
+                    </p>
+                  </button>
+                </div>
               ))}
             </div>
           </div>
