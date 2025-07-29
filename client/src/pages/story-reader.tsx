@@ -1,12 +1,11 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Gem, Heart, Bookmark, ChevronRight, BookOpen } from "lucide-react";
+import { ArrowLeft, Gem, Heart, ChevronRight } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation, useRoute } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
@@ -21,7 +20,6 @@ export default function StoryReader() {
   const [currentNodeId, setCurrentNodeId] = useState<string | null>(null);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [showChoices, setShowChoices] = useState(false);
-  const [readingProgress, setReadingProgress] = useState(10);
 
   const storyId = params?.storyId;
 
@@ -212,7 +210,6 @@ export default function StoryReader() {
         const nextNode = await nextNodeResponse.json();
         if (nextNode && nextNode.id) {
           setCurrentNodeId(nextNode.id);
-          setReadingProgress(prev => Math.min(100, prev + 10));
           
           // Reset choices state for new page
           setShowChoices(false);
@@ -245,24 +242,7 @@ export default function StoryReader() {
     return null; // Let the story manager handle page progression
   };
 
-  const getPageNumber = (nodeId: string | null): number => {
-    if (!nodeId) return 1;
-    if (nodeId === "start") return 1;
-    if (nodeId.startsWith("page-")) {
-      const pageNum = parseInt(nodeId.split("-")[1]);
-      return pageNum || 1;
-    }
-    return 1;
-  };
 
-  const getTotalPages = (storyId: string | null): number => {
-    // Return estimated total story length (not just pages before choices)
-    const storyLengths: Record<string, number> = {
-      "campus-encounter": 25,
-      "midnight-coffee": 30
-    };
-    return storyLengths[storyId || ""] || 20;
-  };
 
   const getNavigationText = (currentId: string | null, hasChoices: boolean): string | null => {
     if (hasChoices) return null; // Choices replace navigation
@@ -324,32 +304,17 @@ export default function StoryReader() {
 
   return (
     <div className="min-h-screen bg-dark-primary text-text-primary">
-      {/* Header */}
+      {/* Minimal Header */}
       <header className="sticky top-0 z-10 bg-dark-primary/95 backdrop-blur-sm border-b border-dark-tertiary">
         <div className="flex items-center justify-between px-4 py-3">
-          <div className="flex items-center space-x-3">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setLocation("/")}
-              className="text-text-muted hover:text-text-primary"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <div>
-              <h1 className="font-semibold text-text-primary">{story?.title}</h1>
-              <div className="flex items-center space-x-3">
-                <div className="flex items-center space-x-2">
-                  <Progress value={readingProgress} className="w-20 h-1" />
-                  <span className="text-xs text-text-muted">{readingProgress}%</span>
-                </div>
-                <div className="flex items-center space-x-1 text-xs text-text-muted">
-                  <BookOpen className="w-3 h-3" />
-                  <span>{getPageNumber(currentNodeId)}/{getTotalPages(storyId || "")}</span>
-                </div>
-              </div>
-            </div>
-          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setLocation("/")}
+            className="text-text-muted hover:text-text-primary"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
           
           <div className="flex items-center space-x-2">
             {isAuthenticated && (
