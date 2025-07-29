@@ -23,7 +23,8 @@ User feedback: Very appreciative of thorough help and comprehensive solutions.
 - **Authentication**: Replit's OIDC authentication system with Passport.js
 - **Session Management**: express-session with PostgreSQL store
 - **Database ORM**: Drizzle ORM with Neon serverless PostgreSQL
-- **API Design**: RESTful APIs with structured error handling
+- **API Design**: Clean, simple RESTful APIs focused on core functionality
+- **Storage**: Simplified single-responsibility storage layer with direct database operations
 
 ### Mobile-First Design
 - **PWA**: Progressive Web App with service worker and manifest
@@ -99,6 +100,7 @@ User feedback: Very appreciative of thorough help and comprehensive solutions.
 - **Position Restoration**: Automatic story position saving and restoration for both authenticated users and guests
 - **Performance Optimization**: Added caching layers and query optimization for faster page loading
 - **Diamond Cost Display**: Premium choices now properly show rose-gold diamond indicators with accurate costs
+- **Backend Simplification**: Streamlined backend to focus on core functionality with clean, simple APIs (January 29, 2025)
 
 ## External Dependencies
 
