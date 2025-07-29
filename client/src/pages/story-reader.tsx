@@ -41,7 +41,10 @@ export default function StoryReader() {
           onTypographySettings={() => setShowTypographySettings(true)}
         />
         {showTypographySettings && (
-          <TypographySettings onClose={() => setShowTypographySettings(false)} />
+          <TypographySettings 
+            isOpen={showTypographySettings}
+            onClose={() => setShowTypographySettings(false)} 
+          />
         )}
       </>
     );
@@ -679,8 +682,6 @@ export default function StoryReader() {
                           <span>{choice.diamondCost || 0} diamonds</span>
                         </span>
                       )}
-                      
-
                     </p>
                   </button>
                 </div>
@@ -706,7 +707,10 @@ export default function StoryReader() {
 
       {/* Typography Settings Modal */}
       {showTypographySettings && (
-        <TypographySettings onClose={() => setShowTypographySettings(false)} />
+        <TypographySettings 
+          isOpen={showTypographySettings}
+          onClose={() => setShowTypographySettings(false)} 
+        />
       )}
     </div>
   );

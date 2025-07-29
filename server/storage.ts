@@ -462,6 +462,18 @@ export class DatabaseStorage implements IStorage {
 
   // Story choice operations  
   async getChoicesFromNode(nodeId: string): Promise<StoryChoice[]> {
+    // Try database first for choices with diamond costs
+    const dbChoices = await db
+      .select()
+      .from(storyChoices)
+      .where(eq(storyChoices.fromNodeId, nodeId))
+      .orderBy(storyChoices.order);
+    
+    if (dbChoices.length > 0) {
+      return dbChoices;
+    }
+    
+    // Fallback to story manager
     return storyManager.getStoryChoices(nodeId);
   }
 
