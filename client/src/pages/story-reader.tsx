@@ -25,6 +25,7 @@ export default function StoryReader() {
   const [showChoices, setShowChoices] = useState(false);
   const [pageHistory, setPageHistory] = useState<string[]>([]);
   const [showTypographySettings, setShowTypographySettings] = useState(false);
+  const [showVipMessage, setShowVipMessage] = useState(false);
 
 
   const [showNavigation, setShowNavigation] = useState(true);
@@ -815,13 +816,52 @@ export default function StoryReader() {
           </div>
         )}
 
-        {/* VIP Author Contact - Show at story endings for VIP users */}
-        {isStoryEnding && user && isVip(user) && (
-          <div className="mt-12 mb-8">
-            <VipMessageAuthor 
-              storyTitle={story?.title}
-              onClose={() => {}}
-            />
+        {/* Story Ending Section */}
+        {isStoryEnding && (
+          <div className="mt-16 mb-32 text-center space-y-8">
+            {/* Bold THE END marker */}
+            <div className="mb-12">
+              <div className="text-6xl font-bold text-rose-gold mb-4">
+                THE END
+              </div>
+              <div className="w-32 h-1 bg-gradient-to-r from-transparent via-rose-gold to-transparent mx-auto"></div>
+            </div>
+            
+            {/* Main action buttons */}
+            <div className="space-y-4 max-w-md mx-auto">
+              <Button
+                onClick={() => setLocation("/")}
+                className="w-full bg-gradient-to-r from-rose-gold to-gold-accent text-dark-primary font-bold py-4 text-lg rounded-xl hover:shadow-lg transition-all duration-200 active:scale-95"
+              >
+                Back to Homepage
+              </Button>
+              
+              {/* VIP Message Author Button */}
+              {user && isVip(user) && (
+                <Button
+                  onClick={() => setShowVipMessage(true)}
+                  className="w-full bg-gradient-to-r from-purple-600 to-purple-800 text-white font-semibold py-3 rounded-xl border border-purple-400/30 hover:shadow-lg transition-all duration-200 active:scale-95"
+                >
+                  👑 Message Author (VIP)
+                </Button>
+              )}
+              
+              {/* Regular users - encourage VIP upgrade */}
+              {user && !isVip(user) && (
+                <Button
+                  onClick={() => setLocation("/store")}
+                  className="w-full bg-dark-secondary text-text-secondary font-medium py-3 rounded-xl border border-dark-tertiary hover:border-rose-gold/30 transition-all duration-200"
+                >
+                  Upgrade to VIP to Message Author
+                </Button>
+              )}
+            </div>
+            
+            {/* Story stats */}
+            <div className="mt-8 text-sm text-text-muted">
+              <p>Thank you for reading {story?.title}!</p>
+              <p className="mt-2">Explore more stories on the homepage</p>
+            </div>
           </div>
         )}
 
@@ -860,6 +900,18 @@ export default function StoryReader() {
           isOpen={showTypographySettings}
           onClose={() => setShowTypographySettings(false)} 
         />
+      )}
+
+      {/* VIP Message Author Modal */}
+      {showVipMessage && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+          <div className="bg-dark-primary rounded-xl max-w-md w-full">
+            <VipMessageAuthor 
+              storyTitle={story?.title}
+              onClose={() => setShowVipMessage(false)}
+            />
+          </div>
+        </div>
       )}
     </div>
   );
