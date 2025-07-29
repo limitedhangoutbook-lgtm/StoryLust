@@ -14,7 +14,7 @@ import Profile from "@/pages/profile";
 import Store from "@/pages/store";
 import StoryCreator from "@/pages/story-creator";
 import StoryManagement from "@/pages/story-management";
-import StoryBuilder from "@/pages/story-builder";
+import StoryBuilder from "@/pages/story-builder-new";
 import UserManagement from "@/pages/user-management";
 
 function Router() {

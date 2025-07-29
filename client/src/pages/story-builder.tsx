@@ -15,6 +15,7 @@ import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { isAdmin } from "@shared/userRoles";
 import { BottomNavigation } from "@/components/bottom-navigation";
+import { StoryFlowBuilder } from "@/components/story-flow-builder";
 
 interface StoryPage {
   id: string;
@@ -57,7 +58,7 @@ export default function StoryBuilder() {
     );
   }
 
-  const [currentStep, setCurrentStep] = useState(1); // 1: Metadata, 2: Pages, 3: Choices, 4: Review
+  const [showMetadata, setShowMetadata] = useState(false);
   const [storyData, setStoryData] = useState({
     title: "",
     description: "",
