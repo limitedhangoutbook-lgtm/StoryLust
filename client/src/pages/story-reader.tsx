@@ -514,9 +514,14 @@ export default function StoryReader() {
                       {choice.isPremium && (
                         <span className="ml-3 inline-flex items-center gap-1.5 px-2 py-1 bg-rose-gold/15 text-rose-gold border border-rose-gold/30 rounded-full text-xs font-semibold">
                           <Gem className="w-3 h-3 fill-current" />
-                          <span>{choice.diamondCost || 5} diamonds</span>
+                          <span>{choice.diamondCost || 0} diamonds</span>
                         </span>
                       )}
+                      
+                      {/* Debug info - remove later */}
+                      <span className="ml-2 text-xs text-gray-500">
+                        [ID: {choice.id}, Premium: {choice.isPremium ? 'yes' : 'no'}, Cost: {choice.diamondCost || 0}]
+                      </span>
                     </p>
                   </button>
                 </div>
@@ -541,10 +546,9 @@ export default function StoryReader() {
 
 
       {/* Typography Settings Modal */}
-      <TypographySettings
-        isOpen={showTypographySettings}
-        onClose={() => setShowTypographySettings(false)}
-      />
+      {showTypographySettings && (
+        <TypographySettings onClose={() => setShowTypographySettings(false)} />
+      )}
     </div>
   );
 }
