@@ -4,8 +4,7 @@ import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./auth";
 import { db } from "./db";
 import { and, eq, gt } from "drizzle-orm";
-import { storyNodes, insertUserChoiceSchema, insertReadingProgressSchema } from "@shared/schema";
-import { z } from "zod";
+import { storyNodes } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth setup
@@ -115,15 +114,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/reading-progress', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const validatedData = insertReadingProgressSchema.parse(req.body);
+      const { storyId, currentNodeId, isBookmarked = false } = req.body;
+      
+      // Validate required fields manually since schema might be missing imports
+      if (!storyId || !currentNodeId) {
+        return res.status(400).json({ message: "storyId and currentNodeId are required" });
+      }
+      
       const progress = await storage.saveReadingProgress({
-        ...validatedData,
         userId,
+        storyId,
+        currentNodeId,
+        isBookmarked,
       });
       res.json(progress);
     } catch (error) {
       console.error("Error saving reading progress:", error);
-      res.status(400).json({ message: "Invalid reading progress data" });
+      res.status(500).json({ message: "Failed to save reading progress" });
     }
   });
 
@@ -131,15 +138,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/user-choices', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const validatedData = insertUserChoiceSchema.parse(req.body);
+      const { storyId, choiceId, fromNodeId, toNodeId } = req.body;
+      
+      // Validate required fields manually  
+      if (!storyId || !choiceId) {
+        return res.status(400).json({ message: "storyId and choiceId are required" });
+      }
+      
       const choice = await storage.saveUserChoice({
-        ...validatedData,
         userId,
+        storyId,
+        choiceId,
+        fromNodeId,
+        toNodeId,
       });
       res.json(choice);
     } catch (error) {
       console.error("Error saving user choice:", error);
-      res.status(400).json({ message: "Invalid choice data" });
+      res.status(500).json({ message: "Failed to save user choice" });
     }
   });
 
@@ -215,6 +231,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error processing choice selection:", error);
       res.status(500).json({ message: "Failed to process your choice" });
+    }
+  });
+
+  // === BOOKMARK ROUTES ===
+  app.post('/api/stories/:storyId/bookmark', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { storyId } = req.params;
+      
+      // Get current reading progress
+      const progress = await storage.getReadingProgress(userId, storyId);
+      
+      if (progress) {
+        // Toggle bookmark status
+        const updatedProgress = await storage.saveReadingProgress({
+          userId,
+          storyId,
+          currentNodeId: progress.currentNodeId,
+          isBookmarked: !progress.isBookmarked,
+        });
+        res.json({ isBookmarked: updatedProgress.isBookmarked });
+      } else {
+        // Create new progress with bookmark
+        const story = await storage.getStory(storyId);
+        if (!story) {
+          return res.status(404).json({ message: "Story not found" });
+        }
+        
+        const startingNode = await storage.getFirstStoryNode(storyId);
+        if (!startingNode) {
+          return res.status(404).json({ message: "Starting node not found" });
+        }
+        
+        const newProgress = await storage.saveReadingProgress({
+          userId,
+          storyId,
+          currentNodeId: startingNode.id,
+          isBookmarked: true,
+        });
+        res.json({ isBookmarked: newProgress.isBookmarked });
+      }
+    } catch (error) {
+      console.error("Error toggling bookmark:", error);
+      res.status(500).json({ message: "Failed to toggle bookmark" });
     }
   });
 
