@@ -760,7 +760,7 @@ export default function StoryReader() {
                 onClick={() => setLocation("/store")}
                 className="flex items-center space-x-1 px-3 py-1 bg-dark-secondary/50 rounded-full hover:bg-dark-secondary/70 transition-colors cursor-pointer"
               >
-                <Gem className="w-4 h-4 text-rose-gold" />
+                <span className="text-sm">🍆</span>
                 <span className="text-sm font-medium text-kindle">{userDiamonds}</span>
               </button>
               <Button
@@ -838,8 +838,8 @@ export default function StoryReader() {
                         </span>
                         {choice.isPremium && (
                           <span className="ml-3 inline-flex items-center gap-1.5 px-2 py-1 bg-rose-gold/15 text-rose-gold border border-rose-gold/30 rounded-full text-xs font-semibold">
-                            <Gem className="w-3 h-3 fill-current" />
-                            <span>{choice.diamondCost || 0} diamonds</span>
+                            <span className="text-xs">🍆</span>
+                            <span>{choice.diamondCost || 0} eggplants</span>
                           </span>
                         )}
                       </p>
