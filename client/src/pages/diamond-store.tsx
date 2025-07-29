@@ -28,60 +28,46 @@ interface DiamondPackage {
   bestValue?: boolean;
   icon: JSX.Element;
   color: string;
+  description?: string;
+  vipBadge?: boolean;
 }
 
 const diamondPackages: DiamondPackage[] = [
   {
     id: "starter",
-    name: "Starter Pack",
-    diamonds: 25,
+    name: "Story Starter",
+    diamonds: 50,
     bonusDiamonds: 0,
-    totalDiamonds: 25,
+    totalDiamonds: 50,
     priceUsd: 2.99,
     icon: <Diamond className="w-6 h-6" />,
-    color: "from-blue-400 to-blue-600"
+    color: "from-blue-400 to-blue-600",
+    description: "Perfect for 2 complete stories"
   },
   {
-    id: "popular",
-    name: "Popular Choice",
-    diamonds: 75,
-    bonusDiamonds: 15,
-    totalDiamonds: 90,
-    priceUsd: 7.99,
+    id: "value",
+    name: "Best Value",
+    diamonds: 200,
+    bonusDiamonds: 0,
+    totalDiamonds: 200,
+    priceUsd: 4.99,
     popular: true,
     icon: <Sparkles className="w-6 h-6" />,
-    color: "from-rose-400 to-rose-600"
+    color: "from-rose-400 to-rose-600",
+    description: "Great for extended reading"
   },
   {
-    id: "premium",
-    name: "Premium Pack",
-    diamonds: 150,
-    bonusDiamonds: 50,
-    totalDiamonds: 200,
-    priceUsd: 14.99,
+    id: "vip",
+    name: "VIP Collector",
+    diamonds: 9999,
+    bonusDiamonds: 0,
+    totalDiamonds: 9999,
+    priceUsd: 49.99,
     bestValue: true,
-    icon: <Gift className="w-6 h-6" />,
-    color: "from-purple-400 to-purple-600"
-  },
-  {
-    id: "ultimate",
-    name: "Ultimate Pack",
-    diamonds: 350,
-    bonusDiamonds: 150,
-    totalDiamonds: 500,
-    priceUsd: 29.99,
+    vipBadge: true,
     icon: <Crown className="w-6 h-6" />,
-    color: "from-yellow-400 to-yellow-600"
-  },
-  {
-    id: "legendary",
-    name: "Legendary Pack",
-    diamonds: 750,
-    bonusDiamonds: 500,
-    totalDiamonds: 1250,
-    priceUsd: 59.99,
-    icon: <Star className="w-6 h-6" />,
-    color: "from-emerald-400 to-emerald-600"
+    color: "from-yellow-400 to-yellow-600",
+    description: "Unlimited access + VIP badge"
   }
 ];
 
@@ -190,15 +176,20 @@ export default function DiamondStore() {
                 pkg.popular ? 'ring-2 ring-rose-500 scale-105' : ''
               } ${pkg.bestValue ? 'ring-2 ring-purple-500' : ''}`}
             >
-              {/* Popular/Best Value Badges */}
+              {/* Popular/Best Value/VIP Badges */}
               {pkg.popular && (
                 <Badge variant="destructive" className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-rose-500">
                   Most Popular
                 </Badge>
               )}
-              {pkg.bestValue && (
+              {pkg.bestValue && !pkg.vipBadge && (
                 <Badge variant="secondary" className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-purple-500 text-white">
                   Best Value
+                </Badge>
+              )}
+              {pkg.vipBadge && (
+                <Badge className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-yellow-400 to-yellow-600 text-black font-bold">
+                  VIP ACCESS
                 </Badge>
               )}
 
@@ -209,6 +200,9 @@ export default function DiamondStore() {
                 <CardTitle className="text-lg font-bold text-text-primary">
                   {pkg.name}
                 </CardTitle>
+                {pkg.description && (
+                  <p className="text-sm text-text-muted">{pkg.description}</p>
+                )}
                 <div className="text-3xl font-bold text-rose-400">
                   ${pkg.priceUsd}
                 </div>
@@ -240,7 +234,7 @@ export default function DiamondStore() {
 
                 {/* Value Calculation */}
                 <div className="text-xs text-text-muted">
-                  ${(pkg.priceUsd / pkg.totalDiamonds).toFixed(3)} per diamond
+                  {pkg.totalDiamonds === 9999 ? 'Unlimited Access' : `$${(pkg.priceUsd / pkg.totalDiamonds).toFixed(3)} per diamond`}
                 </div>
 
                 <Button
