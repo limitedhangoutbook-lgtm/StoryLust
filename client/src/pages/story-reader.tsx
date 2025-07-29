@@ -33,24 +33,7 @@ export default function StoryReader() {
 
   const storyId = params?.storyId;
 
-  // Use unified story reader for cleaner architecture
-  if (useUnifiedReader && storyId) {
-    return (
-      <>
-        <UnifiedStoryReader 
-          storyId={storyId}
-          onBack={() => setLocation("/")}
-          onTypographySettings={() => setShowTypographySettings(true)}
-        />
-        {showTypographySettings && (
-          <TypographySettings 
-            isOpen={showTypographySettings}
-            onClose={() => setShowTypographySettings(false)} 
-          />
-        )}
-      </>
-    );
-  }
+
 
   // Fetch story details with caching
   const { data: story, isLoading: storyLoading } = useQuery<Story>({
