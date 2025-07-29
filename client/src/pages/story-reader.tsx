@@ -79,6 +79,16 @@ export default function StoryReader() {
         if (position.storyId === storyId && position.nodeId) {
           setCurrentNodeId(position.nodeId);
           sessionStorage.removeItem('returnPosition');
+          // Update reading progress with return position
+          if (isAuthenticated) {
+            apiRequest("POST", "/api/reading-progress", {
+              storyId,
+              currentNodeId: position.nodeId,
+              isBookmarked: false
+            }).catch(error => {
+              console.warn('Failed to save return position:', error);
+            });
+          }
           return;
         }
       } catch (e) {
@@ -116,6 +126,8 @@ export default function StoryReader() {
         if (progress?.currentNodeId) {
           setCurrentNodeId(progress.currentNodeId);
           setIsBookmarked(!!progress.isBookmarked);
+          // Invalidate progress queries to ensure fresh data
+          queryClient.invalidateQueries({ queryKey: ["/api/reading-progress"] });
         } else {
           // Start from beginning
           fetchStartingNode();
@@ -179,6 +191,17 @@ export default function StoryReader() {
           }
           
           setCurrentNodeId(nextNode.id);
+          
+          // Save reading progress for authenticated users
+          if (isAuthenticated) {
+            apiRequest("POST", "/api/reading-progress", {
+              storyId,
+              currentNodeId: nextNode.id,
+              isBookmarked: isBookmarked
+            }).catch(error => {
+              console.warn('Failed to save reading progress:', error);
+            });
+          }
           
           // Reset choices state for new page
           setShowChoices(false);
@@ -278,6 +301,17 @@ export default function StoryReader() {
         // Scroll to top for new content
         window.scrollTo({ top: 0, behavior: 'smooth' });
         
+        // Save reading progress for authenticated users
+        if (isAuthenticated && data.targetNode?.id) {
+          apiRequest("POST", "/api/reading-progress", {
+            storyId,
+            currentNodeId: data.targetNode.id,
+            isBookmarked: isBookmarked
+          }).catch(error => {
+            console.warn('Failed to save reading progress:', error);
+          });
+        }
+        
         toast({
           title: "Choice Made",
           description: "Continuing your story...",
@@ -352,19 +386,17 @@ export default function StoryReader() {
     mutationFn: async () => {
       if (!isAuthenticated) throw new Error("Not authenticated");
       
-      const response = await apiRequest("POST", `/api/reading-progress/bookmark`, {
-        storyId,
-        currentNodeId,
-        isBookmarked: !isBookmarked,
-      });
+      const response = await apiRequest("POST", `/api/stories/${storyId}/bookmark`);
       return response.json();
     },
-    onSuccess: () => {
-      setIsBookmarked(!isBookmarked);
+    onSuccess: (data) => {
+      setIsBookmarked(data.isBookmarked);
       toast({
-        title: isBookmarked ? "Bookmark Removed" : "Story Bookmarked",
-        description: isBookmarked ? "Removed from your reading list" : "Added to your reading list",
+        title: data.isBookmarked ? "Story Bookmarked" : "Bookmark Removed",
+        description: data.isBookmarked ? "Added to your reading list" : "Removed from your reading list",
       });
+      // Refresh reading progress list
+      queryClient.invalidateQueries({ queryKey: ["/api/reading-progress"] });
     },
     onError: (error) => {
       if (isUnauthorizedError(error)) {
@@ -579,7 +611,7 @@ export default function StoryReader() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={handleBookmark}
+                onClick={() => bookmarkMutation.mutate()}
                 className={isBookmarked ? "text-rose-gold" : "text-kindle-secondary hover:text-kindle"}
                 disabled={bookmarkMutation.isPending || false}
               >

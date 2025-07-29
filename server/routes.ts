@@ -206,8 +206,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/reading-progress', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const progress = await storage.getUserReadingProgress(userId);
-      res.json(progress);
+      const progressList = await storage.getUserReadingProgress(userId);
+      
+      // Fetch story details for each progress entry
+      const progressWithStories = await Promise.all(
+        progressList.map(async (progress) => {
+          const story = await storage.getStory(progress.storyId);
+          return {
+            ...progress,
+            story: story || null
+          };
+        })
+      );
+      
+      res.json(progressWithStories);
     } catch (error) {
       console.error("Error fetching reading progress:", error);
       res.status(500).json({ message: "Failed to fetch reading progress" });
