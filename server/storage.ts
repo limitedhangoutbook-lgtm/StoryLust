@@ -95,7 +95,9 @@ const sampleStories = [
   }
 ];
 
-const sampleNodes = {
+import { sampleNodes } from "./sample_stories";
+
+const oldSampleNodes = {
   "campus-encounter": [
     {
       id: "start",
@@ -476,7 +478,7 @@ export class DatabaseStorage implements IStorage {
 
   // Story choice operations
   async getChoicesFromNode(nodeId: string): Promise<StoryChoice[]> {
-    // Find choices from sample nodes
+    // Find choices from sample nodes  
     for (const storyId in sampleNodes) {
       const nodes = sampleNodes[storyId as keyof typeof sampleNodes];
       const node = nodes.find(n => n.id === nodeId);
@@ -497,6 +499,29 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getStoryChoice(id: string): Promise<StoryChoice | undefined> {
+    // First check sample data
+    for (const storyId in sampleNodes) {
+      const nodes = sampleNodes[storyId as keyof typeof sampleNodes];
+      for (const node of nodes) {
+        if (node.choices) {
+          const choice = node.choices.find(c => c.id === id);
+          if (choice) {
+            return {
+              id: choice.id,
+              fromNodeId: node.id,
+              toNodeId: choice.nextNodeId,
+              choiceText: choice.text,
+              order: 1,
+              isPremium: (choice as any).isPremium || false,
+              diamondCost: (choice as any).cost || 0,
+              createdAt: new Date()
+            };
+          }
+        }
+      }
+    }
+    
+    // Fallback to database
     const [choice] = await db.select().from(storyChoices).where(eq(storyChoices.id, id));
     return choice;
   }

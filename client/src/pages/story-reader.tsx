@@ -203,14 +203,44 @@ export default function StoryReader() {
 
   const handleContinueReading = () => {
     if (choices.length > 0) {
+      // This page has choices, show them
       setShowChoices(true);
     } else {
-      // Story ended
-      toast({
-        title: "Story Complete",
-        description: "You've reached the end of this story path!",
-      });
+      // This page doesn't have choices, move to next page
+      const nextPageId = getNextPageId(currentNodeId);
+      if (nextPageId) {
+        setCurrentNodeId(nextPageId);
+        setReadingProgress(prev => Math.min(100, prev + 15));
+      } else {
+        // Story ended
+        toast({
+          title: "Story Complete",
+          description: "You've reached the end of this story path!",
+        });
+      }
     }
+  };
+
+  const getNextPageId = (currentId: string | null): string | null => {
+    if (!currentId || !storyId) return null;
+    
+    // Define the page progression for each story
+    const pageSequences: Record<string, Record<string, string>> = {
+      "campus-encounter": {
+        "start": "page-2",
+        "page-2": "page-3", 
+        "page-3": "page-4",
+        "page-4": "page-5"
+      },
+      "midnight-coffee": {
+        "start": "page-2",
+        "page-2": "page-3",
+        "page-3": "page-4", 
+        "page-4": "page-5"
+      }
+    };
+    
+    return pageSequences[storyId]?.[currentId] || null;
   };
 
   const handleBookmark = () => {
