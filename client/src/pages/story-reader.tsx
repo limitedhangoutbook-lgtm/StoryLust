@@ -80,13 +80,13 @@ export default function StoryReader() {
               currentNodeId: position.nodeId,
               isBookmarked: false
             }).catch(error => {
-              console.warn('Failed to save return position:', error);
+
             });
           }
           return;
         }
       } catch (e) {
-        console.warn('Failed to parse saved position:', e);
+
       }
       sessionStorage.removeItem('returnPosition');
     }
@@ -107,7 +107,7 @@ export default function StoryReader() {
           return;
         }
       } catch (e) {
-        console.warn('Failed to parse pending choice:', e);
+
       }
       sessionStorage.removeItem('pendingChoice');
     }
@@ -142,12 +142,12 @@ export default function StoryReader() {
           const progress = JSON.parse(localProgress);
           if (progress.nodeId && progress.timestamp && Date.now() - progress.timestamp < 7 * 24 * 60 * 60 * 1000) { // 7 days
             setCurrentNodeId(progress.nodeId);
-            console.log('Restored from local storage:', progress.nodeId);
+
             return true;
           }
         }
       } catch (e) {
-        console.warn('Failed to parse local progress:', e);
+
       }
       return false;
     }
@@ -160,7 +160,7 @@ export default function StoryReader() {
           setCurrentNodeId(startingNode.id);
         }
       }).catch((error) => {
-        console.error('Error fetching starting node:', error);
+
         toast({
           title: "Error",
           description: "Failed to load story. Please try again.",
@@ -183,9 +183,9 @@ export default function StoryReader() {
         timestamp: Date.now()
       };
       localStorage.setItem(`story-progress-${storyId}`, JSON.stringify(progress));
-      console.log('Saved local progress:', nodeId);
+
     } catch (e) {
-      console.warn('Failed to save local progress:', e);
+
     }
   };
 
@@ -242,7 +242,7 @@ export default function StoryReader() {
               currentNodeId: nextNode.id,
               isBookmarked: isBookmarked
             }).catch(error => {
-              console.warn('Failed to save reading progress:', error);
+              // Silently handle reading progress save error
             });
           }
           // Always save to local storage as backup
@@ -262,7 +262,7 @@ export default function StoryReader() {
           });
         }
       } catch (error: any) {
-        console.error('Error fetching next page:', error);
+
         // If it's a 404 (no next page), treat as story ending
         if (error.message?.includes('404')) {
           setLocation("/");
@@ -368,17 +368,17 @@ export default function StoryReader() {
 
   const selectChoiceMutation = useMutation({
     mutationFn: async (choiceId: string) => {
-      console.log('Making choice API call:', { storyId, currentNodeId, choiceId });
+
       const response = await apiRequest("POST", `/api/choices/${choiceId}/select`, {
         storyId,
         currentNodeId,
       });
       const data = await response.json();
-      console.log('Choice API response:', data);
+
       return data;
     },
     onSuccess: (data) => {
-      console.log('Choice mutation success:', data);
+
       if (data.targetNode && data.targetNode.id) {
         // Add current page to history before navigating
         if (currentNodeId) {
@@ -399,7 +399,7 @@ export default function StoryReader() {
               currentNodeId: data.targetNode.id,
               isBookmarked: isBookmarked
             }).catch(error => {
-              console.warn('Failed to save reading progress:', error);
+              // Silently handle reading progress save error
             });
           }
           
@@ -412,7 +412,7 @@ export default function StoryReader() {
           description: "Continuing your story...",
         });
       } else {
-        console.error('No targetNode in response:', data);
+
         toast({
           title: "Error",
           description: "Failed to navigate to next story section.",
@@ -754,7 +754,7 @@ export default function StoryReader() {
                 <div key={choice.id} className="kindle-text">
                   <button
                     onClick={() => {
-                      console.log('Choice clicked:', choice.id, choice.isPremium, choice.diamondCost);
+
                       handleChoiceSelect(choice.id, choice.isPremium || false, choice.diamondCost || undefined);
                     }}
                     disabled={selectChoiceMutation.isPending}

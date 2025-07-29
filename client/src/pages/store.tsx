@@ -118,7 +118,7 @@ export default function Store() {
       // Refresh user data to show updated diamond balance
       window.location.reload();
     } catch (error) {
-      console.error("Purchase failed:", error);
+
       alert("Purchase failed. Please try again.");
     } finally {
       setSelectedPackage(null);
