@@ -565,6 +565,57 @@ export class DatabaseStorage implements IStorage {
 
     return result;
   }
+
+  // User stats operations
+  async getUserStats(userId: string): Promise<{
+    storiesStarted: number;
+    totalChoicesMade: number;
+    bookmarkedStories: number;
+    premiumChoicesUnlocked: number;
+    diamondsSpent: number;
+  }> {
+    // Get stories started (reading progress entries)
+    const [storiesStartedResult] = await db
+      .select({ count: sql`count(*)` })
+      .from(readingProgress)
+      .where(eq(readingProgress.userId, userId));
+
+    // Get total choices made
+    const [totalChoicesResult] = await db
+      .select({ count: sql`count(*)` })
+      .from(userChoices)
+      .where(eq(userChoices.userId, userId));
+
+    // Get bookmarked stories
+    const [bookmarkedResult] = await db
+      .select({ count: sql`count(*)` })
+      .from(readingProgress)
+      .where(and(
+        eq(readingProgress.userId, userId),
+        eq(readingProgress.isBookmarked, true)
+      ));
+
+    // Get premium choices made and diamonds spent
+    const premiumChoicesResult = await db
+      .select({
+        count: sql`count(*)`,
+        totalCost: sql`sum(${storyChoices.diamondCost})`
+      })
+      .from(userChoices)
+      .innerJoin(storyChoices, eq(userChoices.choiceId, storyChoices.id))
+      .where(and(
+        eq(userChoices.userId, userId),
+        eq(storyChoices.isPremium, true)
+      ));
+
+    return {
+      storiesStarted: Number(storiesStartedResult.count) || 0,
+      totalChoicesMade: Number(totalChoicesResult.count) || 0,
+      bookmarkedStories: Number(bookmarkedResult.count) || 0,
+      premiumChoicesUnlocked: Number(premiumChoicesResult[0]?.count) || 0,
+      diamondsSpent: Number(premiumChoicesResult[0]?.totalCost) || 0,
+    };
+  }
 }
 
 export const storage = new DatabaseStorage();

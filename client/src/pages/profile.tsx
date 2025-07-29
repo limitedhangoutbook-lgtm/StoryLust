@@ -44,17 +44,17 @@ export default function Profile() {
     );
   }
 
-  // Get user reading stats
-  const { data: readingProgress = [] } = useQuery({
-    queryKey: ["/api/reading-progress"],
+  // Fetch real user stats
+  const { data: userStats = {
+    storiesStarted: 0,
+    totalChoicesMade: 0,
+    bookmarkedStories: 0,
+    premiumChoicesUnlocked: 0,
+    diamondsSpent: 0,
+  }, isLoading: statsLoading } = useQuery({
+    queryKey: ["/api/user/stats"],
     enabled: !!user,
   });
-
-  const stats = {
-    storiesStarted: Array.isArray(readingProgress) ? readingProgress.length : 0,
-    bookmarked: Array.isArray(readingProgress) ? readingProgress.filter((p: any) => p.isBookmarked).length : 0,
-    diamonds: (user as any)?.diamonds || 0,
-  };
 
   const getInitials = (firstName?: string, lastName?: string) => {
     const first = firstName?.[0] || "";
@@ -116,7 +116,7 @@ export default function Profile() {
                 <div className="flex items-center space-x-1 mt-2">
                   <Gem className="text-gold-accent" size={14} />
                   <span className="text-sm font-medium text-gold-accent">
-                    {stats.diamonds} diamonds
+                    {(user as any)?.diamonds || 0} diamonds
                   </span>
                 </div>
               </div>
@@ -128,18 +128,44 @@ export default function Profile() {
         <Card className="bg-dark-secondary border-dark-tertiary">
           <CardContent className="pt-6">
             <h3 className="text-lg font-semibold text-text-primary mb-4">Reading Stats</h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="text-center p-4 bg-dark-tertiary rounded-lg">
-                <BookOpen className="w-6 h-6 text-rose-gold mx-auto mb-2" />
-                <div className="text-2xl font-bold text-text-primary">{stats.storiesStarted}</div>
-                <div className="text-xs text-text-muted">Stories Started</div>
+            {statsLoading ? (
+              <div className="grid grid-cols-2 gap-4">
+                {[1, 2].map((i) => (
+                  <div key={i} className="text-center p-4 bg-dark-tertiary rounded-lg animate-pulse">
+                    <div className="w-6 h-6 bg-dark-primary rounded mx-auto mb-2" />
+                    <div className="h-6 bg-dark-primary rounded mb-1" />
+                    <div className="h-3 bg-dark-primary rounded w-3/4 mx-auto" />
+                  </div>
+                ))}
               </div>
-              <div className="text-center p-4 bg-dark-tertiary rounded-lg">
-                <Heart className="w-6 h-6 text-rose-gold mx-auto mb-2" />
-                <div className="text-2xl font-bold text-text-primary">{stats.bookmarked}</div>
-                <div className="text-xs text-text-muted">Bookmarked</div>
+            ) : (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center p-4 bg-dark-tertiary rounded-lg">
+                    <BookOpen className="w-6 h-6 text-rose-gold mx-auto mb-2" />
+                    <div className="text-2xl font-bold text-text-primary">{userStats.storiesStarted}</div>
+                    <div className="text-xs text-text-muted">Stories Started</div>
+                  </div>
+                  <div className="text-center p-4 bg-dark-tertiary rounded-lg">
+                    <Heart className="w-6 h-6 text-rose-gold mx-auto mb-2" />
+                    <div className="text-2xl font-bold text-text-primary">{userStats.bookmarkedStories}</div>
+                    <div className="text-xs text-text-muted">Bookmarked</div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center p-4 bg-dark-tertiary rounded-lg">
+                    <Settings className="w-6 h-6 text-rose-gold mx-auto mb-2" />
+                    <div className="text-2xl font-bold text-text-primary">{userStats.totalChoicesMade}</div>
+                    <div className="text-xs text-text-muted">Choices Made</div>
+                  </div>
+                  <div className="text-center p-4 bg-dark-tertiary rounded-lg">
+                    <Gem className="w-6 h-6 text-gold-accent mx-auto mb-2" />
+                    <div className="text-2xl font-bold text-text-primary">{userStats.diamondsSpent}</div>
+                    <div className="text-xs text-text-muted">Diamonds Spent</div>
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
           </CardContent>
         </Card>
 
