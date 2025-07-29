@@ -246,6 +246,11 @@ export default function StoryReader() {
   const getNavigationText = (currentId: string | null, hasChoices: boolean): string | null => {
     if (hasChoices) return null; // Choices replace navigation
     
+    // For the first page (start), show "Start Reading"
+    if (currentId === "start") {
+      return "Start Reading";
+    }
+    
     const nextPageId = getNextPageId(currentId);
     if (nextPageId) {
       return "Continue Reading";
