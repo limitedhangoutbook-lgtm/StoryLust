@@ -77,7 +77,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { storyId, currentNodeId } = req.params;
       
-      // Get current node's order to find the next sequential node
+      // Get current node to check for next_node_id
       const [currentNode] = await db
         .select()
         .from(storyNodes)
@@ -90,22 +90,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Current node not found" });
       }
       
-      // Find the next node in sequence
-      const [nextNode] = await db
-        .select()
-        .from(storyNodes)
-        .where(and(
-          eq(storyNodes.storyId, storyId),
-          gt(storyNodes.order, currentNode.order)
-        ))
-        .orderBy(storyNodes.order)
-        .limit(1);
-      
-      if (!nextNode) {
-        return res.status(404).json({ message: "No next page found" });
+      // Check if current node has a direct next_node_id
+      if (currentNode.nextNodeId) {
+        const [nextNode] = await db
+          .select()
+          .from(storyNodes)
+          .where(eq(storyNodes.id, currentNode.nextNodeId));
+        
+        if (nextNode) {
+          return res.json(nextNode);
+        }
       }
       
-      res.json(nextNode);
+      // No next node found
+      return res.status(404).json({ message: "No next page found" });
     } catch (error) {
       console.error("Error getting next page:", error);
       res.status(500).json({ message: "Failed to get next page" });
