@@ -843,7 +843,7 @@ export default function StoryReader() {
                           : 'hover:text-kindle-secondary'
                       } ${
                         isSelected && showChoiceAnimation 
-                          ? 'scale-102 shadow-lg ring-2 ring-rose-gold/40 bg-rose-gold/5' 
+                          ? 'scale-[1.02] shadow-xl ring-1 ring-rose-gold/50 bg-gradient-to-r from-rose-gold/8 to-rose-gold/4' 
                           : 'hover:bg-dark-secondary/30'
                       }`}
                       style={{ 
@@ -867,27 +867,43 @@ export default function StoryReader() {
                         )}
                       </p>
                       
-                      {/* Choice selection animation overlay - Dream Daddy style */}
+                      {/* Professional choice selection animation */}
                       {isSelected && showChoiceAnimation && (
-                        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                          {/* Subtle glow effect */}
-                          <div className="absolute inset-0 bg-rose-gold/10 rounded-lg animate-pulse" />
+                        <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-lg">
+                          {/* Elegant shimmer effect */}
+                          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-rose-gold/20 to-transparent -skew-x-12 animate-shimmer" 
+                               style={{ 
+                                 animation: 'shimmer 0.8s ease-out',
+                                 width: '150%',
+                                 left: '-50%'
+                               }} />
                           
-                          {/* Small floating hearts/sparkles near the text */}
-                          {[...Array(3)].map((_, i) => (
+                          {/* Subtle border glow */}
+                          <div className="absolute inset-0 rounded-lg border-2 border-rose-gold/40 animate-pulse" />
+                          
+                          {/* Floating confirmation indicators */}
+                          {[...Array(4)].map((_, i) => (
                             <div
                               key={i}
-                              className="absolute text-rose-gold text-sm opacity-80 animate-bounce"
+                              className="absolute w-1 h-1 bg-rose-gold rounded-full opacity-0 animate-float-up"
                               style={{
-                                left: `${60 + (i * 8)}%`,
-                                top: `${20 + (i * 15)}%`,
-                                animationDelay: `${i * 200}ms`,
-                                animationDuration: '600ms',
+                                left: `${70 + (i * 5)}%`,
+                                top: '50%',
+                                animationDelay: `${i * 150}ms`,
+                                animationDuration: '1s',
+                                animationFillMode: 'forwards'
                               }}
-                            >
-                              {i % 2 === 0 ? '💖' : '✨'}
-                            </div>
+                            />
                           ))}
+                          
+                          {/* Success checkmark */}
+                          <div className="absolute right-4 top-1/2 transform -translate-y-1/2 opacity-0 animate-check-in">
+                            <div className="w-6 h-6 bg-rose-gold/20 rounded-full flex items-center justify-center">
+                              <svg className="w-4 h-4 text-rose-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                            </div>
+                          </div>
                         </div>
                       )}
                     </button>
@@ -898,15 +914,16 @@ export default function StoryReader() {
           </div>
         )}
 
-        {/* Subtle choice selection feedback - Dream Daddy style */}
+        {/* Professional choice confirmation toast */}
         {showChoiceAnimation && (
           <div className="fixed inset-0 z-50 pointer-events-none">
-            {/* Small floating notification */}
-            <div className="absolute top-20 right-6 animate-in slide-in-from-right-2 duration-500">
-              <div className="bg-dark-secondary/90 backdrop-blur-sm rounded-lg px-4 py-2 border border-rose-gold/30 shadow-lg">
-                <div className="flex items-center space-x-2">
-                  <span className="text-rose-gold text-sm">💖</span>
-                  <span className="text-kindle text-sm font-medium">Choice made</span>
+            {/* Elegant sliding confirmation */}
+            <div className="absolute top-24 right-6 animate-in slide-in-from-right-3 fade-in duration-500">
+              <div className="bg-gradient-to-r from-dark-secondary/95 to-dark-secondary/90 backdrop-blur-md rounded-xl px-5 py-3 border border-rose-gold/40 shadow-2xl">
+                <div className="flex items-center space-x-3">
+                  <div className="w-2 h-2 bg-rose-gold rounded-full animate-pulse"></div>
+                  <span className="text-kindle text-sm font-medium tracking-wide">Choice Confirmed</span>
+                  <div className="w-8 h-0.5 bg-gradient-to-r from-rose-gold/60 to-transparent rounded-full animate-expand"></div>
                 </div>
               </div>
             </div>
