@@ -223,6 +223,31 @@ export default function StoryReader() {
   // Check if current node is a story ending
   const isStoryEnding = currentNode?.content?.includes("**THE END**") || false;
 
+  // Go to first choice handler
+  const handleGoToFirstChoice = () => {
+    // Navigate to page-5 which has the first choice
+    setCurrentNodeId("page-5");
+    setPageHistory(["start", "page-2", "page-3", "page-4"]); // Set proper history to get to page-5
+    setShowChoices(false);
+    
+    // Save reading progress
+    if (isAuthenticated) {
+      apiRequest("POST", "/api/reading-progress", {
+        storyId,
+        currentNodeId: "page-5",
+        isBookmarked: isBookmarked
+      }).catch(error => {
+        // Silently handle reading progress save error
+      });
+    }
+    
+    // Save to local storage as backup
+    saveLocalProgress("page-5");
+    
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   // Continue reading handler
   const handleContinueReading = async () => {
     if (choices.length > 0) {
@@ -838,6 +863,8 @@ export default function StoryReader() {
             onGoBack={handleGoBack}
             onContinue={handleContinueReading}
             showChoices={showChoices}
+            isStoryEnding={isStoryEnding}
+            onGoToFirstChoice={handleGoToFirstChoice}
           />
         </div>
       )}
