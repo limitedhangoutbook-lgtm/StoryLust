@@ -80,6 +80,18 @@ export async function registerSimpleRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get starting node for a story
+  app.get('/api/stories/:storyId/start', async (req, res) => {
+    try {
+      const startingNode = await storage.getStartingNode(req.params.storyId);
+      if (!startingNode) return res.status(404).json({ message: "Starting node not found" });
+      res.json(startingNode);
+    } catch (error) {
+      console.error('Error fetching starting node:', error);
+      res.status(500).json({ message: "Failed to fetch starting node" });
+    }
+  });
+
   // === CHOICE SELECTION ===
   app.post('/api/choices/:choiceId/select', async (req: any, res) => {
     try {
