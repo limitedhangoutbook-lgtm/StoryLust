@@ -35,39 +35,39 @@ interface DiamondPackage {
 const diamondPackages: DiamondPackage[] = [
   {
     id: "starter",
-    name: "Story Starter",
-    diamonds: 50,
+    name: "Starter Pack",
+    diamonds: 100,
     bonusDiamonds: 0,
-    totalDiamonds: 50,
+    totalDiamonds: 100,
     priceUsd: 2.99,
     icon: <span className="text-2xl">🍆</span>,
     color: "from-blue-400 to-blue-600",
-    description: "Perfect for 2 complete stories"
+    description: "Perfect for premium story paths"
   },
   {
-    id: "value",
+    id: "bestvalue",
     name: "Best Value",
-    diamonds: 200,
+    diamonds: 300,
     bonusDiamonds: 0,
-    totalDiamonds: 200,
+    totalDiamonds: 300,
     priceUsd: 4.99,
-    popular: true,
+    bestValue: true,
     icon: <span className="text-2xl">🍆</span>,
     color: "from-rose-400 to-rose-600",
-    description: "Great for extended reading"
+    description: "Great value for extended reading"
   },
   {
     id: "vip",
-    name: "VIP Collector",
+    name: "VIP Package",
     diamonds: 9999,
     bonusDiamonds: 0,
     totalDiamonds: 9999,
     priceUsd: 49.99,
-    bestValue: true,
+    popular: true,
     vipBadge: true,
     icon: <span className="text-2xl">🍆👑</span>,
     color: "from-yellow-400 to-yellow-600",
-    description: "Unlimited access + VIP badge"
+    description: "Unlimited access + author contact + custom scenarios"
   }
 ];
 
