@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Home, BookOpen, User, ShoppingCart, Plus, Diamond } from "lucide-react";
+import { Home, BookOpen, User, ShoppingCart, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { isAdmin } from "@shared/userRoles";
@@ -28,12 +28,6 @@ const navigationItems = [
     path: "/store",
     icon: ShoppingCart,
     requiresAuth: true,
-  },
-  {
-    name: "Diamonds",
-    path: "/diamonds",
-    icon: Diamond,
-    requiresAuth: false,
   },
 ];
 
