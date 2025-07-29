@@ -775,6 +775,12 @@ export default function StoryReader() {
         {/* Choices section - integrated with story text */}
         {showChoices && choices.length > 0 && (
           <div className="mt-8 mb-16">
+            {/* Choice instructions */}
+            <div className="text-center mb-8">
+              <p className="text-kindle-secondary text-sm mb-2">What do you choose?</p>
+              <p className="text-text-muted text-xs">💡 You can use the back button to return to previous pages</p>
+            </div>
+            
             <div className="space-y-6">
               {choices.map((choice, index) => {
                 return (
@@ -869,14 +875,14 @@ export default function StoryReader() {
 
 
 
-      {/* Story Navigation - Contextual and Auto-hiding */}
-      {!showChoices && showNavigation && (
+      {/* Story Navigation - Always available when not at story ending */}
+      {showNavigation && !isStoryEnding && (
         <div className={`fixed bottom-0 left-0 right-0 transition-all duration-300 ${
           showNavigation ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'
         }`}>
           <StoryNavigation
             storyTitle={story?.title || ""}
-            canGoBack={pageHistory.length > 0 || isStoryEnding}
+            canGoBack={pageHistory.length > 0}
             onGoBack={handleGoBack}
             onContinue={handleContinueReading}
             showChoices={showChoices}

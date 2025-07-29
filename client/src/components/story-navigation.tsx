@@ -55,7 +55,7 @@ export function StoryNavigation({
               variant="ghost"
               size="sm"
               onClick={onGoBack}
-              disabled={!canGoBack || showChoices}
+              disabled={!canGoBack}
               className="text-kindle hover:text-rose-gold disabled:opacity-30 disabled:hover:text-kindle"
             >
               <ChevronLeft className="w-6 h-6" />
