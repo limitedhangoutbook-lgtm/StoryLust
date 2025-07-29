@@ -255,6 +255,51 @@ export default function StoryReader() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // Read from beginning handler
+  const handleReadFromBeginning = async () => {
+    // Reset to starting node
+    try {
+      const startingNodeResponse = await queryClient.fetchQuery({
+        queryKey: ["/api/stories", storyId, "start"],
+      });
+      
+      if (startingNodeResponse) {
+        setCurrentNodeId((startingNodeResponse as any).id);
+        setPageHistory([]); // Clear history
+        setShowChoices(false);
+        
+        // Reset reading progress
+        if (isAuthenticated) {
+          apiRequest("POST", "/api/reading-progress", {
+            storyId,
+            currentNodeId: (startingNodeResponse as any).id,
+            isBookmarked: false
+          }).catch(error => {
+            // Silently handle error
+          });
+        }
+        
+        // Save to local storage
+        saveLocalProgress((startingNodeResponse as any).id);
+        
+        // Scroll to top
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        
+        toast({
+          title: "Starting Over",
+          description: "Reading from the beginning...",
+          duration: 1500,
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to restart story. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   // Continue reading handler
   const handleContinueReading = async () => {
     if (choices.length > 0) {
@@ -470,8 +515,10 @@ export default function StoryReader() {
           saveLocalProgress(data.targetNode.id);
         }
         
+        // Find the selected choice to determine if it was premium
+        const selectedChoice = choices.find(c => c.id === (selectChoiceMutation.variables as string));
         toast({
-          title: "🍆✨ Choice Made! ✨🍆", 
+          title: selectedChoice?.isPremium ? "🍆✨ Premium Choice Made! ✨🍆" : "✨ Choice Made! ✨", 
           description: "Your story path unfolds...",
           duration: 1000, // Disappear after 1 second to avoid blocking navigation
         });
@@ -894,6 +941,7 @@ export default function StoryReader() {
             showChoices={showChoices}
             isStoryEnding={isStoryEnding}
             onGoToFirstChoice={handleGoToFirstChoice}
+            onReadFromBeginning={handleReadFromBeginning}
           />
         </div>
       )}

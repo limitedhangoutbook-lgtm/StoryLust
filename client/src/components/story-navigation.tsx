@@ -10,6 +10,7 @@ interface StoryNavigationProps {
   showChoices: boolean;
   isStoryEnding?: boolean;
   onGoToFirstChoice?: () => void;
+  onReadFromBeginning?: () => void;
 }
 
 export function StoryNavigation({ 
@@ -19,7 +20,8 @@ export function StoryNavigation({
   onContinue,
   showChoices,
   isStoryEnding = false,
-  onGoToFirstChoice
+  onGoToFirstChoice,
+  onReadFromBeginning
 }: StoryNavigationProps) {
   const [, setLocation] = useLocation();
 
@@ -65,6 +67,14 @@ export function StoryNavigation({
               <h2 className="text-sm font-medium text-kindle-secondary truncate">
                 {storyTitle}
               </h2>
+              {onReadFromBeginning && (
+                <button
+                  onClick={onReadFromBeginning}
+                  className="text-xs text-kindle-secondary hover:text-rose-gold underline mt-1"
+                >
+                  Read from beginning
+                </button>
+              )}
             </div>
             
             <Button
