@@ -257,7 +257,7 @@ export function TimelineStoryBuilder({ pages, onPagesChange }: TimelineStoryBuil
             newConnections.push({
               from,
               to,
-              color: choice.isPremium ? '#fb7185' : connectionColors[page.timelineColumn || 0],
+              color: choice.isPremium ? '#fb7185' : connectionColors[targetPage.timelineColumn || 0],
               isDashed: choice.isPremium
             });
           }
