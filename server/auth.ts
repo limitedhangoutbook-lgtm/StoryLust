@@ -1,12 +1,11 @@
 import * as client from "openid-client";
 import { Strategy, type VerifyFunction } from "openid-client/passport";
-
 import passport from "passport";
 import session from "express-session";
 import type { Express, RequestHandler } from "express";
 import memoize from "memoizee";
 import connectPg from "connect-pg-simple";
-import { storage } from "./simple-storage";
+import { storage } from "./storage";
 
 if (!process.env.REPLIT_DOMAINS) {
   throw new Error("Environment variable REPLIT_DOMAINS not provided");
@@ -54,19 +53,13 @@ function updateUserSession(
   user.expires_at = user.claims?.exp;
 }
 
-async function upsertUser(
-  claims: any,
-) {
-  // Set your role to mega-admin automatically
-  const role = claims["email"] === "evyatar.perel@gmail.com" ? "mega-admin" : "registered";
-  
+async function upsertUser(claims: any) {
   await storage.upsertUser({
     id: claims["sub"],
     email: claims["email"],
     firstName: claims["first_name"],
     lastName: claims["last_name"],
     profileImageUrl: claims["profile_image_url"],
-    role,
   });
 }
 
@@ -88,8 +81,7 @@ export async function setupAuth(app: Express) {
     verified(null, user);
   };
 
-  for (const domain of process.env
-    .REPLIT_DOMAINS!.split(",")) {
+  for (const domain of process.env.REPLIT_DOMAINS!.split(",")) {
     const strategy = new Strategy(
       {
         name: `replitauth:${domain}`,
@@ -106,11 +98,6 @@ export async function setupAuth(app: Express) {
   passport.deserializeUser((user: Express.User, cb) => cb(null, user));
 
   app.get("/api/login", (req, res, next) => {
-    // Store return URL for after login
-    if (req.query.return_to) {
-      req.session.returnTo = req.query.return_to as string;
-    }
-    
     passport.authenticate(`replitauth:${req.hostname}`, {
       prompt: "login consent",
       scope: ["openid", "email", "profile", "offline_access"],
@@ -118,44 +105,9 @@ export async function setupAuth(app: Express) {
   });
 
   app.get("/api/callback", (req, res, next) => {
-    passport.authenticate(`replitauth:${req.hostname}`, (err, user) => {
-      if (err) {
-        return res.redirect("/api/login");
-      }
-      if (!user) {
-        return res.redirect("/api/login");
-      }
-      
-      req.logIn(user, (err) => {
-        if (err) {
-          return res.redirect("/api/login");
-        }
-        
-        // Check if this is a popup login
-        const returnTo = req.session.returnTo || "/";
-        delete req.session.returnTo;
-        
-        // For popup logins, close the popup and let parent handle return
-        if (req.query.popup === 'true' || req.headers.referer?.includes('popup')) {
-          return res.send(`
-            <html>
-              <body>
-                <script>
-                  if (window.opener) {
-                    window.opener.postMessage('login_success', '*');
-                    window.close();
-                  } else {
-                    window.location.href = '${returnTo}';
-                  }
-                </script>
-              </body>
-            </html>
-          `);
-        }
-        
-        // Regular login - redirect to return URL
-        res.redirect(returnTo);
-      });
+    passport.authenticate(`replitauth:${req.hostname}`, {
+      successReturnToOrRedirect: "/",
+      failureRedirect: "/api/login",
     })(req, res, next);
   });
 

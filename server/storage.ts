@@ -17,7 +17,7 @@ import {
   type InsertUserChoice,
 } from "@shared/schema";
 
-export class SimpleStorage {
+export class Storage {
   // === USER OPERATIONS ===
   async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
@@ -34,6 +34,10 @@ export class SimpleStorage {
       })
       .returning();
     return user;
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return await db.select().from(users).orderBy(users.createdAt);
   }
 
   async updateUserDiamonds(userId: string, diamonds: number): Promise<User> {
@@ -54,20 +58,20 @@ export class SimpleStorage {
     return user;
   }
 
-  async getAllUsers(): Promise<User[]> {
-    return await db.select().from(users);
-  }
-
   // === STORY OPERATIONS ===
   async getAllStories(): Promise<Story[]> {
-    return await db.select().from(stories);
+    return await db
+      .select()
+      .from(stories)
+      .where(eq(stories.isPublished, true))
+      .orderBy(desc(stories.isFeatured), stories.createdAt);
   }
 
   async getFeaturedStory(): Promise<Story | undefined> {
     const [story] = await db
       .select()
       .from(stories)
-      .where(eq(stories.isFeatured, true))
+      .where(and(eq(stories.isFeatured, true), eq(stories.isPublished, true)))
       .limit(1);
     return story;
   }
@@ -78,81 +82,64 @@ export class SimpleStorage {
   }
 
   // === STORY NODE OPERATIONS ===
-  async getStoryNode(id: string): Promise<StoryNode | undefined> {
-    const [node] = await db.select().from(storyNodes).where(eq(storyNodes.id, id));
+  async getStoryNode(nodeId: string): Promise<StoryNode | undefined> {
+    const [node] = await db.select().from(storyNodes).where(eq(storyNodes.id, nodeId));
     return node;
   }
 
-  async getStartingNode(storyId: string): Promise<StoryNode | undefined> {
+  async getStoryNodes(storyId: string): Promise<StoryNode[]> {
+    return await db
+      .select()
+      .from(storyNodes)
+      .where(eq(storyNodes.storyId, storyId))
+      .orderBy(storyNodes.order);
+  }
+
+  async getFirstStoryNode(storyId: string): Promise<StoryNode | undefined> {
     const [node] = await db
       .select()
       .from(storyNodes)
-      .where(and(eq(storyNodes.storyId, storyId), eq(storyNodes.isStarting, true)))
+      .where(eq(storyNodes.storyId, storyId))
+      .orderBy(storyNodes.order)
       .limit(1);
     return node;
   }
 
   // === STORY CHOICE OPERATIONS ===
-  async getChoicesFromNode(nodeId: string): Promise<StoryChoice[]> {
+  async getChoicesFromNode(fromNodeId: string): Promise<StoryChoice[]> {
     return await db
       .select()
       .from(storyChoices)
-      .where(eq(storyChoices.fromNodeId, nodeId))
+      .where(eq(storyChoices.fromNodeId, fromNodeId))
       .orderBy(storyChoices.order);
   }
 
-  async getStoryChoice(id: string): Promise<StoryChoice | undefined> {
-    const [choice] = await db.select().from(storyChoices).where(eq(storyChoices.id, id));
+  async getStoryChoice(choiceId: string): Promise<StoryChoice | undefined> {
+    const [choice] = await db.select().from(storyChoices).where(eq(storyChoices.id, choiceId));
     return choice;
   }
 
   // === READING PROGRESS OPERATIONS ===
-  async getStoryProgress(userId: string, storyId: string): Promise<ReadingProgress | undefined> {
+  async getReadingProgress(userId: string, storyId: string): Promise<ReadingProgress | undefined> {
     const [progress] = await db
       .select()
       .from(readingProgress)
-      .where(and(eq(readingProgress.userId, userId), eq(readingProgress.storyId, storyId)));
+      .where(and(
+        eq(readingProgress.userId, userId),
+        eq(readingProgress.storyId, storyId)
+      ));
     return progress;
   }
 
-  async getUserReadingProgress(userId: string): Promise<ReadingProgress[]> {
-    return await db
-      .select()
-      .from(readingProgress)
-      .where(eq(readingProgress.userId, userId))
-      .orderBy(desc(readingProgress.lastReadAt));
-  }
-
-  async upsertReadingProgress(progressData: InsertReadingProgress): Promise<ReadingProgress> {
+  async saveReadingProgress(progressData: InsertReadingProgress): Promise<ReadingProgress> {
     const [progress] = await db
       .insert(readingProgress)
       .values(progressData)
       .onConflictDoUpdate({
         target: [readingProgress.userId, readingProgress.storyId],
-        set: { 
+        set: {
           currentNodeId: progressData.currentNodeId,
-          lastReadAt: new Date()
-        },
-      })
-      .returning();
-    return progress;
-  }
-
-  async toggleBookmark(userId: string, storyId: string): Promise<ReadingProgress> {
-    const existing = await this.getStoryProgress(userId, storyId);
-    const [progress] = await db
-      .insert(readingProgress)
-      .values({
-        userId,
-        storyId,
-        currentNodeId: existing?.currentNodeId || "",
-        isBookmarked: !(existing?.isBookmarked || false),
-      })
-      .onConflictDoUpdate({
-        target: [readingProgress.userId, readingProgress.storyId],
-        set: { 
-          isBookmarked: !(existing?.isBookmarked || false),
-          lastReadAt: new Date()
+          lastReadAt: new Date(),
         },
       })
       .returning();
@@ -160,21 +147,21 @@ export class SimpleStorage {
   }
 
   // === USER CHOICE OPERATIONS ===
-  async saveUserChoice(choiceData: InsertUserChoice): Promise<void> {
+  async saveUserChoice(choiceData: InsertUserChoice): Promise<{ success: boolean }> {
     await db.insert(userChoices).values(choiceData);
+    return { success: true };
   }
 
-  async getUserChoicesForStory(userId: string, storyId: string): Promise<StoryChoice[]> {
-    const choices = await db
-      .select({ 
-        choice: storyChoices
-      })
+  async getUserChoiceHistory(userId: string, storyId: string): Promise<any[]> {
+    return await db
+      .select()
       .from(userChoices)
-      .innerJoin(storyChoices, eq(userChoices.choiceId, storyChoices.id))
-      .where(and(eq(userChoices.userId, userId), eq(userChoices.storyId, storyId)));
-    
-    return choices.map(c => c.choice);
+      .where(and(
+        eq(userChoices.userId, userId),
+        eq(userChoices.storyId, storyId)
+      ))
+      .orderBy(userChoices.createdAt);
   }
 }
 
-export const storage = new SimpleStorage();
+export const storage = new Storage();
