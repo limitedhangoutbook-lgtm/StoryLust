@@ -438,11 +438,23 @@ export default function StoryReader() {
         </div>
       </main>
 
-      {/* Bottom Navigation - Like Kindle */}
-      <footer className="fixed bottom-0 left-0 right-0 bg-kindle border-t border-dark-tertiary/30 px-6 py-4">
-        <div className="max-w-3xl mx-auto">
-          {showChoices && choices.length > 0 ? (
-            // Choice Selection
+
+
+      {/* Story Navigation - Clean and Simple */}
+      {!showChoices && (
+        <StoryNavigation
+          storyTitle={story?.title || ""}
+          canGoBack={pageHistory.length > 0}
+          onGoBack={handleGoBack}
+          onContinue={handleContinueReading}
+          showChoices={showChoices}
+        />
+      )}
+
+      {/* Choices overlay when available */}
+      {showChoices && choices.length > 0 && (
+        <div className="fixed bottom-0 left-0 right-0 bg-kindle border-t border-dark-tertiary/30 px-6 py-4 z-50">
+          <div className="max-w-3xl mx-auto">
             <div className="space-y-3">
               <p className="text-center text-kindle-secondary text-sm mb-4">
                 Choose your path:
@@ -451,7 +463,7 @@ export default function StoryReader() {
                 <button
                   key={choice.id}
                   onClick={() => handleChoiceSelect(choice.id, choice.isPremium, choice.diamondCost)}
-                  disabled={selectChoiceMutation.isPending}
+                  disabled={selectChoiceMutation.isPending || false}
                   className="w-full p-3 text-left text-kindle bg-dark-secondary/30 hover:bg-dark-secondary/50 transition-colors border border-dark-tertiary/50 hover:border-rose-gold/30 rounded-lg"
                 >
                   <div className="flex items-center justify-between">
@@ -468,42 +480,9 @@ export default function StoryReader() {
                 </button>
               ))}
             </div>
-          ) : (
-            // Continue Reading Navigation
-            getNavigationText(currentNodeId, false) && (
-              <div className="flex justify-center gap-3">
-                {pageHistory.length > 0 && (
-                  <button
-                    onClick={handleGoBack}
-                    disabled={selectChoiceMutation.isPending}
-                    className="flex items-center gap-2 px-4 py-2 bg-dark-secondary/50 text-kindle hover:bg-dark-secondary/70 rounded-full font-medium transition-colors"
-                  >
-                    <ArrowLeft className="w-4 h-4" />
-                    Back
-                  </button>
-                )}
-                <button
-                  onClick={handleContinueReading}
-                  disabled={selectChoiceMutation.isPending}
-                  className="flex items-center gap-2 px-6 py-2 bg-rose-gold text-dark-primary hover:bg-rose-gold/90 rounded-full font-medium transition-colors"
-                >
-                  {getNavigationText(currentNodeId, false)}
-                  →
-                </button>
-              </div>
-            )
-          )}
+          </div>
         </div>
-      </footer>
-
-      {/* Story Navigation - Like your sketch */}
-      <StoryNavigation
-        storyTitle={story?.title || ""}
-        canGoBack={pageHistory.length > 0}
-        onGoBack={handleGoBack}
-        onContinue={handleContinueReading}
-        showChoices={showChoices}
-      />
+      )}
 
       {/* Typography Settings Modal */}
       <TypographySettings

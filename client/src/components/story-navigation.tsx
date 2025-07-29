@@ -20,32 +20,22 @@ export function StoryNavigation({
   const [, setLocation] = useLocation();
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-kindle-bg/95 backdrop-blur-sm border-t border-kindle-secondary/20 z-50">
-      <div className="flex items-center justify-between px-4 py-3 max-w-md mx-auto">
-        {/* Back to home button */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setLocation("/")}
-          className="text-kindle-secondary hover:text-kindle p-2"
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </Button>
-
-        {/* Story title with navigation */}
-        <div className="flex items-center space-x-2">
+    <div className="fixed bottom-0 left-0 right-0 bg-kindle border-t border-dark-tertiary/30 z-40">
+      <div className="flex items-center justify-center px-6 py-4 max-w-3xl mx-auto">
+        {/* Simple centered navigation */}
+        <div className="flex items-center space-x-6">
           <Button
             variant="ghost"
             size="sm"
             onClick={onGoBack}
             disabled={!canGoBack || showChoices}
-            className="text-kindle-secondary hover:text-kindle p-2 disabled:opacity-30"
+            className="text-kindle hover:text-rose-gold disabled:opacity-30 disabled:hover:text-kindle"
           >
-            <ChevronLeft className="w-5 h-5" />
+            <ChevronLeft className="w-6 h-6" />
           </Button>
           
-          <div className="text-center min-w-[120px]">
-            <h2 className="text-sm font-medium text-kindle truncate max-w-[120px]">
+          <div className="text-center min-w-[200px]">
+            <h2 className="text-sm font-medium text-kindle-secondary truncate">
               {storyTitle}
             </h2>
           </div>
@@ -55,14 +45,11 @@ export function StoryNavigation({
             size="sm"
             onClick={onContinue}
             disabled={showChoices}
-            className="text-kindle-secondary hover:text-kindle p-2 disabled:opacity-30"
+            className="text-kindle hover:text-rose-gold disabled:opacity-30 disabled:hover:text-kindle"
           >
-            <ChevronRight className="w-5 h-5" />
+            <ChevronRight className="w-6 h-6" />
           </Button>
         </div>
-
-        {/* Empty space for symmetry */}
-        <div className="w-9"></div>
       </div>
     </div>
   );
