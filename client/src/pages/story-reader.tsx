@@ -119,6 +119,7 @@ export default function StoryReader() {
         y: touch.clientY,
         time: Date.now()
       };
+      console.log('Touch start:', touch.clientX, touch.clientY);
     };
 
     const handleTouchEnd = (e: TouchEvent) => {
@@ -129,16 +130,30 @@ export default function StoryReader() {
       const deltaY = touch.clientY - touchStartRef.current.y;
       const deltaTime = Date.now() - touchStartRef.current.time;
       
+      console.log('Touch end:', {
+        deltaX,
+        deltaY,
+        deltaTime,
+        showChoices,
+        pageHistoryLength: pageHistory.length
+      });
+      
       // Only handle swipes that are primarily horizontal and fast enough
       const isHorizontalSwipe = Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50;
       const isFastEnough = deltaTime < 300;
       
+      console.log('Swipe check:', { isHorizontalSwipe, isFastEnough });
+      
       if (isHorizontalSwipe && isFastEnough && !showChoices) {
+        console.log('Processing swipe:', deltaX > 0 ? 'right (back)' : 'left (continue)');
+        
         if (deltaX > 0 && pageHistory.length > 0) {
           // Swipe right - go back
+          console.log('Going back');
           handleGoBack();
         } else if (deltaX < 0) {
           // Swipe left - continue reading
+          console.log('Continuing reading');
           handleContinueReading();
         }
       }
@@ -153,7 +168,7 @@ export default function StoryReader() {
       mainElement.removeEventListener('touchstart', handleTouchStart);
       mainElement.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [showChoices, currentNodeId, pageHistory]);
+  }, [showChoices, currentNodeId, pageHistory, handleContinueReading]);
 
   const selectChoiceMutation = useMutation({
     mutationFn: async (choiceId: string) => {
@@ -419,8 +434,12 @@ export default function StoryReader() {
         </div>
       </header>
 
-      {/* Story Content - Full screen like Kindle */}
-      <main ref={mainContentRef} className="pt-16 pb-20 px-6 max-w-3xl mx-auto">
+      {/* Story Content - Full screen like Kindle with touch area */}
+      <main 
+        ref={mainContentRef} 
+        className="pt-16 pb-20 px-6 max-w-3xl mx-auto min-h-screen touch-manipulation select-none"
+        style={{ touchAction: 'pan-y' }}
+      >
         {/* Swipe hint for first time users */}
         {currentNodeId === "start" && (
           <div className="text-center mb-4 text-kindle-secondary text-sm">
