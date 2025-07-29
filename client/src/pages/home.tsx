@@ -111,7 +111,7 @@ export default function Home() {
               className="absolute inset-0 bg-cover opacity-80"
               style={{ 
                 backgroundImage: `url(${featuredStory.imageUrl})`,
-                backgroundPosition: 'center 30%' // Center the model, slightly higher
+                backgroundPosition: 'center 60%' // Show lower portion of the image
               }}
             />
             <div className="relative p-6 min-h-96 flex flex-col justify-end bg-gradient-to-t from-black/90 via-black/40 via-transparent to-transparent">
