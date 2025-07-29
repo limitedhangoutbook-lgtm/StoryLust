@@ -55,9 +55,21 @@ const diamondPackages: DiamondPackage[] = [
 ];
 
 export default function Store() {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
   const [, setLocation] = useLocation();
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
+
+  // Redirect to login if not authenticated
+  if (!isLoading && !user) {
+    setTimeout(() => {
+      window.location.href = "/api/login";
+    }, 100);
+    return (
+      <div className="max-w-md mx-auto bg-dark-primary min-h-screen flex items-center justify-center">
+        <p className="text-text-muted">Redirecting to sign in...</p>
+      </div>
+    );
+  }
 
   const currentDiamonds = (user as any)?.diamonds || 0;
 

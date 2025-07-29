@@ -15,11 +15,28 @@ type ReadingProgressWithStory = ReadingProgress & {
 };
 
 export default function MyReading() {
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const [, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState<"continue" | "bookmarked">("continue");
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Redirect to login if not authenticated
+  if (!authLoading && !user) {
+    toast({
+      title: "Sign In Required",
+      description: "Please sign in to view your reading progress.",
+      variant: "destructive",
+    });
+    setTimeout(() => {
+      window.location.href = "/api/login";
+    }, 1000);
+    return (
+      <div className="max-w-md mx-auto bg-dark-primary min-h-screen flex items-center justify-center">
+        <p className="text-text-muted">Redirecting to sign in...</p>
+      </div>
+    );
+  }
 
   // Fetch reading progress
   const { data: readingProgress = [], isLoading } = useQuery<ReadingProgressWithStory[]>({

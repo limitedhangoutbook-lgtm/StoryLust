@@ -9,8 +9,20 @@ import { Separator } from "@/components/ui/separator";
 import { useQuery } from "@tanstack/react-query";
 
 export default function Profile() {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
   const [, setLocation] = useLocation();
+
+  // Redirect to login if not authenticated
+  if (!isLoading && !user) {
+    setTimeout(() => {
+      window.location.href = "/api/login";
+    }, 100);
+    return (
+      <div className="max-w-md mx-auto bg-dark-primary min-h-screen flex items-center justify-center">
+        <p className="text-text-muted">Redirecting to sign in...</p>
+      </div>
+    );
+  }
 
   // Get user reading stats
   const { data: readingProgress = [] } = useQuery({

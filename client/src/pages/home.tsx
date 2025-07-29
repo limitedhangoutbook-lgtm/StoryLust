@@ -4,6 +4,7 @@ import { BookOpen, Gem, Moon, Sun, GitBranch } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/components/theme-provider";
 import { useLocation } from "wouter";
+import { Button } from "@/components/ui/button";
 import { BottomNavigation } from "@/components/bottom-navigation";
 import { StoryCard } from "@/components/story-card";
 import type { Story } from "@shared/schema";
@@ -52,12 +53,21 @@ export default function Home() {
             <h1 className="text-xl font-bold tracking-tight text-text-primary">TurnPage</h1>
           </div>
           <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-1 bg-dark-tertiary px-3 py-1.5 rounded-full">
-              <Gem className="text-gold-accent" size={14} />
-              <span className="text-sm font-medium text-text-primary">
-                {(user as any)?.diamonds || 0}
-              </span>
-            </div>
+            {user ? (
+              <div className="flex items-center space-x-1 bg-dark-tertiary px-3 py-1.5 rounded-full">
+                <Gem className="text-gold-accent" size={14} />
+                <span className="text-sm font-medium text-text-primary">
+                  {(user as any)?.diamonds || 0}
+                </span>
+              </div>
+            ) : (
+              <Button
+                onClick={() => window.location.href = "/api/login"}
+                className="bg-rose-gold text-dark-primary hover:bg-rose-gold/90 font-semibold text-sm px-4 py-1.5 h-8"
+              >
+                Sign In
+              </Button>
+            )}
             <button 
               onClick={toggleTheme}
               className="w-8 h-8 rounded-full bg-dark-tertiary flex items-center justify-center hover:bg-dark-quaternary transition-colors"
