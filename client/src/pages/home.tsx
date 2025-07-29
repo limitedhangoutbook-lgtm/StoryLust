@@ -122,7 +122,7 @@ export default function Home() {
                   </div>
                 </div>
                 <button className="w-full mt-4 gradient-rose-gold text-dark-primary font-semibold py-3 rounded-xl transition-all duration-200 active:scale-95">
-                  Continue Reading
+                  {user ? "Continue Reading" : "Start Reading"}
                 </button>
               </div>
             </div>
