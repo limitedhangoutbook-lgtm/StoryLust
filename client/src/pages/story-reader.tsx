@@ -53,7 +53,6 @@ export default function StoryReader() {
         if (progress?.currentNodeId) {
           setCurrentNodeId(progress.currentNodeId);
           setIsBookmarked(!!progress.isBookmarked);
-          setReadingProgress(Math.min(100, (progress.nodeCount || 1) * 10));
         } else {
           // Start from beginning
           fetchStartingNode();
