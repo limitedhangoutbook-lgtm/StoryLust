@@ -299,12 +299,11 @@ export default function StoryReader() {
   });
 
   const handleChoiceSelect = (choiceId: string, isPremium?: boolean, diamondCost?: number) => {
-    if (!isAuthenticated) {
+    // Only require authentication for premium choices
+    if (isPremium && !isAuthenticated) {
       toast({
         title: "Sign In Required",
-        description: isPremium 
-          ? "Sign in to unlock premium story paths with diamonds"
-          : "Sign in to continue your story",
+        description: "Sign in to unlock premium story paths with diamonds",
         variant: "destructive",
       });
       setTimeout(() => {
@@ -313,15 +312,18 @@ export default function StoryReader() {
       return;
     }
 
-    const userDiamonds = (user as any)?.diamonds || 0;
-    
-    if (isPremium && (diamondCost || 0) > userDiamonds) {
-      toast({
-        title: "Not Enough Diamonds",
-        description: `You need ${diamondCost || 0} diamonds to unlock this choice. Visit the store to get more!`,
-        variant: "destructive",
-      });
-      return;
+    // Check diamond balance only for authenticated premium choices
+    if (isPremium && isAuthenticated) {
+      const userDiamonds = (user as any)?.diamonds || 0;
+      
+      if ((diamondCost || 0) > userDiamonds) {
+        toast({
+          title: "Not Enough Diamonds",
+          description: `You need ${diamondCost || 0} diamonds to unlock this choice. Visit the store to get more!`,
+          variant: "destructive",
+        });
+        return;
+      }
     }
 
     selectChoiceMutation.mutate(choiceId);
@@ -473,7 +475,7 @@ export default function StoryReader() {
                   <button
                     onClick={() => {
                       console.log('Choice clicked:', choice.id, choice.isPremium, choice.diamondCost);
-                      handleChoiceSelect(choice.id, choice.isPremium || false, choice.diamondCost);
+                      handleChoiceSelect(choice.id, choice.isPremium || false, choice.diamondCost || undefined);
                     }}
                     disabled={selectChoiceMutation.isPending}
                     className={`w-full text-left transition-all duration-200 group ${

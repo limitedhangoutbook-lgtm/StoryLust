@@ -170,57 +170,74 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Choice routes (protected)
-  app.post('/api/choices/:choiceId/select', isAuthenticated, async (req: any, res) => {
+  // Choice routes (conditionally protected based on choice type)
+  app.post('/api/choices/:choiceId/select', async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
       const choice = await storage.getStoryChoice(req.params.choiceId);
       
       if (!choice) {
         return res.status(404).json({ message: "Choice not found" });
       }
 
-      // Check if user has enough diamonds for premium choice
-      if (choice.isPremium && (choice.diamondCost || 0) > 0) {
-        const user = await storage.getUser(userId);
-        const userDiamonds = user?.diamonds || 0;
-        const choiceCost = choice.diamondCost || 0;
-        
-        if (!user || userDiamonds < choiceCost) {
-          return res.status(400).json({ message: "Insufficient diamonds" });
+      // For premium choices, require authentication
+      if (choice.isPremium) {
+        if (!req.isAuthenticated()) {
+          return res.status(401).json({ message: "Authentication required for premium choices" });
         }
 
-        // Deduct diamonds
-        await storage.updateUserDiamonds(userId, userDiamonds - choiceCost);
+        const userId = req.user.claims.sub;
+        
+        // Check if user has enough diamonds for premium choice
+        if ((choice.diamondCost || 0) > 0) {
+          const user = await storage.getUser(userId);
+          const userDiamonds = user?.diamonds || 0;
+          const choiceCost = choice.diamondCost || 0;
+          
+          if (!user || userDiamonds < choiceCost) {
+            return res.status(400).json({ message: "Insufficient diamonds" });
+          }
+
+          // Deduct diamonds
+          await storage.updateUserDiamonds(userId, userDiamonds - choiceCost);
+        }
+
+        // Save user choice for authenticated users
+        const userChoiceData = insertUserChoiceSchema.parse({
+          userId,
+          storyId: req.body.storyId,
+          choiceId: req.params.choiceId,
+        });
+        
+        await storage.saveUserChoice(userChoiceData);
+
+        // Update reading progress to the target node
+        const progressData = insertReadingProgressSchema.parse({
+          userId,
+          storyId: req.body.storyId,
+          currentNodeId: choice.toNodeId,
+        });
+        
+        const progress = await storage.upsertReadingProgress(progressData);
+        
+        // Get the target node
+        const targetNode = await storage.getStoryNode(choice.toNodeId);
+        
+        res.json({ 
+          choice, 
+          progress, 
+          targetNode,
+          diamondsSpent: choice.diamondCost || 0 
+        });
+      } else {
+        // For free choices, no authentication needed - just return the target node
+        const targetNode = await storage.getStoryNode(choice.toNodeId);
+        
+        res.json({ 
+          choice, 
+          targetNode,
+          diamondsSpent: 0 
+        });
       }
-
-      // Save user choice
-      const userChoiceData = insertUserChoiceSchema.parse({
-        userId,
-        storyId: req.body.storyId,
-        choiceId: req.params.choiceId,
-      });
-      
-      await storage.saveUserChoice(userChoiceData);
-
-      // Update reading progress to the target node
-      const progressData = insertReadingProgressSchema.parse({
-        userId,
-        storyId: req.body.storyId,
-        currentNodeId: choice.toNodeId,
-      });
-      
-      const progress = await storage.upsertReadingProgress(progressData);
-      
-      // Get the target node
-      const targetNode = await storage.getStoryNode(choice.toNodeId);
-      
-      res.json({ 
-        choice, 
-        progress, 
-        targetNode,
-        diamondsSpent: choice.isPremium ? (choice.diamondCost || 0) : 0 
-      });
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid data", errors: error.errors });
