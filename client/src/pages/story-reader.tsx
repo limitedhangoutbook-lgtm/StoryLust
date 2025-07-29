@@ -423,9 +423,7 @@ export default function StoryReader() {
       {/* Story Content - Full screen like Kindle with touch area */}
       <main 
         ref={mainContentRef} 
-        className={`pt-16 px-6 max-w-3xl mx-auto min-h-screen touch-manipulation select-none ${
-          showChoices ? 'pb-80' : 'pb-20'
-        }`}
+        className="pt-16 pb-20 px-6 max-w-3xl mx-auto min-h-screen touch-manipulation select-none"
         style={{ touchAction: 'pan-y' }}
       >
         {/* Swipe hint for first time users */}
@@ -443,6 +441,42 @@ export default function StoryReader() {
             </p>
           ))}
         </div>
+
+        {/* Choices section - inline with content */}
+        {showChoices && choices.length > 0 && (
+          <div className="mt-12 pt-8 border-t border-dark-tertiary/30">
+            <div className="text-center mb-8">
+              <h3 className="text-kindle text-xl font-medium mb-3">Choose Your Path</h3>
+              <div className="w-16 h-0.5 bg-rose-gold mx-auto"></div>
+            </div>
+            <div className="space-y-4">
+              {choices.map((choice) => (
+                <button
+                  key={choice.id}
+                  onClick={() => handleChoiceSelect(choice.id, choice.isPremium, choice.diamondCost)}
+                  disabled={selectChoiceMutation.isPending}
+                  className={`w-full p-5 text-left text-kindle transition-all duration-200 border rounded-xl group ${
+                    choice.isPremium 
+                      ? 'bg-gradient-to-r from-dark-secondary/80 to-rose-gold/20 border-rose-gold/50 hover:border-rose-gold/80 hover:from-dark-secondary/90 hover:to-rose-gold/30' 
+                      : 'bg-dark-secondary/60 hover:bg-dark-secondary/80 border-dark-tertiary/50 hover:border-kindle-secondary/50'
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <span className="text-base leading-relaxed flex-1 kindle-text">
+                      {choice.choiceText}
+                    </span>
+                    {choice.isPremium && (
+                      <div className="flex items-center gap-2 text-rose-gold bg-rose-gold/15 px-3 py-1.5 rounded-full border border-rose-gold/30">
+                        <Gem className="w-4 h-4 fill-current" />
+                        <span className="text-sm font-medium">{choice.diamondCost || 5}</span>
+                      </div>
+                    )}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </main>
 
 
