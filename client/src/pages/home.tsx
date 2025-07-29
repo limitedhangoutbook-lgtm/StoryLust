@@ -108,13 +108,13 @@ export default function Home() {
             onClick={() => openStory(featuredStory.id)}
           >
             <div 
-              className="absolute inset-0 bg-cover opacity-60"
+              className="absolute inset-0 bg-cover opacity-80"
               style={{ 
                 backgroundImage: `url(${featuredStory.imageUrl})`,
-                backgroundPosition: '75% 60%' // Position to show the model in the lower right area
+                backgroundPosition: 'center 30%' // Center the model, slightly higher
               }}
             />
-            <div className="relative p-6 min-h-48 flex flex-col justify-end bg-gradient-to-t from-black/80 via-black/40 to-transparent">
+            <div className="relative p-6 min-h-96 flex flex-col justify-end bg-gradient-to-t from-black/90 via-black/40 via-transparent to-transparent">
               <div className="space-y-2">
                 <div className="flex items-center space-x-2 mb-2">
                   <span className="px-2 py-1 bg-rose-gold/20 text-rose-gold text-xs rounded-full border border-rose-gold/30">
