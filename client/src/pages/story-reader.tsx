@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Gem, Heart, ChevronRight } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -18,6 +18,11 @@ export default function StoryReader() {
   const [currentNodeId, setCurrentNodeId] = useState<string | null>(null);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [showChoices, setShowChoices] = useState(false);
+  const [pageHistory, setPageHistory] = useState<string[]>([]);
+  
+  // Touch gesture handling
+  const touchStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
+  const mainContentRef = useRef<HTMLDivElement>(null);
 
   const storyId = params?.storyId;
 
@@ -86,6 +91,62 @@ export default function StoryReader() {
     setShowChoices(choices.length > 0);
   }, [choices]);
 
+
+
+  // Add touch event listeners for swipe gestures
+  useEffect(() => {
+    const mainElement = mainContentRef.current;
+    if (!mainElement) return;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches.length !== 1) return;
+      
+      const touch = e.touches[0];
+      touchStartRef.current = {
+        x: touch.clientX,
+        y: touch.clientY,
+        time: Date.now()
+      };
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      if (!touchStartRef.current || e.changedTouches.length !== 1) return;
+      
+      const touch = e.changedTouches[0];
+      const deltaX = touch.clientX - touchStartRef.current.x;
+      const deltaY = touch.clientY - touchStartRef.current.y;
+      const deltaTime = Date.now() - touchStartRef.current.time;
+      
+      // Only handle swipes that are primarily horizontal and fast enough
+      const isHorizontalSwipe = Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50;
+      const isFastEnough = deltaTime < 300;
+      
+      if (isHorizontalSwipe && isFastEnough && !showChoices) {
+        if (deltaX > 0 && pageHistory.length > 0) {
+          // Swipe right - go back
+          const previousPageId = pageHistory[pageHistory.length - 1];
+          setPageHistory(prev => prev.slice(0, -1));
+          setCurrentNodeId(previousPageId);
+          setShowChoices(false);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else if (deltaX < 0) {
+          // Swipe left - continue reading
+          handleContinueReading();
+        }
+      }
+      
+      touchStartRef.current = null;
+    };
+
+    mainElement.addEventListener('touchstart', handleTouchStart, { passive: true });
+    mainElement.addEventListener('touchend', handleTouchEnd, { passive: true });
+
+    return () => {
+      mainElement.removeEventListener('touchstart', handleTouchStart);
+      mainElement.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [showChoices, currentNodeId, pageHistory]);
+
   const selectChoiceMutation = useMutation({
     mutationFn: async (choiceId: string) => {
       const response = await apiRequest("POST", `/api/reading-progress/choice`, {
@@ -97,6 +158,11 @@ export default function StoryReader() {
     },
     onSuccess: (data) => {
       if (data.nextNodeId) {
+        // Add current page to history before navigating
+        if (currentNodeId) {
+          setPageHistory(prev => [...prev, currentNodeId]);
+        }
+        
         setCurrentNodeId(data.nextNodeId);
         setShowChoices(false);
         
@@ -202,6 +268,11 @@ export default function StoryReader() {
         const nextNodeResponse = await apiRequest("GET", `/api/stories/${storyId}/next/${currentNodeId}`);
         const nextNode = await nextNodeResponse.json();
         if (nextNode && nextNode.id) {
+          // Add current page to history before navigating
+          if (currentNodeId) {
+            setPageHistory(prev => [...prev, currentNodeId]);
+          }
+          
           setCurrentNodeId(nextNode.id);
           
           // Reset choices state for new page
@@ -333,7 +404,14 @@ export default function StoryReader() {
       </header>
 
       {/* Story Content - Full screen like Kindle */}
-      <main className="pt-16 pb-20 px-6 max-w-3xl mx-auto">
+      <main ref={mainContentRef} className="pt-16 pb-20 px-6 max-w-3xl mx-auto">
+        {/* Swipe hint for first time users */}
+        {currentNodeId === "start" && (
+          <div className="text-center mb-4 text-kindle-secondary text-sm">
+            💡 Tip: Swipe left to continue, swipe right to go back
+          </div>
+        )}
+        
         {/* Story Text */}
         <div className="kindle-text text-kindle space-y-0">
           {currentNode?.content.split('\n\n').map((paragraph, index) => (
@@ -377,7 +455,17 @@ export default function StoryReader() {
           ) : (
             // Continue Reading Navigation
             getNavigationText(currentNodeId, false) && (
-              <div className="flex justify-center">
+              <div className="flex justify-center gap-3">
+                {pageHistory.length > 0 && (
+                  <button
+                    onClick={handleSwipeBack}
+                    disabled={selectChoiceMutation.isPending}
+                    className="flex items-center gap-2 px-4 py-2 bg-dark-secondary/50 text-kindle hover:bg-dark-secondary/70 rounded-full font-medium transition-colors"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                    Back
+                  </button>
+                )}
                 <button
                   onClick={handleContinueReading}
                   disabled={selectChoiceMutation.isPending}
