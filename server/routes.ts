@@ -417,11 +417,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get choices for a story node
+  // Get choices for a story node - database-driven
   app.get("/api/nodes/:nodeId/choices", async (req, res) => {
     try {
-      const { nodeId } = req.params;
-      const choices = storyManager.getStoryChoices(nodeId);
+      // Add cache headers for better performance
+      res.set('Cache-Control', 'public, max-age=300'); // 5 minutes
+      
+      const choices = await storage.getChoicesFromNode(req.params.nodeId);
       res.json(choices);
     } catch (error) {
       console.error("Error fetching choices:", error);
@@ -429,11 +431,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get next page in story progression
+  // Get next page in story progression - database-driven
   app.get("/api/stories/:storyId/next/:currentNodeId", async (req, res) => {
     try {
       const { storyId, currentNodeId } = req.params;
-      const nextNode = storyManager.getNextPage(storyId, currentNodeId);
+      
+      // Get current node's order to find the next sequential node
+      const currentNode = await storage.getStoryNode(currentNodeId);
+      if (!currentNode) {
+        return res.status(404).json({ message: "Current node not found" });
+      }
+      
+      // Find next node in sequence
+      const [nextNode] = await db
+        .select()
+        .from(storyNodes)
+        .where(and(
+          eq(storyNodes.storyId, storyId),
+          gt(storyNodes.order, currentNode.order)
+        ))
+        .orderBy(storyNodes.order)
+        .limit(1);
       
       if (nextNode) {
         res.json(nextNode);

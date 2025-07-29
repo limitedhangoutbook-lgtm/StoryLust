@@ -413,21 +413,30 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  // Story operations
+  // Story operations - fully database-driven
   async getAllStories(category?: string): Promise<Story[]> {
-    const allStories = storyManager.getAllStories();
+    const query = db.select().from(stories);
+    const allStories = await query;
     return category && category !== 'all' ? 
       allStories.filter(story => story.category === category) : 
       allStories;
   }
 
   async getFeaturedStory(): Promise<Story | undefined> {
-    const stories = storyManager.getAllStories();
-    return stories.find(story => story.isFeatured);
+    const [featuredStory] = await db
+      .select()
+      .from(stories)
+      .where(eq(stories.isFeatured, true))
+      .limit(1);
+    return featuredStory;
   }
 
   async getStory(id: string): Promise<Story | undefined> {
-    return storyManager.getStory(id);
+    const [story] = await db
+      .select()
+      .from(stories)
+      .where(eq(stories.id, id));
+    return story;
   }
 
   async createStory(storyData: InsertStory): Promise<Story> {
@@ -437,22 +446,28 @@ export class DatabaseStorage implements IStorage {
 
   // Story node operations
   async getStoryNodes(storyId: string): Promise<StoryNode[]> {
-    // Use story manager to get nodes
-    return [];
+    // Always use database as single source of truth
+    return await db
+      .select()
+      .from(storyNodes)
+      .where(eq(storyNodes.storyId, storyId))
+      .orderBy(storyNodes.order);
   }
 
   async getStoryNode(id: string): Promise<StoryNode | undefined> {
-    // Use story manager first (faster)
-    const node = storyManager.getStoryNode(id);
-    if (node) return node;
-    
-    // Fallback to database
+    // Always use database as single source of truth
     const [dbNode] = await db.select().from(storyNodes).where(eq(storyNodes.id, id));
     return dbNode;
   }
 
   async getStartingNode(storyId: string): Promise<StoryNode | undefined> {
-    return storyManager.getStartingNode(storyId);
+    // Always use database as single source of truth
+    const [startingNode] = await db
+      .select()
+      .from(storyNodes)
+      .where(and(eq(storyNodes.storyId, storyId), eq(storyNodes.isStarting, true)))
+      .limit(1);
+    return startingNode;
   }
 
   async createStoryNode(nodeData: InsertStoryNode): Promise<StoryNode> {
@@ -460,26 +475,9 @@ export class DatabaseStorage implements IStorage {
     return node;
   }
 
-  // Story choice operations  
+  // Story choice operations - fully database-driven  
   async getChoicesFromNode(nodeId: string): Promise<StoryChoice[]> {
-    // Use story manager first (faster, in-memory)
-    const managerChoices = storyManager.getStoryChoices(nodeId);
-    
-    // If story manager has choices, enhance with database data for diamond costs
-    if (managerChoices.length > 0) {
-      const dbChoices = await db
-        .select()
-        .from(storyChoices)
-        .where(eq(storyChoices.fromNodeId, nodeId));
-      
-      // Merge database premium data with manager choices
-      return managerChoices.map(choice => {
-        const dbChoice = dbChoices.find(db => db.id === choice.id);
-        return dbChoice ? { ...choice, isPremium: dbChoice.isPremium, diamondCost: dbChoice.diamondCost } : choice;
-      });
-    }
-    
-    // Fallback to database only
+    // Always use database as single source of truth
     return await db
       .select()
       .from(storyChoices)
@@ -488,11 +486,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getStoryChoice(id: string): Promise<StoryChoice | undefined> {
-    // Use story manager first
-    const choice = storyManager.getStoryChoice(id);
-    if (choice) return choice;
-    
-    // Fallback to database
+    // Always use database as single source of truth
     const [dbChoice] = await db.select().from(storyChoices).where(eq(storyChoices.id, id));
     return dbChoice;
   }

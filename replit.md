@@ -95,6 +95,10 @@ User feedback: Very appreciative of thorough help and comprehensive solutions.
 - **User Management**: Mega-admin interface to promote users to admin writer status
 - **Role-Based Access Control**: Story creation restricted to admin writers, user management to mega-admin only
 - **Choice Node Architecture**: Implemented foundation for endless branching story structures without coding required
+- **Database-First Architecture**: Converted system to be fully database-driven for true dynamic content management
+- **Position Restoration**: Automatic story position saving and restoration for both authenticated users and guests
+- **Performance Optimization**: Added caching layers and query optimization for faster page loading
+- **Diamond Cost Display**: Premium choices now properly show rose-gold diamond indicators with accurate costs
 
 ## External Dependencies
 
