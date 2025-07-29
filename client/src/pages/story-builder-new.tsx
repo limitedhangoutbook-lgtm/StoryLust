@@ -14,14 +14,16 @@ import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { isAdmin } from "@shared/userRoles";
 import { BottomNavigation } from "@/components/bottom-navigation";
-import { StoryFlowBuilder } from "@/components/story-flow-builder";
+import { TimelineStoryBuilder } from "@/components/timeline-story-builder";
 
 interface StoryPage {
   id: string;
   title: string;
   content: string;
   order: number;
+  timelineColumn?: number;
   choices?: Choice[];
+  isEnding?: boolean;
 }
 
 interface Choice {
@@ -30,6 +32,7 @@ interface Choice {
   isPremium: boolean;
   diamondCost: number;
   targetPageId: string;
+  color?: string;
 }
 
 export default function StoryBuilder() {
@@ -69,11 +72,11 @@ export default function StoryBuilder() {
   });
 
   const [pages, setPages] = useState<StoryPage[]>([
-    { id: "start", title: "Opening", content: "", order: 1, choices: [] },
-    { id: "page-2", title: "Page 2", content: "", order: 2, choices: [] },
-    { id: "page-3", title: "Page 3", content: "", order: 3, choices: [] },
-    { id: "page-4", title: "Page 4", content: "", order: 4, choices: [] },
-    { id: "page-5", title: "Choice Point", content: "", order: 5, choices: [] }
+    { id: "start", title: "Opening", content: "", order: 1, timelineColumn: 0, choices: [] },
+    { id: "page-2", title: "Page 2", content: "", order: 2, timelineColumn: 0, choices: [] },
+    { id: "page-3", title: "Page 3", content: "", order: 3, timelineColumn: 0, choices: [] },
+    { id: "page-4", title: "Page 4", content: "", order: 4, timelineColumn: 0, choices: [] },
+    { id: "page-5", title: "Choice Point", content: "", order: 5, timelineColumn: 0, choices: [] }
   ]);
 
   // Story creation mutation
@@ -297,7 +300,7 @@ export default function StoryBuilder() {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-6">
-        <StoryFlowBuilder 
+        <TimelineStoryBuilder 
           pages={pages} 
           onPagesChange={setPages}
         />
