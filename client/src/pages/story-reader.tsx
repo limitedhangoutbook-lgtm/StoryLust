@@ -23,6 +23,8 @@ export default function StoryReader() {
   const [showChoices, setShowChoices] = useState(false);
   const [pageHistory, setPageHistory] = useState<string[]>([]);
   const [showTypographySettings, setShowTypographySettings] = useState(false);
+  const [selectedChoiceId, setSelectedChoiceId] = useState<string | null>(null);
+  const [showChoiceAnimation, setShowChoiceAnimation] = useState(false);
 
   const [showNavigation, setShowNavigation] = useState(true);
   
@@ -443,6 +445,8 @@ export default function StoryReader() {
         
         setCurrentNodeId(data.targetNode.id);
         setShowChoices(false);
+        setShowChoiceAnimation(false);
+        setSelectedChoiceId(null);
         
         // Scroll to top for new content
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -660,7 +664,19 @@ export default function StoryReader() {
       }
     }
 
-    selectChoiceMutation.mutate(choiceId);
+    // Show choice selection animation
+    setSelectedChoiceId(choiceId);
+    setShowChoiceAnimation(true);
+    
+    // Trigger haptic feedback if available
+    if (navigator.vibrate) {
+      navigator.vibrate([50, 100, 50]);
+    }
+    
+    // Delay the mutation to let the animation play
+    setTimeout(() => {
+      selectChoiceMutation.mutate(choiceId);
+    }, 800);
   };
 
   const getNextPageId = (currentId: string | null): string | null => {
