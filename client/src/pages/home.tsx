@@ -47,6 +47,33 @@ export default function Home() {
 
   return (
     <div className="max-w-md mx-auto bg-dark-primary min-h-screen relative pb-20">
+      {/* Featured Image Hero Section - Only for unauthenticated users */}
+      {!user && (
+        <div className="relative overflow-hidden mb-6">
+          <div className="absolute inset-0">
+            <img 
+              src="/davidbook_1753815404952.png" 
+              alt="Featured model for TurnPage stories" 
+              className="w-full h-48 object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-dark-primary via-dark-primary/60 to-dark-primary/20" />
+          </div>
+          <div className="relative px-6 py-16 text-center">
+            <h2 className="text-2xl font-bold text-text-primary mb-3 leading-tight">
+              Choose Your Own Adventure
+            </h2>
+            <p className="text-text-secondary mb-6 leading-relaxed">
+              Interactive stories where every decision matters
+            </p>
+            <Button 
+              onClick={() => window.location.href = "/api/login"}
+              className="bg-rose-gold text-dark-primary hover:bg-rose-gold/90 font-bold px-6 py-2 rounded-xl"
+            >
+              Start Reading
+            </Button>
+          </div>
+        </div>
+      )}
       {/* Header */}
       <header className="sticky top-0 z-50 bg-dark-primary/95 backdrop-blur-sm border-b border-dark-tertiary">
         <div className="flex items-center justify-between p-4">
