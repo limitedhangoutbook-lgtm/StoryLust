@@ -4,6 +4,8 @@ import { ArrowLeft, Gem, Heart, ChevronRight } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation, useRoute } from "wouter";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
@@ -70,93 +72,97 @@ export default function StoryReader() {
         if (startingNode) {
           setCurrentNodeId(startingNode.id);
         }
-      }).catch((error) => {
-        console.error('Error fetching starting node:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load story. Please try again.",
-          variant: "destructive",
-        });
       });
     }
-  }, [storyId, isAuthenticated, currentNodeId, queryClient, toast]);
+  }, [storyId, currentNodeId, queryClient, isAuthenticated]);
 
-  // Update choices visibility when they're available
-  useEffect(() => {
-    setShowChoices(choices.length > 0);
-  }, [choices]);
-
+  // Choice selection mutation
   const selectChoiceMutation = useMutation({
     mutationFn: async (choiceId: string) => {
-      const response = await apiRequest("POST", `/api/reading-progress/choice`, {
-        storyId,
-        currentNodeId,
-        choiceId,
-      });
-      return response.json();
-    },
-    onSuccess: (data) => {
-      if (data.nextNodeId) {
-        setCurrentNodeId(data.nextNodeId);
-        setShowChoices(false);
+      if (!isAuthenticated) {
+        // For guests, simulate choice selection without API call
+        const choice = choices.find(c => c.id === choiceId);
+        if (!choice) throw new Error("Choice not found");
         
-        // Scroll to top for new content
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        if (choice.isPremium) {
+          throw new Error("Sign in required for premium choices");
+        }
+        
+        return { targetNode: { id: choice.toNodeId }, choice, diamondsSpent: 0 };
       }
       
-      // Invalidate queries to refresh data
-      queryClient.invalidateQueries({ queryKey: ["/api/nodes"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/reading-progress"] });
+      return await apiRequest("POST", `/api/choices/${choiceId}/select`, {
+        storyId,
+      });
     },
-    onError: (error) => {
+    onSuccess: (data: any) => {
+      setCurrentNodeId(data.targetNode.id);
+      setShowChoices(false);
+      setReadingProgress(prev => Math.min(100, prev + 15));
+      
+      if (isAuthenticated) {
+        queryClient.invalidateQueries({ queryKey: ["/api/reading-progress", storyId] });
+      }
+      
+      if (data.diamondsSpent > 0) {
+        toast({
+          title: "Premium Choice Selected",
+          description: `${data.diamondsSpent} diamonds spent`,
+        });
+      }
+    },
+    onError: (error: Error) => {
+      if (error.message === "Sign in required for premium choices") {
+        toast({
+          title: "Sign In Required",
+          description: "Please sign in to unlock premium story paths",
+          variant: "destructive",
+        });
+        return;
+      }
+      
       if (isUnauthorizedError(error)) {
         toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
+          title: "Sign In Required", 
+          description: "Please sign in to continue your story",
           variant: "destructive",
         });
         setTimeout(() => {
           window.location.href = "/api/login";
-        }, 500);
+        }, 2000);
         return;
       }
       
       toast({
         title: "Error",
-        description: "Failed to process your choice. Please try again.",
+        description: error.message || "Failed to select choice",
         variant: "destructive",
       });
     },
   });
 
+  // Bookmark mutation (authenticated users only)
   const bookmarkMutation = useMutation({
     mutationFn: async () => {
-      if (!isAuthenticated) throw new Error("Not authenticated");
-      
-      const response = await apiRequest("POST", `/api/reading-progress/bookmark`, {
-        storyId,
-        currentNodeId,
-        isBookmarked: !isBookmarked,
-      });
-      return response.json();
+      return await apiRequest("POST", `/api/stories/${storyId}/bookmark`);
     },
     onSuccess: () => {
       setIsBookmarked(!isBookmarked);
+      queryClient.invalidateQueries({ queryKey: ["/api/reading-progress"] });
       toast({
         title: isBookmarked ? "Bookmark Removed" : "Story Bookmarked",
-        description: isBookmarked ? "Removed from your reading list" : "Added to your reading list",
+        description: isBookmarked 
+          ? "Removed from your reading list" 
+          : "Added to your reading list",
       });
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       if (isUnauthorizedError(error)) {
         toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
+          title: "Sign In Required",
+          description: "Please sign in to bookmark stories",
           variant: "destructive",
         });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
         return;
       }
       
@@ -235,6 +241,8 @@ export default function StoryReader() {
     return null; // Let the story manager handle page progression
   };
 
+
+
   const getNavigationText = (currentId: string | null, hasChoices: boolean): string | null => {
     if (hasChoices) return null; // Choices replace navigation
     
@@ -272,10 +280,10 @@ export default function StoryReader() {
   // Show loading state while critical data is loading OR while data doesn't exist yet
   if (storyLoading || nodeLoading || (!story && storyId) || (!currentNode && currentNodeId)) {
     return (
-      <div className="min-h-screen kindle-reader flex items-center justify-center">
+      <div className="min-h-screen bg-dark-primary flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin w-8 h-8 border-4 border-rose-gold border-t-transparent rounded-full mx-auto mb-4" />
-          <p className="text-kindle-secondary">Loading story...</p>
+          <p className="text-text-muted">Loading story...</p>
         </div>
       </div>
     );
@@ -284,9 +292,9 @@ export default function StoryReader() {
   // Only show error state if we definitively failed to load
   if (storyId && !storyLoading && !story) {
     return (
-      <div className="min-h-screen kindle-reader flex items-center justify-center text-center px-4">
+      <div className="min-h-screen bg-dark-primary flex items-center justify-center text-center px-4">
         <div>
-          <h2 className="text-xl font-semibold text-kindle mb-2">Story not found</h2>
+          <h2 className="text-xl font-semibold text-text-primary mb-2">Story not found</h2>
           <Button 
             onClick={() => setLocation("/")}
             className="bg-rose-gold text-dark-primary hover:bg-rose-gold/90"
@@ -299,98 +307,113 @@ export default function StoryReader() {
   }
 
   return (
-    <div className="min-h-screen kindle-reader">
-      {/* Minimal Header - Just back button and diamonds */}
-      <header className="absolute top-0 left-0 right-0 z-10 px-4 py-3">
-        <div className="flex items-center justify-between">
+    <div className="min-h-screen bg-dark-primary text-text-primary">
+      {/* Minimal Header */}
+      <header className="sticky top-0 z-10 bg-dark-primary/95 backdrop-blur-sm border-b border-dark-tertiary">
+        <div className="flex items-center justify-between px-4 py-3">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setLocation("/")}
-            className="text-kindle-secondary hover:text-kindle p-2"
+            className="text-text-muted hover:text-text-primary"
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
           
-          {isAuthenticated && (
-            <div className="flex items-center space-x-3">
-              <div className="flex items-center space-x-1 px-3 py-1 bg-dark-secondary/50 rounded-full">
-                <Gem className="w-4 h-4 text-rose-gold" />
-                <span className="text-sm font-medium text-kindle">{userDiamonds}</span>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleBookmark}
-                className={isBookmarked ? "text-rose-gold" : "text-kindle-secondary hover:text-kindle"}
-                disabled={bookmarkMutation.isPending}
-              >
-                <Heart className={`w-5 h-5 ${isBookmarked ? "fill-current" : ""}`} />
-              </Button>
-            </div>
-          )}
+          <div className="flex items-center space-x-2">
+            {isAuthenticated && (
+              <>
+                <div className="flex items-center space-x-1 px-2 py-1 bg-dark-secondary rounded-lg">
+                  <Gem className="w-4 h-4 text-rose-gold" />
+                  <span className="text-sm font-medium">{userDiamonds}</span>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleBookmark}
+                  className={isBookmarked ? "text-rose-gold" : "text-text-muted hover:text-text-primary"}
+                  disabled={bookmarkMutation.isPending}
+                >
+                  <Heart className={`w-5 h-5 ${isBookmarked ? "fill-current" : ""}`} />
+                </Button>
+              </>
+            )}
+          </div>
         </div>
       </header>
 
-      {/* Story Content - Full screen like Kindle */}
-      <main className="pt-16 pb-20 px-6 max-w-3xl mx-auto">
-        {/* Story Text */}
-        <div className="kindle-text text-kindle space-y-0">
-          {currentNode?.content.split('\n\n').map((paragraph, index) => (
-            <p key={index} className="kindle-paragraph">
-              {paragraph}
-            </p>
-          ))}
-        </div>
-      </main>
+      {/* Story Content */}
+      <main className="px-4 py-6 max-w-2xl mx-auto">
+        <div className="space-y-6">
+          {/* Story Node Content */}
+          <Card className="bg-dark-secondary border-dark-tertiary">
+            <CardContent className="p-6">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-lg font-semibold text-text-primary">
+                    {currentNode?.title}
+                  </h2>
+                  {currentNode && (currentNode as any).isPremium && (
+                    <Badge className="bg-rose-gold/20 text-rose-gold border-rose-gold/30">
+                      <Gem className="w-3 h-3 mr-1" />
+                      Premium
+                    </Badge>
+                  )}
+                </div>
+                
+                <div className="prose prose-invert max-w-none">
+                  <p className="text-text-secondary leading-relaxed whitespace-pre-line">
+                    {currentNode?.content}
+                  </p>
+                </div>
 
-      {/* Bottom Navigation - Like Kindle */}
-      <footer className="fixed bottom-0 left-0 right-0 bg-kindle border-t border-dark-tertiary/30 px-6 py-4">
-        <div className="max-w-3xl mx-auto">
-          {showChoices && choices.length > 0 ? (
-            // Choice Selection
-            <div className="space-y-3">
-              <p className="text-center text-kindle-secondary text-sm mb-4">
-                Choose your path:
-              </p>
-              {choices.map((choice) => (
-                <button
-                  key={choice.id}
-                  onClick={() => handleChoiceSelect(choice.id, choice.isPremium, choice.diamondCost)}
-                  disabled={selectChoiceMutation.isPending}
-                  className="w-full p-3 text-left text-kindle bg-dark-secondary/30 hover:bg-dark-secondary/50 transition-colors border border-dark-tertiary/50 hover:border-rose-gold/30 rounded-lg"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm">
-                      {choice.choiceText}
-                    </span>
-                    {choice.isPremium && (
-                      <div className="flex items-center gap-1 text-rose-gold">
-                        <Gem className="w-3 h-3" />
-                        <span className="text-xs">{choice.diamondCost}</span>
-                      </div>
-                    )}
-                  </div>
-                </button>
-              ))}
-            </div>
-          ) : (
-            // Continue Reading Navigation
-            getNavigationText(currentNodeId, false) && (
-              <div className="flex justify-center">
-                <button
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Navigation - either Continue Reading or Choice Selection */}
+          <div className="flex justify-center pt-4">
+            {showChoices && choices.length > 0 ? (
+              // Choice buttons replace the navigation
+              <div className="w-full space-y-3">
+                {choices.map((choice) => (
+                  <Button
+                    key={choice.id}
+                    onClick={() => handleChoiceSelect(choice.id, choice.isPremium, choice.diamondCost)}
+                    disabled={selectChoiceMutation.isPending}
+                    className="w-full p-4 h-auto text-left bg-dark-secondary hover:bg-dark-accent transition-colors border border-dark-tertiary hover:border-rose-gold/30"
+                    variant="outline"
+                  >
+                    <div className="flex items-center justify-between w-full">
+                      <span className="text-text-secondary group-hover:text-text-primary transition-colors">
+                        {choice.choiceText}
+                      </span>
+                      {choice.isPremium && (
+                        <div className="flex items-center gap-1 text-rose-gold">
+                          <Heart className="w-4 h-4" />
+                          <span className="text-sm font-medium">{choice.diamondCost}</span>
+                        </div>
+                      )}
+                    </div>
+                  </Button>
+                ))}
+              </div>
+            ) : (
+              // Regular continue reading button
+              getNavigationText(currentNodeId, false) && (
+                <Button
                   onClick={handleContinueReading}
                   disabled={selectChoiceMutation.isPending}
-                  className="flex items-center gap-2 px-6 py-2 bg-rose-gold text-dark-primary hover:bg-rose-gold/90 rounded-full font-medium transition-colors"
+                  className="bg-rose-gold text-dark-primary hover:bg-rose-gold/90 px-8 py-3 rounded-full font-medium"
                 >
                   {getNavigationText(currentNodeId, false)}
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-            )
-          )}
+                  <ChevronRight className="w-4 h-4 ml-2" />
+                </Button>
+              )
+            )}
+          </div>
         </div>
-      </footer>
+      </main>
     </div>
   );
 }

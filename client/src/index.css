@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -34,6 +36,11 @@
   --text-primary: hsl(0, 0%, 100%);
   --text-secondary: hsl(0, 0%, 89.8%);
   --text-muted: hsl(0, 0%, 69%);
+  
+  /* Kindle-like reading experience */
+  --kindle-bg: hsl(30, 12%, 8%);
+  --kindle-text: hsl(30, 8%, 88%);
+  --kindle-text-secondary: hsl(30, 8%, 75%);
 }
 
 .dark {
@@ -139,6 +146,44 @@
 
   .gradient-rose-gold {
     background: linear-gradient(135deg, var(--rose-gold), var(--gold-accent));
+  }
+  
+  /* Kindle-like reading experience */
+  .kindle-reader {
+    font-family: 'Crimson Text', serif;
+    background-color: var(--kindle-bg);
+    color: var(--kindle-text);
+    line-height: 1.7;
+  }
+  
+  .kindle-text {
+    font-size: 1.125rem;
+    line-height: 1.7;
+    text-align: left;
+    hyphens: auto;
+    word-spacing: 0.05em;
+    font-family: 'Crimson Text', serif;
+  }
+  
+  .kindle-paragraph {
+    margin-bottom: 1.2em;
+    text-indent: 1.5em;
+  }
+  
+  .kindle-paragraph:first-of-type {
+    text-indent: 0;
+  }
+  
+  .bg-kindle {
+    background-color: var(--kindle-bg);
+  }
+  
+  .text-kindle {
+    color: var(--kindle-text);
+  }
+  
+  .text-kindle-secondary {
+    color: var(--kindle-text-secondary);
   }
 
   .gradient-dark {
