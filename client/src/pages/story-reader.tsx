@@ -105,6 +105,47 @@ export default function StoryReader() {
     }
   };
 
+  // Continue reading handler
+  const handleContinueReading = async () => {
+    if (choices.length > 0) {
+      // This page has choices, show them
+      setShowChoices(true);
+    } else {
+      // This page doesn't have choices, try to get next page from server
+      try {
+        const nextNodeResponse = await apiRequest("GET", `/api/stories/${storyId}/next/${currentNodeId}`);
+        const nextNode = await nextNodeResponse.json();
+        if (nextNode && nextNode.id) {
+          // Add current page to history before navigating
+          if (currentNodeId) {
+            setPageHistory(prev => [...prev, currentNodeId]);
+          }
+          
+          setCurrentNodeId(nextNode.id);
+          
+          // Reset choices state for new page
+          setShowChoices(false);
+          
+          // Scroll to top for new page
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+          // Story ended
+          toast({
+            title: "Story Complete",
+            description: "You've reached the end of this story path!",
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching next page:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load next page. Please try again.",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
   // Add touch event listeners for swipe gestures
   useEffect(() => {
     const mainElement = mainContentRef.current;
@@ -119,7 +160,6 @@ export default function StoryReader() {
         y: touch.clientY,
         time: Date.now()
       };
-      console.log('Touch start:', touch.clientX, touch.clientY);
     };
 
     const handleTouchEnd = (e: TouchEvent) => {
@@ -130,30 +170,16 @@ export default function StoryReader() {
       const deltaY = touch.clientY - touchStartRef.current.y;
       const deltaTime = Date.now() - touchStartRef.current.time;
       
-      console.log('Touch end:', {
-        deltaX,
-        deltaY,
-        deltaTime,
-        showChoices,
-        pageHistoryLength: pageHistory.length
-      });
-      
       // Only handle swipes that are primarily horizontal and fast enough
       const isHorizontalSwipe = Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50;
       const isFastEnough = deltaTime < 300;
       
-      console.log('Swipe check:', { isHorizontalSwipe, isFastEnough });
-      
       if (isHorizontalSwipe && isFastEnough && !showChoices) {
-        console.log('Processing swipe:', deltaX > 0 ? 'right (back)' : 'left (continue)');
-        
         if (deltaX > 0 && pageHistory.length > 0) {
           // Swipe right - go back
-          console.log('Going back');
           handleGoBack();
         } else if (deltaX < 0) {
           // Swipe left - continue reading
-          console.log('Continuing reading');
           handleContinueReading();
         }
       }
@@ -279,46 +305,6 @@ export default function StoryReader() {
     }
 
     selectChoiceMutation.mutate(choiceId);
-  };
-
-  const handleContinueReading = async () => {
-    if (choices.length > 0) {
-      // This page has choices, show them
-      setShowChoices(true);
-    } else {
-      // This page doesn't have choices, try to get next page from server
-      try {
-        const nextNodeResponse = await apiRequest("GET", `/api/stories/${storyId}/next/${currentNodeId}`);
-        const nextNode = await nextNodeResponse.json();
-        if (nextNode && nextNode.id) {
-          // Add current page to history before navigating
-          if (currentNodeId) {
-            setPageHistory(prev => [...prev, currentNodeId]);
-          }
-          
-          setCurrentNodeId(nextNode.id);
-          
-          // Reset choices state for new page
-          setShowChoices(false);
-          
-          // Scroll to top for new page
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        } else {
-          // Story ended
-          toast({
-            title: "Story Complete",
-            description: "You've reached the end of this story path!",
-          });
-        }
-      } catch (error) {
-        console.error('Error fetching next page:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load next page. Please try again.",
-          variant: "destructive",
-        });
-      }
-    }
   };
 
   const getNextPageId = (currentId: string | null): string | null => {
