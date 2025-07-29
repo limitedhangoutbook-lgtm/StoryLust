@@ -722,7 +722,7 @@ export default function StoryReader() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setLocation("/")}
+            onClick={handleGoBack}
             className="text-kindle-secondary hover:text-kindle p-2"
           >
             <ArrowLeft className="w-5 h-5" />
