@@ -95,7 +95,7 @@ const sampleStories = [
   }
 ];
 
-import { sampleNodes } from "./sample_stories";
+import { storyManager } from "./story-manager";
 
 const oldSampleNodes = {
   "campus-encounter": [
@@ -384,36 +384,19 @@ export class DatabaseStorage implements IStorage {
 
   // Story operations
   async getAllStories(category?: string): Promise<Story[]> {
-    // Use sample stories for testing
-    const filtered = category && category !== 'all' ? 
-      sampleStories.filter(story => story.category === category) : 
-      sampleStories;
-    
-    return filtered.map(story => ({
-      ...story,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    }));
+    const allStories = storyManager.getAllStories();
+    return category && category !== 'all' ? 
+      allStories.filter(story => story.category === category) : 
+      allStories;
   }
 
   async getFeaturedStory(): Promise<Story | undefined> {
-    // Return sample featured story
-    const featured = sampleStories.find(story => story.isFeatured);
-    return featured ? {
-      ...featured,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    } : undefined;
+    const stories = storyManager.getAllStories();
+    return stories.find(story => story.isFeatured);
   }
 
   async getStory(id: string): Promise<Story | undefined> {
-    // Return sample story by ID
-    const story = sampleStories.find(s => s.id === id);
-    return story ? {
-      ...story,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    } : undefined;
+    return storyManager.getStory(id);
   }
 
   async createStory(storyData: InsertStory): Promise<Story> {
@@ -437,38 +420,17 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getStoryNode(id: string): Promise<StoryNode | undefined> {
-    // Find node across all sample stories
-    for (const storyId in sampleNodes) {
-      const nodes = sampleNodes[storyId as keyof typeof sampleNodes];
-      const node = nodes.find(n => n.id === id);
-      if (node) {
-        return {
-          id: node.id,
-          storyId: node.storyId,
-          title: node.title,
-          content: node.content,
-          order: 1,
-          isStarting: node.isStartNode || false,
-          createdAt: new Date()
-        };
-      }
-    }
-    return undefined;
+    // Use story manager first
+    const node = storyManager.getStoryNode(id);
+    if (node) return node;
+    
+    // Fallback to database
+    const [dbNode] = await db.select().from(storyNodes).where(eq(storyNodes.id, id));
+    return dbNode;
   }
 
   async getStartingNode(storyId: string): Promise<StoryNode | undefined> {
-    // Return the starting node for the story
-    const nodes = sampleNodes[storyId as keyof typeof sampleNodes] || [];
-    const startNode = nodes.find(node => node.isStartNode);
-    return startNode ? {
-      id: startNode.id,
-      storyId: startNode.storyId,
-      title: startNode.title,
-      content: startNode.content,
-      order: 1,
-      isStarting: true,
-      createdAt: new Date()
-    } : undefined;
+    return storyManager.getStartingNode(storyId);
   }
 
   async createStoryNode(nodeData: InsertStoryNode): Promise<StoryNode> {
@@ -478,52 +440,17 @@ export class DatabaseStorage implements IStorage {
 
   // Story choice operations
   async getChoicesFromNode(nodeId: string): Promise<StoryChoice[]> {
-    // Find choices from sample nodes  
-    for (const storyId in sampleNodes) {
-      const nodes = sampleNodes[storyId as keyof typeof sampleNodes];
-      const node = nodes.find(n => n.id === nodeId);
-      if (node && node.choices) {
-        return node.choices.map((choice, index) => ({
-          id: choice.id,
-          fromNodeId: nodeId,
-          toNodeId: choice.nextNodeId,
-          choiceText: choice.text,
-          order: index + 1,
-          isPremium: (choice as any).isPremium || false,
-          diamondCost: (choice as any).cost || 0,
-          createdAt: new Date()
-        }));
-      }
-    }
-    return [];
+    return storyManager.getChoicesFromNode(nodeId);
   }
 
   async getStoryChoice(id: string): Promise<StoryChoice | undefined> {
-    // First check sample data
-    for (const storyId in sampleNodes) {
-      const nodes = sampleNodes[storyId as keyof typeof sampleNodes];
-      for (const node of nodes) {
-        if (node.choices) {
-          const choice = node.choices.find(c => c.id === id);
-          if (choice) {
-            return {
-              id: choice.id,
-              fromNodeId: node.id,
-              toNodeId: choice.nextNodeId,
-              choiceText: choice.text,
-              order: 1,
-              isPremium: (choice as any).isPremium || false,
-              diamondCost: (choice as any).cost || 0,
-              createdAt: new Date()
-            };
-          }
-        }
-      }
-    }
+    // Use story manager first
+    const choice = storyManager.getStoryChoice(id);
+    if (choice) return choice;
     
     // Fallback to database
-    const [choice] = await db.select().from(storyChoices).where(eq(storyChoices.id, id));
-    return choice;
+    const [dbChoice] = await db.select().from(storyChoices).where(eq(storyChoices.id, id));
+    return dbChoice;
   }
 
   async createStoryChoice(choiceData: InsertStoryChoice): Promise<StoryChoice> {
