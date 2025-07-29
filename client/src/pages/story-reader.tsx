@@ -668,15 +668,15 @@ export default function StoryReader() {
     setSelectedChoiceId(choiceId);
     setShowChoiceAnimation(true);
     
-    // Trigger haptic feedback if available
+    // Trigger subtle haptic feedback if available
     if (navigator.vibrate) {
-      navigator.vibrate([50, 100, 50]);
+      navigator.vibrate([30]);
     }
     
-    // Delay the mutation to let the animation play
+    // Delay the mutation to let the animation play (shorter duration)
     setTimeout(() => {
       selectChoiceMutation.mutate(choiceId);
-    }, 800);
+    }, 600);
   };
 
   const getNextPageId = (currentId: string | null): string | null => {
@@ -843,11 +843,11 @@ export default function StoryReader() {
                           : 'hover:text-kindle-secondary'
                       } ${
                         isSelected && showChoiceAnimation 
-                          ? 'scale-105 shadow-2xl ring-4 ring-rose-gold/70 bg-rose-gold/10' 
+                          ? 'scale-102 shadow-lg ring-2 ring-rose-gold/40 bg-rose-gold/5' 
                           : 'hover:bg-dark-secondary/30'
                       }`}
                       style={{ 
-                        transform: isSelected && showChoiceAnimation ? 'scale(1.05)' : 'scale(1)',
+                        transform: isSelected && showChoiceAnimation ? 'scale(1.02)' : 'scale(1)',
                       }}
                     >
                       <p className="kindle-paragraph relative pl-8 py-2 px-3">
@@ -867,38 +867,25 @@ export default function StoryReader() {
                         )}
                       </p>
                       
-                      {/* Choice selection animation overlay */}
+                      {/* Choice selection animation overlay - Dream Daddy style */}
                       {isSelected && showChoiceAnimation && (
                         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                          {/* Ripple effect */}
-                          <div className="absolute inset-0 bg-rose-gold/20 animate-ping rounded-lg" />
+                          {/* Subtle glow effect */}
+                          <div className="absolute inset-0 bg-rose-gold/10 rounded-lg animate-pulse" />
                           
-                          {/* Floating particles */}
-                          {[...Array(6)].map((_, i) => (
+                          {/* Small floating hearts/sparkles near the text */}
+                          {[...Array(3)].map((_, i) => (
                             <div
                               key={i}
-                              className="absolute w-1.5 h-1.5 bg-rose-gold rounded-full animate-bounce opacity-80"
+                              className="absolute text-rose-gold text-sm opacity-80 animate-bounce"
                               style={{
-                                left: `${25 + (i * 10)}%`,
-                                top: `${30 + (i % 2) * 30}%`,
-                                animationDelay: `${i * 100}ms`,
-                                animationDuration: '700ms',
-                              }}
-                            />
-                          ))}
-                          
-                          {/* Sparkle effects */}
-                          {[...Array(4)].map((_, i) => (
-                            <div
-                              key={`sparkle-${i}`}
-                              className="absolute text-rose-gold animate-pulse text-xs"
-                              style={{
-                                left: `${20 + (i * 20)}%`,
-                                top: `${25 + (i % 3) * 20}%`,
-                                animationDelay: `${i * 150}ms`,
+                                left: `${60 + (i * 8)}%`,
+                                top: `${20 + (i * 15)}%`,
+                                animationDelay: `${i * 200}ms`,
+                                animationDuration: '600ms',
                               }}
                             >
-                              ✨
+                              {i % 2 === 0 ? '💖' : '✨'}
                             </div>
                           ))}
                         </div>
@@ -911,58 +898,18 @@ export default function StoryReader() {
           </div>
         )}
 
-        {/* Full screen celebration animation for choice selection */}
+        {/* Subtle choice selection feedback - Dream Daddy style */}
         {showChoiceAnimation && (
-          <div className="fixed inset-0 z-50 pointer-events-none overflow-hidden">
-            {/* Confetti burst */}
-            {[...Array(25)].map((_, i) => (
-              <div
-                key={`confetti-${i}`}
-                className="absolute w-2 h-2 rounded-full animate-bounce"
-                style={{
-                  left: `${Math.random() * 100}%`,
-                  top: `${Math.random() * 100}%`,
-                  backgroundColor: ['#f43f5e', '#fbbf24', '#8b5cf6', '#06b6d4', '#10b981'][Math.floor(Math.random() * 5)],
-                  animationDelay: `${i * 40}ms`,
-                  animationDuration: '1000ms',
-                }}
-              />
-            ))}
-            
-            {/* Central success burst */}
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-              <div className="w-40 h-40 bg-rose-gold/30 rounded-full animate-ping" />
-              <div className="absolute inset-0 w-40 h-40 bg-amber-400/25 rounded-full animate-ping" style={{ animationDelay: '300ms' }} />
-              <div className="absolute inset-0 w-40 h-40 bg-purple-500/20 rounded-full animate-ping" style={{ animationDelay: '600ms' }} />
-            </div>
-            
-            {/* Success message with dramatic entrance */}
-            <div className="absolute top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center animate-in zoom-in-95 duration-700">
-              <div className="bg-dark-secondary/95 backdrop-blur-md rounded-xl px-8 py-4 border-2 border-rose-gold/60 shadow-2xl">
-                <div className="text-3xl font-bold text-rose-gold mb-2 animate-pulse">
-                  ✨ Choice Made! ✨
-                </div>
-                <div className="text-lg text-kindle animate-in slide-in-from-bottom-4 duration-500" style={{ animationDelay: '200ms' }}>
-                  Your story continues...
+          <div className="fixed inset-0 z-50 pointer-events-none">
+            {/* Small floating notification */}
+            <div className="absolute top-20 right-6 animate-in slide-in-from-right-2 duration-500">
+              <div className="bg-dark-secondary/90 backdrop-blur-sm rounded-lg px-4 py-2 border border-rose-gold/30 shadow-lg">
+                <div className="flex items-center space-x-2">
+                  <span className="text-rose-gold text-sm">💖</span>
+                  <span className="text-kindle text-sm font-medium">Choice made</span>
                 </div>
               </div>
             </div>
-            
-            {/* Additional floating elements for extra dopamine */}
-            {[...Array(8)].map((_, i) => (
-              <div
-                key={`float-${i}`}
-                className="absolute text-2xl animate-bounce"
-                style={{
-                  left: `${15 + (i * 12)}%`,
-                  top: `${20 + (i % 4) * 20}%`,
-                  animationDelay: `${i * 120}ms`,
-                  animationDuration: '800ms',
-                }}
-              >
-                {['🎉', '🌟', '💫', '⭐', '🎊', '✨', '🎆', '🌠'][i]}
-              </div>
-            ))}
           </div>
         )}
       </main>
