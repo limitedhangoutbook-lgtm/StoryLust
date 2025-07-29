@@ -596,53 +596,15 @@ export default function StoryReader() {
   const handleChoiceSelect = (choiceId: string, isPremium?: boolean, diamondCost?: number) => {
     // Only require authentication for premium choices
     if (isPremium && !isAuthenticated) {
-      // Save current reading position before login
-      const currentPosition = {
-        storyId,
-        nodeId: currentNodeId,
-        choiceId,
-        timestamp: Date.now()
-      };
-      sessionStorage.setItem('pendingChoice', JSON.stringify(currentPosition));
-      
       toast({
         title: "Sign In Required",
-        description: "Sign in to unlock premium story paths with diamonds",
+        description: "Sign in to unlock premium story paths with eggplants",
         variant: "destructive",
       });
       
-      // Open login in a popup window
-      const loginUrl = `/api/login?return_to=${encodeURIComponent(window.location.pathname)}&popup=true`;
-      const popup = window.open(
-        loginUrl,
-        'login',
-        'width=500,height=600,scrollbars=yes,resizable=yes,toolbar=no,menubar=no,location=no,status=no'
-      );
-      
-      // Listen for popup messages and completion
-      const handleMessage = (event: MessageEvent) => {
-        if (event.data === 'login_success') {
-          popup?.close();
-          // Refresh auth state
-          queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-          setTimeout(() => {
-            // Retry the choice automatically
-            selectChoiceMutation.mutate(choiceId);
-          }, 1000);
-        }
-      };
-      
-      window.addEventListener('message', handleMessage);
-      
-      const checkClosed = setInterval(() => {
-        if (popup?.closed) {
-          clearInterval(checkClosed);
-          window.removeEventListener('message', handleMessage);
-          // Fallback: refresh if popup was closed manually
-          queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-        }
-      }, 1000);
-      
+      // Redirect to login with return URL that brings back to current story page
+      const currentUrl = window.location.href;
+      window.location.href = `/api/login?returnTo=${encodeURIComponent(currentUrl)}`;
       return;
     }
 

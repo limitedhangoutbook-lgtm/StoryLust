@@ -98,6 +98,10 @@ export async function setupAuth(app: Express) {
   passport.deserializeUser((user: Express.User, cb) => cb(null, user));
 
   app.get("/api/login", (req, res, next) => {
+    // Store the referrer URL for redirect after login
+    const returnTo = req.query.returnTo as string || req.get('Referer') || '/';
+    (req.session as any).returnTo = returnTo;
+    
     passport.authenticate(`replitauth:${req.hostname}`, {
       prompt: "login consent",
       scope: ["openid", "email", "profile", "offline_access"],
@@ -106,7 +110,7 @@ export async function setupAuth(app: Express) {
 
   app.get("/api/callback", (req, res, next) => {
     passport.authenticate(`replitauth:${req.hostname}`, {
-      successReturnToOrRedirect: "/",
+      successRedirect: (req.session as any).returnTo || "/",
       failureRedirect: "/api/login",
     })(req, res, next);
   });
