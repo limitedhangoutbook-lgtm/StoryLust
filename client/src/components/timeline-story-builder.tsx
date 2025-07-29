@@ -186,7 +186,7 @@ export function TimelineStoryBuilder({ pages, onPagesChange }: TimelineStoryBuil
   };
 
   // Get pages that can be targets for choices
-  const getTargetPages = (currentPageId: string) => {
+  const getTargetBranches = (currentPageId: string) => {
     return pages.filter(p => p.id !== currentPageId);
   };
 
@@ -415,16 +415,16 @@ export function TimelineStoryBuilder({ pages, onPagesChange }: TimelineStoryBuil
                                       </div>
                                       
                                       <div>
-                                        <Label className="text-text-primary">Target Page</Label>
+                                        <Label className="text-text-primary">Target Branch</Label>
                                         <Select
                                           value={choice.targetPageId}
                                           onValueChange={(value) => updateChoice(page.id, choice.id, { targetPageId: value })}
                                         >
                                           <SelectTrigger className="bg-dark-tertiary border-dark-tertiary text-text-primary">
-                                            <SelectValue placeholder="Select target page" />
+                                            <SelectValue placeholder="Select target branch" />
                                           </SelectTrigger>
                                           <SelectContent className="bg-dark-secondary border-dark-tertiary">
-                                            {getTargetPages(page.id).map((targetPage) => (
+                                            {getTargetBranches(page.id).map((targetPage) => (
                                               <SelectItem key={targetPage.id} value={targetPage.id}>
                                                 {targetPage.title} (Timeline {targetPage.timelineColumn || 0})
                                               </SelectItem>
