@@ -44,7 +44,8 @@ export const branchingStories: BranchingStoryDefinition[] = [
 
 Jake had been there since six in the evening, surrounded by a fortress of textbooks, energy drink cans, and crumpled notes. His economics final was tomorrow morning, and Professor Hartwell had a reputation for creating exams that could crush even the most prepared students.
 
-The stress was getting to him. His shoulders ached from hunching over his desk, his eyes burned from staring at the same diagrams for hours, and his mind kept wandering to everything except microeconomic theory.`
+The stress was getting to him. His shoulders ached from hunching over his desk, his eyes burned from staring at the same diagrams for hours, and his mind kept wandering to everything except microeconomic theory.`,
+        nextPage: "page-2"
       },
       {
         id: "page-2",
@@ -53,7 +54,8 @@ The stress was getting to him. His shoulders ached from hunching over his desk, 
 
 He was just considering taking a break when he heard footsteps approaching his table. These weren't the heavy, measured steps of the security guard he'd grown accustomed to hearing every hour or so. These were lighter, more purposeful.
 
-Jake looked up, and his breath caught in his throat. Alex Chen was walking toward his table, carrying a worn leather messenger bag and what appeared to be a thermos. Jake had noticed Alex in Professor Martinez's Philosophy of Existence class – it was hard not to.`
+Jake looked up, and his breath caught in his throat. Alex Chen was walking toward his table, carrying a worn leather messenger bag and what appeared to be a thermos. Jake had noticed Alex in Professor Martinez's Philosophy of Existence class – it was hard not to.`,
+        nextPage: "page-3"
       },
       {
         id: "page-3",
@@ -66,7 +68,8 @@ As Alex settled into the chair, pulling out their own collection of books and no
 
 "Philosophy homework?" Jake asked, nodding toward the book.
 
-Alex laughed softly, a sound that seemed to make the sterile library atmosphere feel instantly warmer. "Working on my senior thesis about existentialism in contemporary literature."`
+Alex laughed softly, a sound that seemed to make the sterile library atmosphere feel instantly warmer. "Working on my senior thesis about existentialism in contemporary literature."`,
+        nextPage: "page-4"
       },
       {
         id: "page-4", 
@@ -81,7 +84,8 @@ Alex laughed softly, a sound that seemed to make the sterile library atmosphere 
 
 Alex winced sympathetically. "Hartwell has quite the reputation. My roommate took his class last year and basically lived in the library for the entire final exam period."
 
-The conversation flowed naturally, and Jake felt the tight knot of anxiety in his chest beginning to loosen.`
+The conversation flowed naturally, and Jake felt the tight knot of anxiety in his chest beginning to loosen.`,
+        nextPage: "page-5"
       },
       {
         id: "page-5",
