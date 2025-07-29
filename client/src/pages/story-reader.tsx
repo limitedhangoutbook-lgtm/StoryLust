@@ -388,48 +388,81 @@ export default function StoryReader() {
 
       {/* Story Content */}
       <main className="px-4 py-6 max-w-2xl mx-auto">
-        {!showChoices ? (
-          <div className="space-y-6">
-            {/* Story Node Content */}
-            <Card className="bg-dark-secondary border-dark-tertiary">
-              <CardContent className="p-6">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-semibold text-text-primary">
-                      {currentNode.title}
-                    </h2>
-                    {(currentNode as any).isPremium && (
-                      <Badge className="bg-rose-gold/20 text-rose-gold border-rose-gold/30">
-                        <Gem className="w-3 h-3 mr-1" />
-                        Premium
-                      </Badge>
-                    )}
-                  </div>
-                  
-                  <div className="prose prose-invert max-w-none">
-                    <p className="text-text-secondary leading-relaxed whitespace-pre-line">
-                      {currentNode.content}
-                    </p>
-                  </div>
+        <div className="space-y-6">
+          {/* Story Node Content */}
+          <Card className="bg-dark-secondary border-dark-tertiary">
+            <CardContent className="p-6">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-lg font-semibold text-text-primary">
+                    {currentNode.title}
+                  </h2>
+                  {(currentNode as any).isPremium && (
+                    <Badge className="bg-rose-gold/20 text-rose-gold border-rose-gold/30">
+                      <Gem className="w-3 h-3 mr-1" />
+                      Premium
+                    </Badge>
+                  )}
                 </div>
-              </CardContent>
-            </Card>
+                
+                <div className="prose prose-invert max-w-none">
+                  <p className="text-text-secondary leading-relaxed whitespace-pre-line">
+                    {currentNode.content}
+                  </p>
+                </div>
 
-            {/* Continue Button */}
-            <div className="flex justify-center pt-4">
-              <Button
-                onClick={handleContinueReading}
-                disabled={selectChoiceMutation.isPending}
-                className="bg-rose-gold text-dark-primary hover:bg-rose-gold/90 px-8 py-3 rounded-full font-medium"
-              >
-{getNavigationText(currentNodeId, choices.length > 0)}
-                {(choices.length > 0 || getNextPageId(currentNodeId)) && (
-                  <ChevronRight className="w-4 h-4 ml-2" />
+                {/* Choices - shown inline when available */}
+                {showChoices && choices.length > 0 && (
+                  <div className="pt-6 border-t border-dark-tertiary">
+                    <h3 className="text-sm font-medium text-text-muted mb-4 text-center">
+                      Choose your path:
+                    </h3>
+                    <div className="space-y-3">
+                      {choices.map((choice) => (
+                        <button
+                          key={choice.id}
+                          onClick={() => handleChoiceSelect(choice.id, choice.isPremium, choice.diamondCost)}
+                          disabled={selectChoiceMutation.isPending}
+                          className="w-full p-4 text-left bg-dark-tertiary hover:bg-dark-accent transition-colors rounded-lg border border-transparent hover:border-rose-gold/30 group"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="text-text-secondary group-hover:text-text-primary transition-colors">
+                              {choice.text}
+                            </span>
+                            {choice.isPremium && (
+                              <div className="flex items-center gap-1 text-rose-gold">
+                                <Heart className="w-4 h-4" />
+                                <span className="text-sm font-medium">{choice.diamondCost}</span>
+                              </div>
+                            )}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 )}
-              </Button>
-            </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Navigation Button */}
+          <div className="flex justify-center pt-4">
+            <Button
+              onClick={handleContinueReading}
+              disabled={selectChoiceMutation.isPending}
+              className="bg-rose-gold text-dark-primary hover:bg-rose-gold/90 px-8 py-3 rounded-full font-medium"
+            >
+              {getNavigationText(currentNodeId, choices.length > 0)}
+              {(choices.length > 0 || getNextPageId(currentNodeId)) && (
+                <ChevronRight className="w-4 h-4 ml-2" />
+              )}
+            </Button>
           </div>
-        ) : (
+        </div>
+      </main>
+    </div>
+  );
+}
           <div className="space-y-6">
             {/* Choice Selection */}
             <Card className="bg-dark-secondary border-dark-tertiary">
