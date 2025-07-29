@@ -106,6 +106,11 @@ export async function setupAuth(app: Express) {
   passport.deserializeUser((user: Express.User, cb) => cb(null, user));
 
   app.get("/api/login", (req, res, next) => {
+    // Store return URL for after login
+    if (req.query.return_to) {
+      req.session.returnTo = req.query.return_to as string;
+    }
+    
     passport.authenticate(`replitauth:${req.hostname}`, {
       prompt: "login consent",
       scope: ["openid", "email", "profile", "offline_access"],
@@ -113,9 +118,44 @@ export async function setupAuth(app: Express) {
   });
 
   app.get("/api/callback", (req, res, next) => {
-    passport.authenticate(`replitauth:${req.hostname}`, {
-      successReturnToOrRedirect: "/",
-      failureRedirect: "/api/login",
+    passport.authenticate(`replitauth:${req.hostname}`, (err, user) => {
+      if (err) {
+        return res.redirect("/api/login");
+      }
+      if (!user) {
+        return res.redirect("/api/login");
+      }
+      
+      req.logIn(user, (err) => {
+        if (err) {
+          return res.redirect("/api/login");
+        }
+        
+        // Check if this is a popup login
+        const returnTo = req.session.returnTo || "/";
+        delete req.session.returnTo;
+        
+        // For popup logins, close the popup and let parent handle return
+        if (req.query.popup === 'true' || req.headers.referer?.includes('popup')) {
+          return res.send(`
+            <html>
+              <body>
+                <script>
+                  if (window.opener) {
+                    window.opener.postMessage('login_success', '*');
+                    window.close();
+                  } else {
+                    window.location.href = '${returnTo}';
+                  }
+                </script>
+              </body>
+            </html>
+          `);
+        }
+        
+        // Regular login - redirect to return URL
+        res.redirect(returnTo);
+      });
     })(req, res, next);
   });
 

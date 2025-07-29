@@ -65,11 +65,50 @@ export default function StoryReader() {
     enabled: !!currentNodeId,
   });
 
-  // Initialize story on load
+  // Initialize story on load and handle position restoration
   useEffect(() => {
     if (!storyId || currentNodeId) return;
 
-    // Always start from the beginning for guests, or get progress for authenticated users
+    // Check for saved position from login flow
+    const savedPosition = sessionStorage.getItem('returnPosition');
+    const pendingChoice = sessionStorage.getItem('pendingChoice');
+    
+    if (savedPosition) {
+      try {
+        const position = JSON.parse(savedPosition);
+        if (position.storyId === storyId && position.nodeId) {
+          setCurrentNodeId(position.nodeId);
+          sessionStorage.removeItem('returnPosition');
+          return;
+        }
+      } catch (e) {
+        console.warn('Failed to parse saved position:', e);
+      }
+      sessionStorage.removeItem('returnPosition');
+    }
+    
+    // Check for pending choice after login
+    if (pendingChoice && isAuthenticated) {
+      try {
+        const choice = JSON.parse(pendingChoice);
+        if (choice.storyId === storyId && choice.nodeId) {
+          setCurrentNodeId(choice.nodeId);
+          sessionStorage.removeItem('pendingChoice');
+          // Auto-retry the choice after a short delay
+          setTimeout(() => {
+            if (choice.choiceId) {
+              handleChoiceSelect(choice.choiceId, true, 0);
+            }
+          }, 1500);
+          return;
+        }
+      } catch (e) {
+        console.warn('Failed to parse pending choice:', e);
+      }
+      sessionStorage.removeItem('pendingChoice');
+    }
+
+    // Normal initialization - get progress for authenticated users
     if (isAuthenticated) {
       queryClient.fetchQuery({
         queryKey: ["/api/reading-progress", storyId],
@@ -258,14 +297,46 @@ export default function StoryReader() {
     },
     onError: (error) => {
       if (isUnauthorizedError(error)) {
+        // Save current position for return after login
+        const currentPosition = {
+          storyId,
+          nodeId: currentNodeId,
+          timestamp: Date.now()
+        };
+        sessionStorage.setItem('returnPosition', JSON.stringify(currentPosition));
+        
         toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
+          title: "Session Expired",
+          description: "Please sign in again to continue",
           variant: "destructive",
         });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
+        
+        // Open login in popup
+        const loginUrl = `/api/login?return_to=${encodeURIComponent(window.location.pathname)}&popup=true`;
+        const popup = window.open(
+          loginUrl,
+          'login',
+          'width=500,height=600,scrollbars=yes,resizable=yes'
+        );
+        
+        // Listen for popup messages
+        const handleMessage = (event: MessageEvent) => {
+          if (event.data === 'login_success') {
+            popup?.close();
+            queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+            window.location.reload();
+          }
+        };
+        
+        window.addEventListener('message', handleMessage);
+        
+        const checkClosed = setInterval(() => {
+          if (popup?.closed) {
+            clearInterval(checkClosed);
+            window.removeEventListener('message', handleMessage);
+            queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+          }
+        }, 1000);
         return;
       }
       
@@ -297,14 +368,34 @@ export default function StoryReader() {
     },
     onError: (error) => {
       if (isUnauthorizedError(error)) {
+        // Save current position for return after login  
+        const currentPosition = {
+          storyId,
+          nodeId: currentNodeId,
+          timestamp: Date.now()
+        };
+        sessionStorage.setItem('returnPosition', JSON.stringify(currentPosition));
+        
         toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
+          title: "Session Expired",
+          description: "Please sign in again to continue",
           variant: "destructive",
         });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
+        
+        // Open login in popup
+        const loginUrl = `/api/login?return_to=${encodeURIComponent(window.location.pathname)}`;
+        const popup = window.open(
+          loginUrl,
+          'login', 
+          'width=500,height=600,scrollbars=yes,resizable=yes'
+        );
+        
+        const checkClosed = setInterval(() => {
+          if (popup?.closed) {
+            clearInterval(checkClosed);
+            window.location.reload();
+          }
+        }, 1000);
         return;
       }
       
@@ -319,14 +410,53 @@ export default function StoryReader() {
   const handleChoiceSelect = (choiceId: string, isPremium?: boolean, diamondCost?: number) => {
     // Only require authentication for premium choices
     if (isPremium && !isAuthenticated) {
+      // Save current reading position before login
+      const currentPosition = {
+        storyId,
+        nodeId: currentNodeId,
+        choiceId,
+        timestamp: Date.now()
+      };
+      sessionStorage.setItem('pendingChoice', JSON.stringify(currentPosition));
+      
       toast({
         title: "Sign In Required",
         description: "Sign in to unlock premium story paths with diamonds",
         variant: "destructive",
       });
-      setTimeout(() => {
-        window.location.href = "/api/login";
+      
+      // Open login in a popup window
+      const loginUrl = `/api/login?return_to=${encodeURIComponent(window.location.pathname)}&popup=true`;
+      const popup = window.open(
+        loginUrl,
+        'login',
+        'width=500,height=600,scrollbars=yes,resizable=yes,toolbar=no,menubar=no,location=no,status=no'
+      );
+      
+      // Listen for popup messages and completion
+      const handleMessage = (event: MessageEvent) => {
+        if (event.data === 'login_success') {
+          popup?.close();
+          // Refresh auth state
+          queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+          setTimeout(() => {
+            // Retry the choice automatically
+            selectChoiceMutation.mutate(choiceId);
+          }, 1000);
+        }
+      };
+      
+      window.addEventListener('message', handleMessage);
+      
+      const checkClosed = setInterval(() => {
+        if (popup?.closed) {
+          clearInterval(checkClosed);
+          window.removeEventListener('message', handleMessage);
+          // Fallback: refresh if popup was closed manually
+          queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+        }
       }, 1000);
+      
       return;
     }
 
@@ -518,10 +648,7 @@ export default function StoryReader() {
                         </span>
                       )}
                       
-                      {/* Debug info - remove later */}
-                      <span className="ml-2 text-xs text-gray-500">
-                        [ID: {choice.id}, Premium: {choice.isPremium ? 'yes' : 'no'}, Cost: {choice.diamondCost || 0}]
-                      </span>
+
                     </p>
                   </button>
                 </div>
