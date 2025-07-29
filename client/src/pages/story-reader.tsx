@@ -206,33 +206,31 @@ export default function StoryReader() {
       // This page has choices, show them
       setShowChoices(true);
     } else {
-      // This page doesn't have choices, move to next page
-      const nextPageId = getNextPageId(currentNodeId);
-      if (nextPageId) {
-        try {
-          // Fetch the next page data
-          const nextNode = await apiRequest("GET", `/api/nodes/${nextPageId}`);
-          setCurrentNodeId(nextPageId);
-          setReadingProgress(prev => Math.min(100, prev + 20));
+      // This page doesn't have choices, try to get next page from server
+      try {
+        const nextNode = await apiRequest("GET", `/api/stories/${storyId}/next/${currentNodeId}`);
+        if (nextNode) {
+          setCurrentNodeId(nextNode.id);
+          setReadingProgress(prev => Math.min(100, prev + 10));
           
           // Reset choices state for new page
           setShowChoices(false);
           
           // Scroll to top for new page
           window.scrollTo({ top: 0, behavior: 'smooth' });
-        } catch (error) {
-          console.error('Error fetching next page:', error);
+        } else {
+          // Story ended
           toast({
-            title: "Error",
-            description: "Failed to load next page. Please try again.",
-            variant: "destructive",
+            title: "Story Complete",
+            description: "You've reached the end of this story path!",
           });
         }
-      } else {
-        // Story ended
+      } catch (error) {
+        console.error('Error fetching next page:', error);
         toast({
-          title: "Story Complete",
-          description: "You've reached the end of this story path!",
+          title: "Error",
+          description: "Failed to load next page. Please try again.",
+          variant: "destructive",
         });
       }
     }
@@ -241,23 +239,9 @@ export default function StoryReader() {
   const getNextPageId = (currentId: string | null): string | null => {
     if (!currentId || !storyId) return null;
     
-    // Define the page progression for each story
-    const pageSequences: Record<string, Record<string, string>> = {
-      "campus-encounter": {
-        "start": "page-2",
-        "page-2": "page-3", 
-        "page-3": "page-4",
-        "page-4": "page-5"
-      },
-      "midnight-coffee": {
-        "start": "page-2",
-        "page-2": "page-3",
-        "page-3": "page-4", 
-        "page-4": "page-5"
-      }
-    };
-    
-    return pageSequences[storyId]?.[currentId] || null;
+    // For branching stories, page progression is handled by the story manager
+    // This function is now simplified - the story manager knows the next page
+    return null; // Let the story manager handle page progression
   };
 
   const getPageNumber = (nodeId: string | null): number => {

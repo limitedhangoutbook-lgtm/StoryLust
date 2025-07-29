@@ -276,6 +276,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get next page in story progression
+  app.get("/api/stories/:storyId/next/:currentNodeId", async (req, res) => {
+    try {
+      const { storyId, currentNodeId } = req.params;
+      const nextNode = storyManager.getNextPage(storyId, currentNodeId);
+      
+      if (nextNode) {
+        res.json(nextNode);
+      } else {
+        res.status(404).json({ message: "No next page found" });
+      }
+    } catch (error) {
+      console.error("Error fetching next page:", error);
+      res.status(500).json({ message: "Failed to fetch next page" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
