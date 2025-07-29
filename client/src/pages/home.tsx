@@ -6,9 +6,10 @@ import { useTheme } from "@/components/theme-provider";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { BottomNavigation } from "@/components/bottom-navigation";
+import { FloatingCreateButton } from "@/components/floating-create-button";
 import { StoryCard } from "@/components/story-card";
 import type { Story } from "@shared/schema";
-import { isAdmin, isMegaAdmin, getUserPermissions } from "@shared/userRoles";
+import { isAdmin, isMegaAdmin } from "@shared/userRoles";
 
 export default function Home() {
   const { user } = useAuth();
@@ -55,7 +56,16 @@ export default function Home() {
             </div>
             <h1 className="text-xl font-bold tracking-tight text-text-primary">TurnPage</h1>
           </div>
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-3">
+            {user && isAdmin(user as any) && (
+              <Button
+                onClick={() => setLocation("/story-builder")}
+                size="sm"
+                className="bg-rose-gold text-dark-primary hover:bg-rose-gold/90 font-semibold"
+              >
+                Create Story
+              </Button>
+            )}
             {user ? (
               <button 
                 onClick={() => setLocation("/store")}
@@ -219,6 +229,7 @@ export default function Home() {
         </section>
       </main>
 
+      <FloatingCreateButton />
       <BottomNavigation />
     </div>
   );

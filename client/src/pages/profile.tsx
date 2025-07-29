@@ -1,4 +1,4 @@
-import { ArrowLeft, LogOut, Gem, BookOpen, Heart, User, Settings } from "lucide-react";
+import { ArrowLeft, LogOut, Gem, BookOpen, Heart, User, Settings, Plus, Edit } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation } from "wouter";
 import { BottomNavigation } from "@/components/bottom-navigation";
@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { useQuery } from "@tanstack/react-query";
+import { isAdmin, isMegaAdmin } from "@shared/userRoles";
 
 export default function Profile() {
   const { user, isLoading } = useAuth();
@@ -56,6 +57,8 @@ export default function Profile() {
     queryKey: ["/api/user/stats"],
     enabled: !!user,
   });
+
+  const stats = userStats as any;
 
   const getInitials = (firstName?: string, lastName?: string) => {
     const first = firstName?.[0] || "";
@@ -144,24 +147,24 @@ export default function Profile() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="text-center p-4 bg-dark-tertiary rounded-lg">
                     <BookOpen className="w-6 h-6 text-rose-gold mx-auto mb-2" />
-                    <div className="text-2xl font-bold text-text-primary">{userStats.storiesStarted}</div>
+                    <div className="text-2xl font-bold text-text-primary">{stats.storiesStarted}</div>
                     <div className="text-xs text-text-muted">Stories Started</div>
                   </div>
                   <div className="text-center p-4 bg-dark-tertiary rounded-lg">
                     <Heart className="w-6 h-6 text-rose-gold mx-auto mb-2" />
-                    <div className="text-2xl font-bold text-text-primary">{userStats.bookmarkedStories}</div>
+                    <div className="text-2xl font-bold text-text-primary">{stats.bookmarkedStories}</div>
                     <div className="text-xs text-text-muted">Bookmarked</div>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="text-center p-4 bg-dark-tertiary rounded-lg">
                     <Settings className="w-6 h-6 text-rose-gold mx-auto mb-2" />
-                    <div className="text-2xl font-bold text-text-primary">{userStats.storiesCompleted}</div>
+                    <div className="text-2xl font-bold text-text-primary">{stats.storiesCompleted}</div>
                     <div className="text-xs text-text-muted">Completed</div>
                   </div>
                   <div className="text-center p-4 bg-dark-tertiary rounded-lg">
                     <Gem className="w-6 h-6 text-gold-accent mx-auto mb-2" />
-                    <div className="text-2xl font-bold text-text-primary">{userStats.totalChoicesMade}</div>
+                    <div className="text-2xl font-bold text-text-primary">{stats.totalChoicesMade}</div>
                     <div className="text-xs text-text-muted">Choices Made</div>
                   </div>
                 </div>
@@ -191,6 +194,42 @@ export default function Profile() {
                 <Gem className="w-4 h-4 mr-3 text-gold-accent" />
                 Get More Diamonds
               </Button>
+              
+              {/* Admin Actions */}
+              {user && isAdmin(user) && (
+                <>
+                  <Separator className="bg-dark-tertiary" />
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start text-rose-gold hover:bg-dark-tertiary"
+                    onClick={() => setLocation("/story-builder")}
+                  >
+                    <Plus className="w-4 h-4 mr-3" />
+                    Create New Story
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start text-rose-gold hover:bg-dark-tertiary"
+                    onClick={() => setLocation("/story-management")}
+                  >
+                    <Edit className="w-4 h-4 mr-3" />
+                    Manage My Stories
+                  </Button>
+                </>
+              )}
+              
+              {/* Mega Admin Actions */}
+              {user && isMegaAdmin(user) && (
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start text-gold-accent hover:bg-dark-tertiary"
+                  onClick={() => setLocation("/user-management")}
+                >
+                  <Settings className="w-4 h-4 mr-3" />
+                  User Management
+                </Button>
+              )}
+              
               <Separator className="bg-dark-tertiary" />
               <Button
                 variant="ghost"
