@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Plus, Trash2, Edit, Diamond, Circle, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,6 +19,12 @@ interface StoryPage {
   isEnding?: boolean;
 }
 
+interface TimelineBranch {
+  id: number;
+  name: string;
+  color: string;
+}
+
 interface Choice {
   id: string;
   text: string;
@@ -36,6 +42,18 @@ interface TimelineStoryBuilderProps {
 export function TimelineStoryBuilder({ pages, onPagesChange }: TimelineStoryBuilderProps) {
   const [editingPage, setEditingPage] = useState<StoryPage | null>(null);
   const [editingChoice, setEditingChoice] = useState<{ pageId: string; choice: Choice } | null>(null);
+  const [editingBranch, setEditingBranch] = useState<number | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [connections, setConnections] = useState<Array<{
+    from: { x: number; y: number };
+    to: { x: number; y: number };
+    color: string;
+    isDashed: boolean;
+  }>>([]);
+  
+  const [branchNames, setBranchNames] = useState<Record<number, string>>({
+    0: 'Main Timeline'
+  });
 
   // Timeline colors for different branches
   const timelineColors = [
@@ -73,9 +91,17 @@ export function TimelineStoryBuilder({ pages, onPagesChange }: TimelineStoryBuil
     const pagesInColumn = pages.filter(p => (p.timelineColumn || 0) === timelineColumn);
     const maxOrder = pagesInColumn.length > 0 ? Math.max(...pagesInColumn.map(p => p.order)) : 0;
     
+    // Create branch name if it doesn't exist
+    if (timelineColumn > 0 && !branchNames[timelineColumn]) {
+      setBranchNames(prev => ({
+        ...prev,
+        [timelineColumn]: `Branch ${timelineColumn}`
+      }));
+    }
+    
     const newPage: StoryPage = {
       id: `page-${Date.now()}`,
-      title: timelineColumn === 0 ? `Page ${pages.length + 1}` : `Branch ${timelineColumn} - Page ${pagesInColumn.length + 1}`,
+      title: timelineColumn === 0 ? `Page ${pages.length + 1}` : `${branchNames[timelineColumn] || `Branch ${timelineColumn}`} - Page ${pagesInColumn.length + 1}`,
       content: "",
       order: maxOrder + 1,
       timelineColumn,
@@ -90,9 +116,11 @@ export function TimelineStoryBuilder({ pages, onPagesChange }: TimelineStoryBuil
     const pagesInColumn = pages.filter(p => (p.timelineColumn || 0) === timelineColumn);
     const maxOrder = pagesInColumn.length > 0 ? Math.max(...pagesInColumn.map(p => p.order)) : 0;
     
+    const branchName = branchNames[timelineColumn] || (timelineColumn === 0 ? 'Main Timeline' : `Branch ${timelineColumn}`);
+    
     const newEnding: StoryPage = {
       id: `ending-${Date.now()}`,
-      title: `Ending ${timelineColumn + 1}`,
+      title: `${branchName} Ending`,
       content: "",
       order: maxOrder + 1,
       timelineColumn,
@@ -192,8 +220,67 @@ export function TimelineStoryBuilder({ pages, onPagesChange }: TimelineStoryBuil
 
   const timelineColumns = getTimelineColumns();
 
+  // Calculate connection lines between choices and targets
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const calculateConnections = () => {
+      const newConnections: Array<{
+        from: { x: number; y: number };
+        to: { x: number; y: number };
+        color: string;
+        isDashed: boolean;
+      }> = [];
+
+      pages.forEach(page => {
+        page.choices?.forEach(choice => {
+          if (!choice.targetPageId) return;
+
+          const sourceElement = document.querySelector(`[data-choice-id="${choice.id}"]`);
+          const targetElement = document.querySelector(`[data-page-id="${choice.targetPageId}"]`);
+          
+          if (sourceElement && targetElement && containerRef.current) {
+            const containerRect = containerRef.current.getBoundingClientRect();
+            const sourceRect = sourceElement.getBoundingClientRect();
+            const targetRect = targetElement.getBoundingClientRect();
+
+            const from = {
+              x: sourceRect.right - containerRect.left,
+              y: sourceRect.top + sourceRect.height / 2 - containerRect.top
+            };
+
+            const to = {
+              x: targetRect.left - containerRect.left,
+              y: targetRect.top + targetRect.height / 2 - containerRect.top
+            };
+
+            newConnections.push({
+              from,
+              to,
+              color: choice.isPremium ? '#fb7185' : connectionColors[page.timelineColumn || 0],
+              isDashed: choice.isPremium
+            });
+          }
+        });
+      });
+
+      setConnections(newConnections);
+    };
+
+    // Calculate connections after render
+    const timeout = setTimeout(calculateConnections, 100);
+    
+    // Recalculate on window resize
+    window.addEventListener('resize', calculateConnections);
+    
+    return () => {
+      clearTimeout(timeout);
+      window.removeEventListener('resize', calculateConnections);
+    };
+  }, [pages, connectionColors]);
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" ref={containerRef} style={{ position: 'relative' }}>
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold text-text-primary">Timeline Story Flow</h3>
         <div className="flex space-x-2">
@@ -237,15 +324,81 @@ export function TimelineStoryBuilder({ pages, onPagesChange }: TimelineStoryBuil
         </div>
       </div>
 
+      {/* Connection Lines SVG Overlay */}
+      <svg
+        className="absolute inset-0 pointer-events-none z-10"
+        style={{ width: '100%', height: '100%' }}
+      >
+        {connections.map((connection, index) => (
+          <g key={index}>
+            <defs>
+              <marker
+                id={`arrowhead-${index}`}
+                markerWidth="8"
+                markerHeight="6"
+                refX="8"
+                refY="3"
+                orient="auto"
+              >
+                <polygon
+                  points="0 0, 8 3, 0 6"
+                  fill={connection.color}
+                />
+              </marker>
+            </defs>
+            <path
+              d={`M ${connection.from.x} ${connection.from.y} Q ${connection.from.x + (connection.to.x - connection.from.x) / 2} ${connection.from.y} ${connection.to.x} ${connection.to.y}`}
+              stroke={connection.color}
+              strokeWidth="2"
+              strokeDasharray={connection.isDashed ? "5,5" : "0"}
+              fill="none"
+              markerEnd={`url(#arrowhead-${index})`}
+            />
+          </g>
+        ))}
+      </svg>
+
       {/* Timeline Columns */}
-      <div className="flex space-x-6 overflow-x-auto pb-4">
+      <div className="flex space-x-6 overflow-x-auto pb-4 relative z-20">
         {timelineColumns.map((columnPages, columnIndex) => (
           <div key={columnIndex} className="flex-shrink-0 min-w-[280px] space-y-4">
             {/* Column Header */}
             <div className="flex items-center justify-between">
-              <h4 className="font-medium text-text-primary">
-                {columnIndex === 0 ? 'Main Timeline' : `Branch ${columnIndex}`}
-              </h4>
+              <div className="flex items-center space-x-2">
+                <h4 className="font-medium text-text-primary">
+                  {branchNames[columnIndex] || (columnIndex === 0 ? 'Main Timeline' : `Branch ${columnIndex}`)}
+                </h4>
+                {columnIndex > 0 && (
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        className="h-5 w-5 p-0 text-text-muted hover:text-text-primary"
+                      >
+                        <Edit className="w-3 h-3" />
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="bg-dark-secondary border-dark-tertiary">
+                      <DialogHeader>
+                        <DialogTitle className="text-text-primary">Rename Branch</DialogTitle>
+                      </DialogHeader>
+                      <div>
+                        <Label className="text-text-primary">Branch Name</Label>
+                        <Input
+                          value={branchNames[columnIndex] || `Branch ${columnIndex}`}
+                          onChange={(e) => setBranchNames(prev => ({
+                            ...prev,
+                            [columnIndex]: e.target.value
+                          }))}
+                          className="bg-dark-tertiary border-dark-tertiary text-text-primary"
+                          placeholder="e.g. Romance Path, Action Route, Secret Ending"
+                        />
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                )}
+              </div>
               <div className="flex space-x-1">
                 <Button
                   onClick={() => addPage(columnIndex)}
@@ -270,7 +423,10 @@ export function TimelineStoryBuilder({ pages, onPagesChange }: TimelineStoryBuil
             <div className="space-y-3">
               {columnPages.map((page, pageIndex) => (
                 <div key={page.id} className="relative">
-                  <Card className={`${timelineColors[columnIndex % timelineColors.length]} border-2`}>
+                  <Card 
+                    className={`${timelineColors[columnIndex % timelineColors.length]} border-2`}
+                    data-page-id={page.id}
+                  >
                     <CardHeader className="pb-2">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
@@ -372,6 +528,7 @@ export function TimelineStoryBuilder({ pages, onPagesChange }: TimelineStoryBuil
                               <div
                                 key={choice.id}
                                 className="flex items-center space-x-2 p-2 bg-dark-tertiary rounded text-xs"
+                                data-choice-id={choice.id}
                               >
                                 <div className="flex-1">
                                   <div className="flex items-center space-x-1">
