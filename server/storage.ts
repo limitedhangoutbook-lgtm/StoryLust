@@ -27,10 +27,18 @@ export class Storage {
   async upsertUser(userData: UpsertUser): Promise<User> {
     const [user] = await db
       .insert(users)
-      .values(userData)
+      .values({
+        ...userData,
+        diamonds: userData.diamonds ?? 100, // Ensure new users get starting diamonds
+      })
       .onConflictDoUpdate({
         target: users.id,
-        set: { ...userData, updatedAt: new Date() },
+        set: { 
+          ...userData, 
+          updatedAt: new Date(),
+          // Don't overwrite diamonds on existing users unless explicitly provided
+          diamonds: userData.diamonds !== undefined ? userData.diamonds : sql`${users.diamonds}`,
+        },
       })
       .returning();
     return user;

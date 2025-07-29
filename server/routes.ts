@@ -349,6 +349,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // === ADMIN DIAMOND MANAGEMENT ===
+  app.post('/api/admin/grant-starting-diamonds', isAuthenticated, async (req: any, res) => {
+    try {
+      const currentUser = await storage.getUser(req.user.claims.sub);
+      if (currentUser?.role !== 'mega-admin') {
+        return res.status(403).json({ message: "Mega-admin access required" });
+      }
+
+      // Grant 100 diamonds to all users who have null or 0 diamonds
+      const result = await db
+        .update(users)
+        .set({ diamonds: 100, updatedAt: new Date() })
+        .where(sql`${users.diamonds} IS NULL OR ${users.diamonds} = 0`)
+        .returning();
+
+      res.json({ 
+        message: "Starting diamonds granted to all users without diamonds",
+        usersUpdated: result.length 
+      });
+    } catch (error) {
+      console.error("Error granting starting diamonds:", error);
+      res.status(500).json({ message: "Failed to grant starting diamonds" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
