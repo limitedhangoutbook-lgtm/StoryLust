@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Gem, Heart, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -397,31 +397,28 @@ export default function StoryReader() {
       touchStartRef.current = null;
     };
 
-    // Show navigation on scroll
-    const handleScroll = () => {
-      showNavigationTemporarily();
-    };
-
-    // Show navigation on mouse movement
-    const handleMouseMove = () => {
-      showNavigationTemporarily();
-    };
-
     mainElement.addEventListener('touchstart', handleTouchStart, { passive: true });
     mainElement.addEventListener('touchend', handleTouchEnd, { passive: true });
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    document.addEventListener('mousemove', handleMouseMove, { passive: true });
 
     return () => {
       mainElement.removeEventListener('touchstart', handleTouchStart);
       mainElement.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [showChoices, pageHistory.length]); // Minimized dependencies
+
+  // Separate effect for navigation auto-hiding
+  useEffect(() => {
+    const handleScroll = () => showNavigationTemporarily();
+    const handleMouseMove = () => showNavigationTemporarily();
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    document.addEventListener('mousemove', handleMouseMove, { passive: true });
+
+    return () => {
       window.removeEventListener('scroll', handleScroll);
       document.removeEventListener('mousemove', handleMouseMove);
-      if (hideNavTimeout.current) {
-        clearTimeout(hideNavTimeout.current);
-      }
     };
-  }, [showChoices, currentNodeId, pageHistory, handleContinueReading]);
+  }, []); // No dependencies - just event listeners
 
   const selectChoiceMutation = useMutation({
     mutationFn: async (choiceId: string) => {
