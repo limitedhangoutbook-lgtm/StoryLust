@@ -61,8 +61,8 @@ export class StoryManager {
 
   // Get a story page/node
   getStoryNode(nodeId: string): StoryNode | undefined {
-    for (const [storyId, definition] of this.stories.entries()) {
-      const page = definition.pages.find(p => p.id === nodeId);
+    for (const [storyId, definition] of Array.from(this.stories.entries())) {
+      const page = definition.pages.find((p: any) => p.id === nodeId);
       if (page) {
         return {
           id: page.id,
@@ -99,10 +99,10 @@ export class StoryManager {
 
   // Get choices for a story node
   getStoryChoices(nodeId: string): StoryChoice[] {
-    for (const [storyId, definition] of this.stories.entries()) {
-      const page = definition.pages.find(p => p.id === nodeId);
+    for (const [storyId, definition] of Array.from(this.stories.entries())) {
+      const page = definition.pages.find((p: any) => p.id === nodeId);
       if (page && page.choices) {
-        return page.choices.map((choice, index) => ({
+        return page.choices.map((choice: any, index: number) => ({
           id: choice.id,
           fromNodeId: nodeId,
           toNodeId: choice.nextNodeId,
@@ -119,10 +119,10 @@ export class StoryManager {
 
   // Get a specific choice
   getStoryChoice(choiceId: string): StoryChoice | undefined {
-    for (const [storyId, definition] of this.stories.entries()) {
+    for (const [storyId, definition] of Array.from(this.stories.entries())) {
       for (const page of definition.pages) {
         if (page.choices) {
-          const choice = page.choices.find(c => c.id === choiceId);
+          const choice = page.choices.find((c: any) => c.id === choiceId);
           if (choice) {
             return {
               id: choice.id,
@@ -165,7 +165,7 @@ export class StoryManager {
       story: {
         title: branchingStory.title,
         description: branchingStory.description,
-        imageUrl: null,
+        imageUrl: undefined,
         spiceLevel: branchingStory.spiceLevel,
         category: branchingStory.category,
         wordCount: this.calculateWordCount(branchingStory.nodes),

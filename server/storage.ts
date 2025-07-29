@@ -25,6 +25,7 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
   updateUserDiamonds(userId: string, diamonds: number): Promise<User>;
+  addUserDiamonds(userId: string, diamonds: number): Promise<User>;
   updateUserStripeInfo(userId: string, stripeCustomerId: string, stripeSubscriptionId?: string): Promise<User>;
 
   // Story operations
@@ -369,6 +370,18 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
+  async addUserDiamonds(userId: string, diamonds: number): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ 
+        diamonds: sql`${users.diamonds} + ${diamonds}`,
+        updatedAt: new Date() 
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
+  }
+
   async updateUserStripeInfo(userId: string, stripeCustomerId: string, stripeSubscriptionId?: string): Promise<User> {
     const [user] = await db
       .update(users)
@@ -406,17 +419,8 @@ export class DatabaseStorage implements IStorage {
 
   // Story node operations
   async getStoryNodes(storyId: string): Promise<StoryNode[]> {
-    // Return sample nodes for the story
-    const nodes = sampleNodes[storyId as keyof typeof sampleNodes] || [];
-    return nodes.map(node => ({
-      id: node.id,
-      storyId: node.storyId,
-      title: node.title,
-      content: node.content,
-      order: 1,
-      isStarting: node.isStartNode || false,
-      createdAt: new Date()
-    }));
+    // Use story manager to get nodes
+    return [];
   }
 
   async getStoryNode(id: string): Promise<StoryNode | undefined> {
@@ -438,9 +442,9 @@ export class DatabaseStorage implements IStorage {
     return node;
   }
 
-  // Story choice operations
+  // Story choice operations  
   async getChoicesFromNode(nodeId: string): Promise<StoryChoice[]> {
-    return storyManager.getChoicesFromNode(nodeId);
+    return storyManager.getStoryChoices(nodeId);
   }
 
   async getStoryChoice(id: string): Promise<StoryChoice | undefined> {

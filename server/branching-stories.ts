@@ -413,5 +413,140 @@ The confidence Jake felt in that moment carried over into everything else. He ac
         endingType: "confidence"
       }
     ]
+  },
+  {
+    id: "midnight-coffee", 
+    title: "Midnight Coffee",
+    description: "Working late at the coffee shop, Sam never expected the regular customer to change everything.",
+    spiceLevel: 1,
+    category: "lgbt",
+    nodes: [
+      // Free story progression (5 pages)
+      {
+        id: "start",
+        title: "After Hours",
+        content: `The coffee shop felt different at night. During the day, Grind & Brew buzzed with students and business people, but after 11 PM, it transformed into something quieter, more intimate.
+
+Sam had been working the closing shift for six months now and had grown to love these late hours. The soft jazz, the warm glow of pendant lights, the way the street looked through rain-streaked windows – it all felt more like a cozy living room than a commercial establishment.
+
+The regular daytime crowd had been replaced by a smaller group of nighttime regulars. There was Marcus, the grad student; Elena, the nurse; and a handful of others who had become familiar faces in Sam's nocturnal world.
+
+But tonight felt different. Maybe it was the rain that had been falling steadily since dinner time, creating a cocoon-like atmosphere that made the outside world seem distant and irrelevant.`
+      },
+      {
+        id: "page-2", 
+        title: "The Regular",
+        content: `Sam glanced at the clock above the espresso machine: 11:47 PM. Just thirteen more minutes until closing, and then they could finally head home to their small apartment above the bookstore next door.
+
+That's when the bell above the door chimed, and Sam looked up to see River walking in from the rain. River was one of the most reliable regulars – had been coming here for months, always ordering the same thing: a double espresso, no sugar, extra hot.
+
+But tonight, River looked different. Their usual confident stride had been replaced by uncertain steps, and instead of their typical focused expression, there was something vulnerable in their demeanor.
+
+River had always intrigued Sam. They clearly worked late hours, judging by their schedule, and always carried a leather portfolio that suggested some kind of creative work. But they never lingered, never made small talk beyond polite pleasantries.
+
+Tonight, however, River approached the counter slowly, as if weighing each step.`
+      },
+      {
+        id: "page-3",
+        title: "Something Different",
+        content: `"The usual?" Sam asked, already reaching for the espresso beans, but River shook their head.
+
+"Actually," River said, their voice softer than usual, "could I get something... different tonight? Maybe something warm and comforting? I've had a long day."
+
+Sam paused, studying River's face in the warm light. There were stress lines around their eyes that hadn't been there before, and their usually perfect composure seemed fragile.
+
+"How about a lavender honey latte?" Sam suggested. "It's not on the menu, but it's my go-to when I need something soothing."
+
+River's expression brightened slightly. "That sounds perfect, actually. You know, I've been coming here for months, and I don't think I've ever asked your name."
+
+"Sam," they replied, already beginning to craft the drink with more care than usual. "And you're River, right? I've seen it on your credit card."
+
+A small smile tugged at River's lips. "Observant. I like that."`
+      },
+      {
+        id: "page-4",
+        title: "Opening Up", 
+        content: `As Sam worked on the latte, adding a delicate foam art design of a leaf, River settled onto one of the bar stools at the counter instead of taking their usual corner table.
+
+"I'm a graphic designer," River said unexpectedly. "Freelance. Which explains the weird hours and the constant caffeine dependence."
+
+Sam looked up from the espresso machine. "That explains the portfolio. Are you working on something interesting?"
+
+River laughed, but there was a tired edge to it. "I just lost a major client today. Three months of work, and they decided to go with someone else's concept. I've been walking around the city in the rain for hours, trying to figure out what to do next."
+
+The vulnerability in River's voice made Sam pause in their work. They'd seen hundreds of customers over the months, but something about this moment felt different, more genuine than the usual late-night interactions.
+
+"I'm sorry," Sam said softly. "That sounds devastating."
+
+"It is," River admitted. "But sitting here, talking to you... it's the first time today that I don't feel completely lost."`
+      },
+      {
+        id: "page-5",
+        title: "The Connection",
+        content: `Sam finished the latte and slid it across the counter, their fingers briefly brushing River's as they accepted the cup. The touch was brief but electric, sending an unexpected warmth up Sam's arm.
+
+"This is beautiful," River said, looking down at the foam art. "You're an artist too."
+
+"Just a coffee shop employee with too much time to practice," Sam replied, but they felt pleased by the compliment.
+
+River took a sip and closed their eyes. "This is exactly what I needed. How did you know?"
+
+The clock above them showed 11:55 PM. In five minutes, Sam would need to start closing procedures, but for the first time in months, they didn't want their shift to end. There was something about River's presence, their openness, that made the normally solitary closing routine feel incomplete.
+
+"Would you like to stay while I close up?" Sam asked impulsively. "I mean, if you don't have anywhere else to be. Sometimes it's nice to have company."`,
+        choices: [
+          {
+            id: "choice-offer-help",
+            text: "Offer to help River with their portfolio over coffee",
+            nextNodeId: "creative-collaboration",
+            isPremium: false
+          },
+          {
+            id: "choice-suggest-walk", 
+            text: "Suggest taking a walk together after closing",
+            nextNodeId: "night-walk",
+            isPremium: true,
+            diamondCost: 5
+          }
+        ]
+      },
+
+      // Story paths and endings
+      {
+        id: "creative-collaboration",
+        title: "Artistic Minds",
+        content: `River's eyes lit up. "Actually, that would be amazing. I could use a fresh perspective, and something tells me you have a good eye for design."
+
+As Sam went through the closing routine, River pulled out their portfolio and spread some designs across one of the tables. The work was stunning – clean lines, bold colors, and concepts that seemed to leap off the page.
+
+"These are incredible," Sam said genuinely. "That client was an idiot to pass these up."
+
+Working together, they refined River's presentations and brainstormed new approaches. Sam's coffee artistry translated into an intuitive understanding of visual composition, and their suggestions helped River see their work in a new light.
+
+By 2 AM, they had restructured River's entire portfolio and developed a strategy for approaching new clients. More importantly, they'd discovered a creative chemistry that felt both natural and exciting.
+
+**ENDING: Creative Partnership**`,
+        isEnding: true,
+        endingType: "collaboration"
+      },
+
+      {
+        id: "night-walk",
+        title: "Under the Stars",
+        content: `"I'd love that," River said, their smile genuine and warm. "I've been walking aimlessly all evening, but walking with you sounds much better."
+
+After Sam finished closing, they stepped out into the cool night air together. The rain had stopped, leaving the streets glistening under the streetlights. They walked slowly, talking about everything and nothing – River's design work, Sam's dreams of opening their own coffee shop, the way the city felt different at night.
+
+When they reached the small park near Sam's apartment, River stopped walking and turned to face them.
+
+"Thank you," River said softly. "For the coffee, for listening, for... this. I came in tonight feeling like my world was falling apart, and somehow you've made everything feel possible again."
+
+The space between them seemed to shrink, and Sam felt their heart racing as River stepped closer.
+
+**ENDING: New Beginning**`,
+        isEnding: true,
+        endingType: "romance"
+      }
+    ]
   }
 ];

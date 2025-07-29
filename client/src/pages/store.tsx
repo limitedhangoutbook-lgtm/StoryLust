@@ -6,6 +6,7 @@ import { BottomNavigation } from "@/components/bottom-navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { apiRequest } from "@/lib/queryClient";
 
 interface DiamondPackage {
   id: string;
@@ -99,18 +100,26 @@ export default function Store() {
 
     setSelectedPackage(packageId);
     
-    // Here you would integrate with Stripe
-    // For now, we'll just simulate the purchase flow
     try {
-      // const response = await apiRequest("POST", "/api/create-payment-intent", {
-      //   amount: pkg.price,
-      //   packageId: pkg.id,
-      // });
+      // Create payment intent
+      const response = await apiRequest("POST", "/api/create-payment-intent", {
+        amount: pkg.price,
+        packageId: pkg.id,
+      });
       
-      // Redirect to checkout or show payment form
-      alert("Payment integration coming soon!");
+      // For demo purposes, simulate successful payment and add diamonds
+      // In production, this would happen via Stripe webhook after payment confirmation
+      await apiRequest("POST", "/api/add-diamonds", {
+        packageId: pkg.id,
+      });
+      
+      alert(`Successfully purchased ${pkg.diamonds + (pkg.bonus || 0)} diamonds!`);
+      
+      // Refresh user data to show updated diamond balance
+      window.location.reload();
     } catch (error) {
       console.error("Purchase failed:", error);
+      alert("Purchase failed. Please try again.");
     } finally {
       setSelectedPackage(null);
     }

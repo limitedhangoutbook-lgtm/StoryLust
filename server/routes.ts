@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { storyManager } from "./story-manager";
+import Stripe from "stripe";
 import { 
   insertStorySchema, 
   insertStoryNodeSchema, 
@@ -11,6 +12,13 @@ import {
   insertUserChoiceSchema 
 } from "@shared/schema";
 import { z } from "zod";
+
+if (!process.env.STRIPE_SECRET_KEY) {
+  throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
+}
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: "2025-06-30.basil",
+});
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -277,6 +285,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get choices for a story node
+  app.get("/api/nodes/:nodeId/choices", async (req, res) => {
+    try {
+      const { nodeId } = req.params;
+      const choices = storyManager.getStoryChoices(nodeId);
+      res.json(choices);
+    } catch (error) {
+      console.error("Error fetching choices:", error);
+      res.status(500).json({ message: "Failed to fetch choices" });
+    }
+  });
+
   // Get next page in story progression
   app.get("/api/stories/:storyId/next/:currentNodeId", async (req, res) => {
     try {
@@ -291,6 +311,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching next page:", error);
       res.status(500).json({ message: "Failed to fetch next page" });
+    }
+  });
+
+  // Stripe payment route for diamond purchases
+  app.post("/api/create-payment-intent", isAuthenticated, async (req, res) => {
+    try {
+      const { amount, packageId } = req.body;
+      const userId = (req as any).user.claims.sub;
+      
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: Math.round(amount * 100), // Convert to cents
+        currency: "usd",
+        metadata: {
+          userId,
+          packageId,
+          type: "diamond_purchase"
+        },
+      });
+      
+      res.json({ clientSecret: paymentIntent.client_secret });
+    } catch (error: any) {
+      console.error("Payment intent creation failed:", error);
+      res.status(500).json({ message: "Error creating payment intent: " + error.message });
+    }
+  });
+
+  // Add diamonds to user account (webhook handler)
+  app.post("/api/add-diamonds", isAuthenticated, async (req, res) => {
+    try {
+      const { packageId } = req.body;
+      const userId = (req as any).user.claims.sub;
+      
+      // Diamond package mapping
+      const packages: Record<string, { diamonds: number; bonus: number }> = {
+        starter: { diamonds: 100, bonus: 0 },
+        popular: { diamonds: 300, bonus: 50 },
+        premium: { diamonds: 600, bonus: 150 },
+        mega: { diamonds: 1200, bonus: 400 }
+      };
+      
+      const pkg = packages[packageId];
+      if (!pkg) {
+        return res.status(400).json({ message: "Invalid package" });
+      }
+      
+      const totalDiamonds = pkg.diamonds + pkg.bonus;
+      await storage.addUserDiamonds(userId, totalDiamonds);
+      
+      res.json({ 
+        success: true, 
+        diamondsAdded: totalDiamonds,
+        message: `${totalDiamonds} diamonds added to your account!`
+      });
+    } catch (error) {
+      console.error("Error adding diamonds:", error);
+      res.status(500).json({ message: "Failed to add diamonds" });
     }
   });
 

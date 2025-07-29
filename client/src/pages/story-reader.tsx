@@ -177,7 +177,7 @@ export default function StoryReader() {
     },
   });
 
-  const handleChoiceSelect = (choiceId: string, isPremium: boolean | null, diamondCost: number | null) => {
+  const handleChoiceSelect = (choiceId: string, isPremium?: boolean, diamondCost?: number) => {
     if (!isAuthenticated && isPremium) {
       toast({
         title: "Sign In Required",
@@ -208,8 +208,9 @@ export default function StoryReader() {
     } else {
       // This page doesn't have choices, try to get next page from server
       try {
-        const nextNode = await apiRequest("GET", `/api/stories/${storyId}/next/${currentNodeId}`);
-        if (nextNode) {
+        const nextNodeResponse = await apiRequest("GET", `/api/stories/${storyId}/next/${currentNodeId}`);
+        const nextNode = await nextNodeResponse.json();
+        if (nextNode && nextNode.id) {
           setCurrentNodeId(nextNode.id);
           setReadingProgress(prev => Math.min(100, prev + 10));
           
@@ -383,7 +384,7 @@ export default function StoryReader() {
                   <h2 className="text-lg font-semibold text-text-primary">
                     {currentNode?.title}
                   </h2>
-                  {(currentNode as any).isPremium && (
+                  {currentNode && (currentNode as any).isPremium && (
                     <Badge className="bg-rose-gold/20 text-rose-gold border-rose-gold/30">
                       <Gem className="w-3 h-3 mr-1" />
                       Premium
