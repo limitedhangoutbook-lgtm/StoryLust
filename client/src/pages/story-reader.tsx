@@ -198,25 +198,40 @@ export default function StoryReader() {
 
   const selectChoiceMutation = useMutation({
     mutationFn: async (choiceId: string) => {
-      const response = await apiRequest("POST", `/api/reading-progress/choice`, {
+      console.log('Making choice API call:', { storyId, currentNodeId, choiceId });
+      const response = await apiRequest("POST", `/api/choices/${choiceId}/select`, {
         storyId,
         currentNodeId,
-        choiceId,
       });
-      return response.json();
+      const data = await response.json();
+      console.log('Choice API response:', data);
+      return data;
     },
     onSuccess: (data) => {
-      if (data.nextNodeId) {
+      console.log('Choice mutation success:', data);
+      if (data.targetNode && data.targetNode.id) {
         // Add current page to history before navigating
         if (currentNodeId) {
           setPageHistory(prev => [...prev, currentNodeId]);
         }
         
-        setCurrentNodeId(data.nextNodeId);
+        setCurrentNodeId(data.targetNode.id);
         setShowChoices(false);
         
         // Scroll to top for new content
         window.scrollTo({ top: 0, behavior: 'smooth' });
+        
+        toast({
+          title: "Choice Made",
+          description: "Continuing your story...",
+        });
+      } else {
+        console.error('No targetNode in response:', data);
+        toast({
+          title: "Error",
+          description: "Failed to navigate to next story section.",
+          variant: "destructive",
+        });
       }
       
       // Invalidate queries to refresh data
