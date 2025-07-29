@@ -65,7 +65,7 @@ export function BottomNavigation() {
                 isActive
                   ? "bg-rose-gold/10 text-rose-gold"
                   : isDisabled
-                  ? "text-text-muted/50"
+                  ? "text-text-muted/30 cursor-not-allowed"
                   : "text-text-muted hover:text-text-secondary hover:bg-dark-tertiary/50"
               )}
             >
@@ -73,12 +73,14 @@ export function BottomNavigation() {
                 size={20} 
                 className={cn(
                   "mb-1",
-                  isActive && "stroke-[2.5px]"
+                  isActive && "stroke-[2.5px]",
+                  isDisabled && "opacity-40"
                 )} 
               />
               <span className={cn(
                 "text-xs font-medium leading-none",
-                isActive && "font-semibold"
+                isActive && "font-semibold",
+                isDisabled && "opacity-40"
               )}>
                 {item.name}
               </span>
