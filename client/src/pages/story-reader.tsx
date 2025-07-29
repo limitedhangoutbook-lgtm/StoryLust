@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Gem, Heart, Bookmark, ChevronRight } from "lucide-react";
+import { ArrowLeft, Gem, Heart, Bookmark, ChevronRight, BookOpen } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation, useRoute } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -201,7 +201,7 @@ export default function StoryReader() {
     selectChoiceMutation.mutate(choiceId);
   };
 
-  const handleContinueReading = () => {
+  const handleContinueReading = async () => {
     if (choices.length > 0) {
       // This page has choices, show them
       setShowChoices(true);
@@ -209,8 +209,25 @@ export default function StoryReader() {
       // This page doesn't have choices, move to next page
       const nextPageId = getNextPageId(currentNodeId);
       if (nextPageId) {
-        setCurrentNodeId(nextPageId);
-        setReadingProgress(prev => Math.min(100, prev + 15));
+        try {
+          // Fetch the next page data
+          const nextNode = await apiRequest("GET", `/api/nodes/${nextPageId}`);
+          setCurrentNodeId(nextPageId);
+          setReadingProgress(prev => Math.min(100, prev + 20));
+          
+          // Reset choices state for new page
+          setShowChoices(false);
+          
+          // Scroll to top for new page
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } catch (error) {
+          console.error('Error fetching next page:', error);
+          toast({
+            title: "Error",
+            description: "Failed to load next page. Please try again.",
+            variant: "destructive",
+          });
+        }
       } else {
         // Story ended
         toast({
@@ -241,6 +258,34 @@ export default function StoryReader() {
     };
     
     return pageSequences[storyId]?.[currentId] || null;
+  };
+
+  const getPageNumber = (nodeId: string | null): number => {
+    if (!nodeId) return 1;
+    if (nodeId === "start") return 1;
+    if (nodeId.startsWith("page-")) {
+      const pageNum = parseInt(nodeId.split("-")[1]);
+      return pageNum || 1;
+    }
+    return 1;
+  };
+
+  const getTotalPages = (storyId: string | null): number => {
+    // All stories have 5 pages before choices
+    return 5;
+  };
+
+  const getNavigationText = (currentId: string | null, hasChoices: boolean): string => {
+    if (hasChoices) return "Make Your Choice";
+    
+    const nextPageId = getNextPageId(currentId);
+    if (nextPageId) {
+      const currentPage = getPageNumber(currentId);
+      const totalPages = getTotalPages(storyId);
+      return `Continue Reading (${currentPage}/${totalPages})`;
+    }
+    
+    return "Story Complete";
   };
 
   const handleBookmark = () => {
@@ -301,9 +346,15 @@ export default function StoryReader() {
             </Button>
             <div>
               <h1 className="font-semibold text-text-primary">{story.title}</h1>
-              <div className="flex items-center space-x-2">
-                <Progress value={readingProgress} className="w-20 h-1" />
-                <span className="text-xs text-text-muted">{readingProgress}%</span>
+              <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-2">
+                  <Progress value={readingProgress} className="w-20 h-1" />
+                  <span className="text-xs text-text-muted">{readingProgress}%</span>
+                </div>
+                <div className="flex items-center space-x-1 text-xs text-text-muted">
+                  <BookOpen className="w-3 h-3" />
+                  <span>{getPageNumber(currentNodeId)}/{getTotalPages(storyId)}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -366,13 +417,9 @@ export default function StoryReader() {
                 disabled={selectChoiceMutation.isPending}
                 className="bg-rose-gold text-dark-primary hover:bg-rose-gold/90 px-8 py-3 rounded-full font-medium"
               >
-                {choices.length > 0 ? (
-                  <>
-                    Continue Reading
-                    <ChevronRight className="w-4 h-4 ml-2" />
-                  </>
-                ) : (
-                  "Story Complete"
+{getNavigationText(currentNodeId, choices.length > 0)}
+                {(choices.length > 0 || getNextPageId(currentNodeId)) && (
+                  <ChevronRight className="w-4 h-4 ml-2" />
                 )}
               </Button>
             </div>
