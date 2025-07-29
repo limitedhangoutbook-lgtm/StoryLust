@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Gem, Heart, Settings } from "lucide-react";
+import { ArrowLeft, Heart, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StoryNavigation } from "@/components/story-navigation";
 import { TypographySettings } from "@/components/typography-settings";

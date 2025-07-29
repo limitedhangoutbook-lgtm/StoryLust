@@ -72,7 +72,7 @@ export default function Home() {
                 onClick={() => setLocation("/store")}
                 className="flex items-center space-x-1 bg-dark-tertiary px-3 py-1.5 rounded-full hover:bg-dark-tertiary/80 transition-colors cursor-pointer"
               >
-                <Gem className="text-gold-accent" size={14} />
+                <span className="text-lg">🍆</span>
                 <span className="text-sm font-medium text-text-primary">
                   {(user as any)?.diamonds || 0}
                 </span>

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowLeft, Gem, Zap, Crown, Gift, ShoppingCart } from "lucide-react";
+import { ArrowLeft, Zap, Crown, Gift, ShoppingCart } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation } from "wouter";
 import { BottomNavigation } from "@/components/bottom-navigation";
@@ -25,7 +25,7 @@ const diamondPackages: DiamondPackage[] = [
     name: "Starter Pack",
     diamonds: 100,
     price: 2.99,
-    icon: Gem,
+    icon: "🍆",
   },
   {
     id: "popular",
@@ -139,10 +139,10 @@ export default function Store() {
             >
               <ArrowLeft size={16} className="text-text-muted" />
             </Button>
-            <h1 className="text-xl font-bold tracking-tight text-text-primary">Diamond Store</h1>
+            <h1 className="text-xl font-bold tracking-tight text-text-primary">Eggplant Store</h1>
           </div>
           <div className="flex items-center space-x-1 bg-dark-tertiary px-3 py-1.5 rounded-full">
-            <Gem className="text-gold-accent" size={14} />
+            <span className="text-lg">🍆</span>
             <span className="text-sm font-medium text-text-primary">
               {currentDiamonds}
             </span>
@@ -156,11 +156,11 @@ export default function Store() {
           <CardContent className="pt-6">
             <div className="text-center space-y-2">
               <div className="w-12 h-12 gradient-rose-gold rounded-2xl flex items-center justify-center mx-auto">
-                <Gem className="w-6 h-6 text-dark-primary" />
+                <span className="text-2xl">🍆</span>
               </div>
               <h2 className="text-lg font-bold text-text-primary">Unlock Premium Stories</h2>
               <p className="text-sm text-text-muted">
-                Use diamonds to access exclusive story paths and premium content
+                Use eggplants to access exclusive story paths and premium content
               </p>
             </div>
           </CardContent>
@@ -169,7 +169,7 @@ export default function Store() {
 
       {/* Packages */}
       <main className="px-4 space-y-4">
-        <h3 className="text-lg font-semibold text-text-primary">Diamond Packages</h3>
+        <h3 className="text-lg font-semibold text-text-primary">Eggplant Packages</h3>
         
         <div className="space-y-3">
           {diamondPackages.map((pkg) => {
@@ -200,7 +200,11 @@ export default function Store() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4">
                       <div className="w-12 h-12 bg-dark-tertiary rounded-xl flex items-center justify-center">
-                        <Icon className="w-6 h-6 text-gold-accent" />
+                        {typeof Icon === 'string' ? (
+                          <span className="text-2xl">{Icon}</span>
+                        ) : (
+                          <Icon className="w-6 h-6 text-gold-accent" />
+                        )}
                       </div>
                       <div>
                         <h4 className="font-semibold text-text-primary">{pkg.name}</h4>
@@ -216,11 +220,11 @@ export default function Store() {
                               </span>
                             </>
                           )}
-                          <Gem className="w-4 h-4 text-gold-accent" />
+                          <span className="text-sm">🍆</span>
                         </div>
                         {pkg.bonus && (
                           <p className="text-xs text-text-muted">
-                            Total: {totalDiamonds.toLocaleString()} diamonds
+                            Total: {totalDiamonds.toLocaleString()} eggplants
                           </p>
                         )}
                       </div>

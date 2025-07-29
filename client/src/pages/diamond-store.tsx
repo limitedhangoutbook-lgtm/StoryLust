@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Diamond, Sparkles, Gift, Crown, Star } from "lucide-react";
+import { Sparkles, Gift, Crown, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -40,7 +40,7 @@ const diamondPackages: DiamondPackage[] = [
     bonusDiamonds: 0,
     totalDiamonds: 50,
     priceUsd: 2.99,
-    icon: <Diamond className="w-6 h-6" />,
+    icon: <span className="text-2xl">🍆</span>,
     color: "from-blue-400 to-blue-600",
     description: "Perfect for 2 complete stories"
   },
@@ -52,7 +52,7 @@ const diamondPackages: DiamondPackage[] = [
     totalDiamonds: 200,
     priceUsd: 4.99,
     popular: true,
-    icon: <Sparkles className="w-6 h-6" />,
+    icon: <span className="text-2xl">🍆</span>,
     color: "from-rose-400 to-rose-600",
     description: "Great for extended reading"
   },
@@ -65,7 +65,7 @@ const diamondPackages: DiamondPackage[] = [
     priceUsd: 49.99,
     bestValue: true,
     vipBadge: true,
-    icon: <Crown className="w-6 h-6" />,
+    icon: <span className="text-2xl">🍆👑</span>,
     color: "from-yellow-400 to-yellow-600",
     description: "Unlimited access + VIP badge"
   }
@@ -234,7 +234,7 @@ export default function DiamondStore() {
 
                 {/* Value Calculation */}
                 <div className="text-xs text-text-muted">
-                  {pkg.totalDiamonds === 9999 ? 'Unlimited Access' : `$${(pkg.priceUsd / pkg.totalDiamonds).toFixed(3)} per diamond`}
+                  {pkg.totalDiamonds === 9999 ? 'Unlimited Access' : `$${(pkg.priceUsd / pkg.totalDiamonds).toFixed(3)} per eggplant`}
                 </div>
 
                 <Button

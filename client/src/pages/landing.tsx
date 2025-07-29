@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { BookOpen, Heart, Gem, Star } from "lucide-react";
+import { BookOpen, Heart, Star } from "lucide-react";
 
 export default function Landing() {
   return (
@@ -66,12 +66,12 @@ export default function Landing() {
             <CardContent className="p-6">
               <div className="flex items-start space-x-4">
                 <div className="w-12 h-12 bg-gold-accent/20 rounded-xl flex items-center justify-center">
-                  <Gem className="w-6 h-6 text-gold-accent" />
+                  <span className="text-2xl">🍆</span>
                 </div>
                 <div>
                   <h3 className="font-semibold text-text-primary mb-2">Premium Content</h3>
                   <p className="text-text-muted text-sm leading-relaxed">
-                    Unlock exclusive story paths and premium content with our diamond currency system.
+                    Unlock exclusive story paths and premium content with our eggplant currency system.
                   </p>
                 </div>
               </div>
