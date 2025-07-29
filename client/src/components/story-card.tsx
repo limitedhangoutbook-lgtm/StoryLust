@@ -6,6 +6,7 @@ import type { Story } from "@shared/schema";
 interface StoryCardProps {
   story: Story;
   onRead: (storyId: string) => void;
+  onReadFromBeginning?: (storyId: string) => void;
   onBookmark?: (storyId: string) => void;
   showProgress?: boolean;
   progressPercent?: number;
@@ -15,6 +16,7 @@ interface StoryCardProps {
 export function StoryCard({ 
   story, 
   onRead, 
+  onReadFromBeginning,
   onBookmark, 
   showProgress, 
   progressPercent,
@@ -116,13 +118,26 @@ export function StoryCard({
             </div>
           </div>
 
-          {/* Read Button */}
-          <Button
-            onClick={() => onRead(story.id)}
-            className="w-full bg-rose-gold text-dark-primary hover:bg-rose-gold/90 font-semibold"
-          >
-            {showProgress && progressPercent ? "Continue Reading" : "Start Reading"}
-          </Button>
+          {/* Read Buttons */}
+          <div className="space-y-2">
+            <Button
+              onClick={() => onRead(story.id)}
+              className="w-full bg-rose-gold text-dark-primary hover:bg-rose-gold/90 font-semibold"
+            >
+              {showProgress && progressPercent ? "Continue Reading" : "Start Reading"}
+            </Button>
+            
+            {/* Read from Beginning button - only show when user has progress */}
+            {showProgress && progressPercent && progressPercent > 0 && onReadFromBeginning && (
+              <Button
+                onClick={() => onReadFromBeginning(story.id)}
+                variant="outline"
+                className="w-full text-xs text-text-muted border-dark-tertiary hover:border-rose-gold/30 hover:text-rose-gold py-1.5 h-auto"
+              >
+                Read from Beginning
+              </Button>
+            )}
+          </div>
         </div>
       </CardContent>
     </Card>

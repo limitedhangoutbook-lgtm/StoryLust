@@ -84,6 +84,33 @@ export default function MyReading() {
     setLocation(`/story/${storyId}`);
   };
 
+  const openStoryFromBeginning = async (storyId: string) => {
+    try {
+      // Clear reading progress by setting to the starting node
+      await apiRequest("POST", '/api/reading-progress', {
+        storyId,
+        currentNodeId: `${storyId.split('-')[0]}-start`, // Assume start node follows pattern
+        isBookmarked: false
+      });
+      
+      // Invalidate cache to refresh the UI
+      queryClient.invalidateQueries({ queryKey: ["/api/reading-progress"] });
+      
+      toast({
+        title: "Story Reset",
+        description: "Starting from the beginning!",
+      });
+    } catch (error) {
+      console.error('Failed to reset progress:', error);
+      toast({
+        title: "Error",
+        description: "Failed to reset story progress.",
+        variant: "destructive",
+      });
+    }
+    setLocation(`/story/${storyId}`);
+  };
+
   const handleBookmark = (storyId: string) => {
     bookmarkMutation.mutate(storyId);
   };
@@ -180,6 +207,7 @@ export default function MyReading() {
                 <StoryCard
                   story={progress.story}
                   onRead={() => openStory(progress.storyId)}
+                  onReadFromBeginning={() => openStoryFromBeginning(progress.storyId)}
                   onBookmark={() => handleBookmark(progress.storyId)}
                   showProgress={true}
                   progressPercent={progress.isCompleted ? 100 : Math.min(100, (progress.currentNodeId ? 50 : 10))}

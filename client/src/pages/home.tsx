@@ -37,6 +37,26 @@ export default function Home() {
     setLocation(`/story/${storyId}`);
   };
 
+  const openStoryFromBeginning = async (storyId: string) => {
+    if (user) {
+      try {
+        // Clear reading progress by setting to the starting node
+        await fetch('/api/reading-progress', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            storyId,
+            currentNodeId: `${storyId.split('-')[0]}-start`, // Assume start node follows pattern
+            isBookmarked: false
+          })
+        });
+      } catch (error) {
+        console.error('Failed to reset progress:', error);
+      }
+    }
+    setLocation(`/story/${storyId}`);
+  };
+
 
 
   const filterButtons = [
@@ -221,6 +241,7 @@ export default function Home() {
                 key={story.id}
                 story={story}
                 onRead={() => openStory(story.id)}
+                onReadFromBeginning={() => openStoryFromBeginning(story.id)}
               />
             ))}
           </div>
