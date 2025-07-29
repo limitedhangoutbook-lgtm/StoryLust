@@ -271,18 +271,20 @@ export default function StoryReader() {
   };
 
   const getTotalPages = (storyId: string | null): number => {
-    // All stories have 5 pages before choices
-    return 5;
+    // Return estimated total story length (not just pages before choices)
+    const storyLengths: Record<string, number> = {
+      "campus-encounter": 25,
+      "midnight-coffee": 30
+    };
+    return storyLengths[storyId || ""] || 20;
   };
 
-  const getNavigationText = (currentId: string | null, hasChoices: boolean): string => {
-    if (hasChoices) return "Make Your Choice";
+  const getNavigationText = (currentId: string | null, hasChoices: boolean): string | null => {
+    if (hasChoices) return null; // Choices replace navigation
     
     const nextPageId = getNextPageId(currentId);
     if (nextPageId) {
-      const currentPage = getPageNumber(currentId);
-      const totalPages = getTotalPages(storyId);
-      return `Continue Reading (${currentPage}/${totalPages})`;
+      return "Continue Reading";
     }
     
     return "Story Complete";
@@ -350,7 +352,7 @@ export default function StoryReader() {
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <div>
-              <h1 className="font-semibold text-text-primary">{story.title}</h1>
+              <h1 className="font-semibold text-text-primary">{story?.title}</h1>
               <div className="flex items-center space-x-3">
                 <div className="flex items-center space-x-2">
                   <Progress value={readingProgress} className="w-20 h-1" />
@@ -358,7 +360,7 @@ export default function StoryReader() {
                 </div>
                 <div className="flex items-center space-x-1 text-xs text-text-muted">
                   <BookOpen className="w-3 h-3" />
-                  <span>{getPageNumber(currentNodeId)}/{getTotalPages(storyId)}</span>
+                  <span>{getPageNumber(currentNodeId)}/{getTotalPages(storyId || "")}</span>
                 </div>
               </div>
             </div>
@@ -395,7 +397,7 @@ export default function StoryReader() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h2 className="text-lg font-semibold text-text-primary">
-                    {currentNode.title}
+                    {currentNode?.title}
                   </h2>
                   {(currentNode as any).isPremium && (
                     <Badge className="bg-rose-gold/20 text-rose-gold border-rose-gold/30">
@@ -407,99 +409,56 @@ export default function StoryReader() {
                 
                 <div className="prose prose-invert max-w-none">
                   <p className="text-text-secondary leading-relaxed whitespace-pre-line">
-                    {currentNode.content}
+                    {currentNode?.content}
                   </p>
                 </div>
 
-                {/* Choices - shown inline when available */}
-                {showChoices && choices.length > 0 && (
-                  <div className="pt-6 border-t border-dark-tertiary">
-                    <h3 className="text-sm font-medium text-text-muted mb-4 text-center">
-                      Choose your path:
-                    </h3>
-                    <div className="space-y-3">
-                      {choices.map((choice) => (
-                        <button
-                          key={choice.id}
-                          onClick={() => handleChoiceSelect(choice.id, choice.isPremium, choice.diamondCost)}
-                          disabled={selectChoiceMutation.isPending}
-                          className="w-full p-4 text-left bg-dark-tertiary hover:bg-dark-accent transition-colors rounded-lg border border-transparent hover:border-rose-gold/30 group"
-                        >
-                          <div className="flex items-center justify-between">
-                            <span className="text-text-secondary group-hover:text-text-primary transition-colors">
-                              {choice.text}
-                            </span>
-                            {choice.isPremium && (
-                              <div className="flex items-center gap-1 text-rose-gold">
-                                <Heart className="w-4 h-4" />
-                                <span className="text-sm font-medium">{choice.diamondCost}</span>
-                              </div>
-                            )}
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
             </CardContent>
           </Card>
 
-          {/* Navigation Button */}
+          {/* Navigation - either Continue Reading or Choice Selection */}
           <div className="flex justify-center pt-4">
-            <Button
-              onClick={handleContinueReading}
-              disabled={selectChoiceMutation.isPending}
-              className="bg-rose-gold text-dark-primary hover:bg-rose-gold/90 px-8 py-3 rounded-full font-medium"
-            >
-              {getNavigationText(currentNodeId, choices.length > 0)}
-              {(choices.length > 0 || getNextPageId(currentNodeId)) && (
-                <ChevronRight className="w-4 h-4 ml-2" />
-              )}
-            </Button>
+            {showChoices && choices.length > 0 ? (
+              // Choice buttons replace the navigation
+              <div className="w-full space-y-3">
+                {choices.map((choice) => (
+                  <Button
+                    key={choice.id}
+                    onClick={() => handleChoiceSelect(choice.id, choice.isPremium, choice.diamondCost)}
+                    disabled={selectChoiceMutation.isPending}
+                    className="w-full p-4 h-auto text-left bg-dark-secondary hover:bg-dark-accent transition-colors border border-dark-tertiary hover:border-rose-gold/30"
+                    variant="outline"
+                  >
+                    <div className="flex items-center justify-between w-full">
+                      <span className="text-text-secondary group-hover:text-text-primary transition-colors">
+                        {choice.choiceText}
+                      </span>
+                      {choice.isPremium && (
+                        <div className="flex items-center gap-1 text-rose-gold">
+                          <Heart className="w-4 h-4" />
+                          <span className="text-sm font-medium">{choice.diamondCost}</span>
+                        </div>
+                      )}
+                    </div>
+                  </Button>
+                ))}
+              </div>
+            ) : (
+              // Regular continue reading button
+              getNavigationText(currentNodeId, false) && (
+                <Button
+                  onClick={handleContinueReading}
+                  disabled={selectChoiceMutation.isPending}
+                  className="bg-rose-gold text-dark-primary hover:bg-rose-gold/90 px-8 py-3 rounded-full font-medium"
+                >
+                  {getNavigationText(currentNodeId, false)}
+                  <ChevronRight className="w-4 h-4 ml-2" />
+                </Button>
+              )
+            )}
           </div>
         </div>
-      </main>
-    </div>
-  );
-}
-          <div className="space-y-6">
-            {/* Choice Selection */}
-            <Card className="bg-dark-secondary border-dark-tertiary">
-              <CardContent className="p-6">
-                <h3 className="text-lg font-semibold text-text-primary mb-4">
-                  Choose your path:
-                </h3>
-                
-                <div className="space-y-3">
-                  {choices.map((choice) => (
-                    <Button
-                      key={choice.id}
-                      onClick={() => handleChoiceSelect(choice.id, choice.isPremium, choice.diamondCost)}
-                      disabled={selectChoiceMutation.isPending}
-                      variant="outline"
-                      className={`w-full justify-start p-4 h-auto text-left border-2 transition-all ${
-                        choice.isPremium
-                          ? "border-rose-gold/30 bg-rose-gold/5 hover:bg-rose-gold/10 hover:border-rose-gold/50"
-                          : "border-dark-tertiary hover:border-text-muted hover:bg-dark-tertiary/50"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between w-full">
-                        <span className="text-text-primary">{choice.choiceText}</span>
-                        {choice.isPremium && (
-                          <div className="flex items-center space-x-1 text-rose-gold">
-                            <Gem className="w-4 h-4" />
-                            <span className="text-sm">{choice.diamondCost}</span>
-                          </div>
-                        )}
-                      </div>
-                    </Button>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
       </main>
     </div>
   );
