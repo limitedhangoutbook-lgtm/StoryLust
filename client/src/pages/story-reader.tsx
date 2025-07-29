@@ -23,8 +23,7 @@ export default function StoryReader() {
   const [showChoices, setShowChoices] = useState(false);
   const [pageHistory, setPageHistory] = useState<string[]>([]);
   const [showTypographySettings, setShowTypographySettings] = useState(false);
-  const [selectedChoiceId, setSelectedChoiceId] = useState<string | null>(null);
-  const [showChoiceAnimation, setShowChoiceAnimation] = useState(false);
+
 
   const [showNavigation, setShowNavigation] = useState(true);
   
@@ -445,8 +444,6 @@ export default function StoryReader() {
         
         setCurrentNodeId(data.targetNode.id);
         setShowChoices(false);
-        setShowChoiceAnimation(false);
-        setSelectedChoiceId(null);
         
         // Scroll to top for new content
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -664,19 +661,8 @@ export default function StoryReader() {
       }
     }
 
-    // Show choice selection animation
-    setSelectedChoiceId(choiceId);
-    setShowChoiceAnimation(true);
-    
-    // Trigger subtle haptic feedback if available
-    if (navigator.vibrate) {
-      navigator.vibrate([30]);
-    }
-    
-    // Delay the mutation to let the animation play (shorter duration)
-    setTimeout(() => {
-      selectChoiceMutation.mutate(choiceId);
-    }, 600);
+    // Process choice selection immediately
+    selectChoiceMutation.mutate(choiceId);
   };
 
   const getNextPageId = (currentId: string | null): string | null => {
@@ -829,26 +815,18 @@ export default function StoryReader() {
           <div className="mt-8 mb-16">
             <div className="space-y-6">
               {choices.map((choice, index) => {
-                const isSelected = selectedChoiceId === choice.id;
                 return (
                   <div key={choice.id} className="kindle-text relative">
                     <button
                       onClick={() => {
                         handleChoiceSelect(choice.id, choice.isPremium || false, choice.diamondCost || undefined);
                       }}
-                      disabled={selectChoiceMutation.isPending || showChoiceAnimation}
+                      disabled={selectChoiceMutation.isPending}
                       className={`w-full text-left transition-all duration-300 group relative overflow-hidden rounded-lg ${
                         choice.isPremium 
                           ? 'hover:text-rose-gold' 
                           : 'hover:text-kindle-secondary'
-                      } ${
-                        isSelected && showChoiceAnimation 
-                          ? 'scale-[1.02] shadow-xl ring-1 ring-rose-gold/50 bg-gradient-to-r from-rose-gold/8 to-rose-gold/4' 
-                          : 'hover:bg-dark-secondary/30'
-                      }`}
-                      style={{ 
-                        transform: isSelected && showChoiceAnimation ? 'scale(1.02)' : 'scale(1)',
-                      }}
+                      } hover:bg-dark-secondary/30`}
                     >
                       <p className="kindle-paragraph relative pl-8 py-2 px-3">
                         <span className={`absolute left-3 top-2 font-bold ${
@@ -867,45 +845,7 @@ export default function StoryReader() {
                         )}
                       </p>
                       
-                      {/* Professional choice selection animation */}
-                      {isSelected && showChoiceAnimation && (
-                        <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-lg">
-                          {/* Elegant shimmer effect */}
-                          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-rose-gold/20 to-transparent -skew-x-12 animate-shimmer" 
-                               style={{ 
-                                 animation: 'shimmer 0.8s ease-out',
-                                 width: '150%',
-                                 left: '-50%'
-                               }} />
-                          
-                          {/* Subtle border glow */}
-                          <div className="absolute inset-0 rounded-lg border-2 border-rose-gold/40 animate-pulse" />
-                          
-                          {/* Floating confirmation indicators */}
-                          {[...Array(4)].map((_, i) => (
-                            <div
-                              key={i}
-                              className="absolute w-1 h-1 bg-rose-gold rounded-full opacity-0 animate-float-up"
-                              style={{
-                                left: `${70 + (i * 5)}%`,
-                                top: '50%',
-                                animationDelay: `${i * 150}ms`,
-                                animationDuration: '1s',
-                                animationFillMode: 'forwards'
-                              }}
-                            />
-                          ))}
-                          
-                          {/* Success checkmark */}
-                          <div className="absolute right-4 top-1/2 transform -translate-y-1/2 opacity-0 animate-check-in">
-                            <div className="w-6 h-6 bg-rose-gold/20 rounded-full flex items-center justify-center">
-                              <svg className="w-4 h-4 text-rose-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                              </svg>
-                            </div>
-                          </div>
-                        </div>
-                      )}
+
                     </button>
                   </div>
                 );
@@ -914,21 +854,7 @@ export default function StoryReader() {
           </div>
         )}
 
-        {/* Professional choice confirmation toast */}
-        {showChoiceAnimation && (
-          <div className="fixed inset-0 z-50 pointer-events-none">
-            {/* Elegant sliding confirmation */}
-            <div className="absolute top-24 right-6 animate-in slide-in-from-right-3 fade-in duration-500">
-              <div className="bg-gradient-to-r from-dark-secondary/95 to-dark-secondary/90 backdrop-blur-md rounded-xl px-5 py-3 border border-rose-gold/40 shadow-2xl">
-                <div className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-rose-gold rounded-full animate-pulse"></div>
-                  <span className="text-kindle text-sm font-medium tracking-wide">Choice Confirmed</span>
-                  <div className="w-8 h-0.5 bg-gradient-to-r from-rose-gold/60 to-transparent rounded-full animate-expand"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+
       </main>
 
 
