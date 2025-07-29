@@ -35,6 +35,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(story);
   });
 
+  // Get starting node for a story
+  app.get('/api/stories/:storyId/start', async (req, res) => {
+    const startingNode = await storage.getFirstStoryNode(req.params.storyId);
+    if (!startingNode) {
+      return res.status(404).json({ message: "Starting node not found" });
+    }
+    res.json(startingNode);
+  });
+
+  app.get('/api/stories/:storyId/nodes/start', async (req, res) => {
+    const startingNode = await storage.getFirstStoryNode(req.params.storyId);
+    if (!startingNode) {
+      return res.status(404).json({ message: "Starting node not found" });
+    }
+    res.json(startingNode);
+  });
+
   // === NODE & CHOICE ROUTES ===
   app.get('/api/nodes/:nodeId', async (req, res) => {
     const node = await storage.getStoryNode(req.params.nodeId);

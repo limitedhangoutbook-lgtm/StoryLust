@@ -160,7 +160,7 @@ export default function StoryReader() {
           setCurrentNodeId(startingNode.id);
         }
       }).catch((error) => {
-
+        console.error('Error fetching starting node:', error);
         toast({
           title: "Error",
           description: "Failed to load story. Please try again.",
