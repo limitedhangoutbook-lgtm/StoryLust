@@ -48,6 +48,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Import unified story manager  
+  const { getUnifiedStory, getStoryPage } = await import('./unified-story-manager.js');
+
   app.get('/api/stories/featured', async (req, res) => {
     try {
       const story = await storage.getFeaturedStory();
@@ -55,6 +58,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching featured story:", error);
       res.status(500).json({ message: "Failed to fetch featured story" });
+    }
+  });
+
+  // New unified story endpoint
+  app.get('/api/stories/:storyId/complete', async (req, res) => {
+    try {
+      const unifiedStory = getUnifiedStory(req.params.storyId);
+      if (!unifiedStory) {
+        return res.status(404).json({ message: "Story not found" });
+      }
+      res.json(unifiedStory);
+    } catch (error) {
+      console.error("Error fetching unified story:", error);
+      res.status(500).json({ message: "Failed to fetch story" });
+    }
+  });
+
+  // New unified choice endpoint
+  app.post('/api/stories/:storyId/choice', async (req, res) => {
+    try {
+      const { choiceId, currentPageId, nextPageId, isPremium, diamondCost } = req.body;
+      
+      // For premium choices, require authentication
+      if (isPremium && req.isAuthenticated()) {
+        const userId = (req.user as any).claims.sub;
+        
+        // Check diamonds for premium choices
+        if (diamondCost > 0) {
+          const user = await storage.getUser(userId);
+          const userDiamonds = user?.diamonds || 0;
+          
+          if (userDiamonds < diamondCost) {
+            return res.status(400).json({ message: "Insufficient diamonds" });
+          }
+
+          // Deduct diamonds
+          await storage.updateUserDiamonds(userId, userDiamonds - diamondCost);
+        }
+      } else if (isPremium) {
+        return res.status(401).json({ message: "Authentication required for premium choices" });
+      }
+
+      // Get the target page
+      const targetPage = getStoryPage(req.params.storyId, nextPageId);
+      
+      res.json({ 
+        success: true,
+        nextPageId,
+        targetPage,
+        diamondsSpent: isPremium ? diamondCost : 0 
+      });
+    } catch (error) {
+      console.error("Error processing choice:", error);
+      res.status(500).json({ message: "Failed to process choice" });
     }
   });
 

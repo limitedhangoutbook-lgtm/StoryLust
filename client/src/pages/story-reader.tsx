@@ -3,9 +3,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Gem, Heart, Settings } from "lucide-react";
 import { StoryNavigation } from "@/components/story-navigation";
 import { TypographySettings } from "@/components/typography-settings";
+import { UnifiedStoryReader } from "@/components/unified-story-reader";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation, useRoute } from "wouter";
-import { Button } from "@/components/ui/button";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
@@ -22,12 +22,29 @@ export default function StoryReader() {
   const [showChoices, setShowChoices] = useState(false);
   const [pageHistory, setPageHistory] = useState<string[]>([]);
   const [showTypographySettings, setShowTypographySettings] = useState(false);
+  const [useUnifiedReader, setUseUnifiedReader] = useState(true); // New unified system
   
   // Touch gesture handling
   const touchStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
   const mainContentRef = useRef<HTMLDivElement>(null);
 
   const storyId = params?.storyId;
+
+  // Use unified story reader for cleaner architecture
+  if (useUnifiedReader && storyId) {
+    return (
+      <>
+        <UnifiedStoryReader 
+          storyId={storyId}
+          onBack={() => setLocation("/")}
+          onTypographySettings={() => setShowTypographySettings(true)}
+        />
+        {showTypographySettings && (
+          <TypographySettings onClose={() => setShowTypographySettings(false)} />
+        )}
+      </>
+    );
+  }
 
   // Fetch story details
   const { data: story, isLoading: storyLoading } = useQuery<Story>({
