@@ -47,7 +47,7 @@ This message was sent by a VIP member through TurnPage.
       `.trim();
 
       // Use dedicated author email for professional communication
-      const authorEmail = "author@limitedhangoutbook.com"; // Professional author email
+      const authorEmail = "Author@limitedhangoutbook.com"; // Professional author email
       const mailtoLink = `mailto:${authorEmail}?subject=${encodeURIComponent(`VIP Message: ${subject}`)}&body=${encodeURIComponent(emailBody)}`;
       
       window.open(mailtoLink, '_blank');

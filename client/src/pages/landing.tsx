@@ -1,15 +1,25 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { BookOpen, Heart, Gem, Star } from "lucide-react";
+import featuredImage from "@assets/davidbook_1753815404952.png";
 
 export default function Landing() {
   return (
     <div className="max-w-md mx-auto bg-dark-primary min-h-screen">
       {/* Hero Section */}
       <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-rose-gold/20 via-transparent to-gold-accent/20" />
-        <div className="relative px-6 py-16 text-center">
-          <div className="w-16 h-16 gradient-rose-gold rounded-3xl flex items-center justify-center mx-auto mb-6">
+        {/* Featured Image Background */}
+        <div className="absolute inset-0">
+          <img 
+            src={featuredImage} 
+            alt="Featured model for TurnPage stories" 
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-dark-primary via-dark-primary/80 to-dark-primary/40" />
+        </div>
+        
+        <div className="relative px-6 py-20 text-center">
+          <div className="w-16 h-16 gradient-rose-gold rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg">
             <BookOpen className="w-8 h-8 text-dark-primary" />
           </div>
           
