@@ -116,9 +116,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Story creation endpoint
-  app.post('/api/stories/create', async (req, res) => {
+  // Story creation endpoint - Admin only
+  app.post('/api/stories/create', isAuthenticated, async (req, res) => {
     try {
+      // Check if user is admin
+      const userEmail = (req.user as any)?.claims?.email;
+      const adminEmails = [
+        "evyatar.perel@gmail.com", // Your email
+        // Add partner emails here as needed
+      ];
+      
+      if (!adminEmails.includes(userEmail)) {
+        return res.status(403).json({ message: "Access denied: Admin only" });
+      }
+
       const validation = storyCreationManager.validateStoryStructure(req.body);
       if (!validation.valid) {
         return res.status(400).json({ 

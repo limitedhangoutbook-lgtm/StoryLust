@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
+import { useAuth } from "@/hooks/useAuth";
 
 interface StoryNode {
   id: string;
@@ -40,6 +41,34 @@ interface Connection {
 export default function StoryCreator() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const { user } = useAuth();
+
+  // Admin access check
+  const isAdminUser = (user: any) => {
+    const adminEmails = [
+      "evyatar.perel@gmail.com", // Your email
+      // Add partner emails here as needed
+    ];
+    return adminEmails.includes(user?.email);
+  };
+
+  // Redirect if not admin
+  if (!user || !isAdminUser(user)) {
+    return (
+      <div className="min-h-screen bg-kindle flex items-center justify-center">
+        <div className="text-center p-8">
+          <h1 className="text-2xl font-bold text-kindle mb-4">Access Restricted</h1>
+          <p className="text-kindle-secondary mb-6">Story creation is limited to authorized partners.</p>
+          <Button 
+            onClick={() => setLocation("/")}
+            className="bg-rose-gold text-dark-primary hover:bg-rose-gold/90"
+          >
+            Return Home
+          </Button>
+        </div>
+      </div>
+    );
+  }
   const [storyMetadata, setStoryMetadata] = useState({
     title: "",
     description: "",

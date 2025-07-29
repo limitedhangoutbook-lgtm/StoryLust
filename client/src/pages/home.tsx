@@ -9,6 +9,15 @@ import { BottomNavigation } from "@/components/bottom-navigation";
 import { StoryCard } from "@/components/story-card";
 import type { Story } from "@shared/schema";
 
+// Admin check function - centralized for reuse
+const isAdminUser = (user: any) => {
+  const adminEmails = [
+    "evyatar.perel@gmail.com", // Your email
+    // Add partner emails here as needed
+  ];
+  return adminEmails.includes(user?.email);
+};
+
 export default function Home() {
   const { user } = useAuth();
   const { theme, setTheme } = useTheme();
@@ -34,6 +43,8 @@ export default function Home() {
   const openStory = (storyId: string) => {
     setLocation(`/story/${storyId}`);
   };
+
+
 
   const filterButtons = [
     { key: "all", label: "All" },
@@ -152,13 +163,13 @@ export default function Home() {
           ))}
         </section>
 
-        {/* Create Story Section */}
-        {user && (
+        {/* Admin Create Story Section */}
+        {user && isAdminUser(user) && (
           <section className="p-4 bg-dark-secondary/50 rounded-xl border border-dark-tertiary/30">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-sm font-semibold text-text-primary">Create Your Story</h3>
-                <p className="text-xs text-text-muted mt-1">Build branching adventures without coding</p>
+                <h3 className="text-sm font-semibold text-text-primary">Admin: Create Story</h3>
+                <p className="text-xs text-text-muted mt-1">Visual story editor for partners</p>
               </div>
               <Button
                 onClick={() => setLocation("/story-creator")}
