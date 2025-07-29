@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Gem, Heart, Settings } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { StoryNavigation } from "@/components/story-navigation";
 import { TypographySettings } from "@/components/typography-settings";
 import { UnifiedStoryReader } from "@/components/unified-story-reader";
@@ -22,7 +23,7 @@ export default function StoryReader() {
   const [showChoices, setShowChoices] = useState(false);
   const [pageHistory, setPageHistory] = useState<string[]>([]);
   const [showTypographySettings, setShowTypographySettings] = useState(false);
-  const [useUnifiedReader, setUseUnifiedReader] = useState(true); // New unified system
+  const [useUnifiedReader, setUseUnifiedReader] = useState(false); // Using current system - navigation is perfect!
   
   // Touch gesture handling
   const touchStartRef = useRef<{ x: number; y: number; time: number } | null>(null);

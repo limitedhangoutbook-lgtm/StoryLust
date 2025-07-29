@@ -262,7 +262,7 @@ export function UnifiedStoryReader({ storyId, onBack, onTypographySettings }: Un
       <main 
         ref={mainContentRef}
         className={`pt-16 px-6 max-w-3xl mx-auto min-h-screen touch-manipulation select-none ${
-          hasChoices ? 'pb-32' : 'pb-20'
+          hasChoices ? 'pb-32' : 'pb-28'
         }`}
         style={{ touchAction: 'pan-y' }}
       >
@@ -318,15 +318,41 @@ export function UnifiedStoryReader({ storyId, onBack, onTypographySettings }: Un
           </div>
         )}
 
-        {/* Continue Button for Pages Without Choices */}
+        {/* Story Navigation - Elegant Swipe Interface */}
         {!hasChoices && !currentPage.isEnding && (
-          <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2">
-            <Button
-              onClick={handleContinue}
-              className="bg-dark-secondary hover:bg-dark-tertiary text-kindle border border-dark-tertiary/50"
-            >
-              Continue Reading
-            </Button>
+          <div className="fixed bottom-0 left-0 right-0 bg-dark-secondary/95 backdrop-blur-sm border-t border-dark-tertiary/30">
+            <div className="flex items-center max-w-3xl mx-auto">
+              {/* Left Arrow - Go Back */}
+              <button 
+                onClick={handleGoBack}
+                disabled={pageHistory.length === 0}
+                className="p-4 text-kindle-secondary hover:text-kindle transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              
+              {/* Center - Story Title and Swipe Hint */}
+              <div className="flex-1 text-center py-4">
+                <div className="text-sm font-medium text-kindle mb-1">
+                  {storyData?.title || "Story"}
+                </div>
+                <div className="text-xs text-kindle-secondary/70 tracking-wider">
+                  Swipe left to continue • Swipe right to go back
+                </div>
+              </div>
+              
+              {/* Right Arrow - Continue */}
+              <button 
+                onClick={handleContinue}
+                className="p-4 text-kindle-secondary hover:text-kindle transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
           </div>
         )}
 

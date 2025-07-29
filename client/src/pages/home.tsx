@@ -121,7 +121,13 @@ export default function Home() {
                     </span>
                   </div>
                 </div>
-                <button className="w-full mt-4 gradient-rose-gold text-dark-primary font-semibold py-3 rounded-xl transition-all duration-200 active:scale-95">
+                <button 
+                  className="w-full mt-4 gradient-rose-gold text-dark-primary font-semibold py-3 rounded-xl transition-all duration-200 active:scale-95"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openStory(featuredStory.id);
+                  }}
+                >
                   {user ? "Continue Reading" : "Start Reading"}
                 </button>
               </div>
@@ -145,6 +151,24 @@ export default function Home() {
             </button>
           ))}
         </section>
+
+        {/* Create Story Section */}
+        {user && (
+          <section className="p-4 bg-dark-secondary/50 rounded-xl border border-dark-tertiary/30">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-semibold text-text-primary">Create Your Story</h3>
+                <p className="text-xs text-text-muted mt-1">Build branching adventures without coding</p>
+              </div>
+              <Button
+                onClick={() => setLocation("/story-creator")}
+                className="bg-rose-gold text-dark-primary hover:bg-rose-gold/90 text-sm px-4 py-2 h-8"
+              >
+                ✍️ Create
+              </Button>
+            </div>
+          </section>
+        )}
 
         {/* Story Grid */}
         <section className="space-y-4">

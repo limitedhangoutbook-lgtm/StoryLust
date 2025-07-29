@@ -48,8 +48,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Import unified story manager  
+  // Import unified story manager and creation manager
   const { getUnifiedStory, getStoryPage } = await import('./unified-story-manager.js');
+  const { storyCreationManager } = await import('./story-creation-manager.js');
 
   app.get('/api/stories/featured', async (req, res) => {
     try {
@@ -112,6 +113,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error processing choice:", error);
       res.status(500).json({ message: "Failed to process choice" });
+    }
+  });
+
+  // Story creation endpoint
+  app.post('/api/stories/create', async (req, res) => {
+    try {
+      const validation = storyCreationManager.validateStoryStructure(req.body);
+      if (!validation.valid) {
+        return res.status(400).json({ 
+          message: "Invalid story structure", 
+          errors: validation.errors 
+        });
+      }
+
+      const storyId = await storyCreationManager.createStoryFromData(req.body);
+      res.json({ success: true, storyId });
+    } catch (error) {
+      console.error("Error creating story:", error);
+      res.status(500).json({ message: "Failed to create story" });
     }
   });
 

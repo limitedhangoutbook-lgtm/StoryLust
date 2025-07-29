@@ -2,7 +2,42 @@
 // Based on the user's sketches showing choice nodes (circles) and ending nodes (squares)
 
 import { storage } from "./storage";
-import type { InsertStory, InsertStoryNode, InsertStoryChoice } from "@shared/schema";
+import type { Story, StoryNode, StoryChoice } from "@shared/schema";
+
+// Define creation types separately to avoid schema conflicts
+interface InsertStory {
+  id: string;
+  title: string;
+  description: string;
+  spiceLevel: number;
+  category: string;
+  wordCount: number;
+  featured: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface InsertStoryNode {
+  id: string;
+  storyId: string;
+  title: string;
+  content: string;
+  nodeType: string;
+  isPremium: boolean;
+  order: number;
+  createdAt: Date;
+}
+
+interface InsertStoryChoice {
+  id: string;
+  fromNodeId: string;
+  toNodeId: string;
+  choiceText: string;
+  order: number;
+  isPremium: boolean;
+  diamondCost: number;
+  createdAt: Date;
+}
 
 export interface CreatedStoryData {
   id: string;
@@ -35,15 +70,15 @@ export class StoryCreationManager {
     try {
       // 1. Create the main story record
       const storyRecord: InsertStory = {
-        id: storyData.id,
         title: storyData.title,
         description: storyData.description,
+        imageUrl: "/api/placeholder/400/300", // Default placeholder
         spiceLevel: storyData.spiceLevel,
         category: storyData.category,
         wordCount: this.calculateWordCount(storyData.pages),
-        featured: false,
-        createdAt: new Date(),
-        updatedAt: new Date()
+        pathCount: this.calculatePathCount(storyData.pages),
+        isFeatured: false,
+        isPublished: true
       };
 
       const story = await storage.createStory(storyRecord);
@@ -95,6 +130,12 @@ export class StoryCreationManager {
       const wordCount = page.content.split(/\s+/).filter(word => word.length > 0).length;
       return total + wordCount;
     }, 0);
+  }
+
+  private calculatePathCount(pages: CreatedPageData[]): number {
+    // Count total number of different paths through the story
+    const endings = pages.filter(p => p.isEnding).length;
+    return Math.max(endings, 1); // At least 1 path
   }
 
   private getPageOrder(pageId: string, pages: CreatedPageData[]): number {
