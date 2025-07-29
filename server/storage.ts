@@ -29,15 +29,15 @@ export class Storage {
       .insert(users)
       .values({
         ...userData,
-        arrows: userData.arrows ?? (userData.role === 'mega-admin' ? 999 : 20), // Give mega-admin 999 arrows
+        diamonds: userData.diamonds ?? (userData.role === 'mega-admin' ? 999 : 20), // Give mega-admin 999 diamonds
       })
       .onConflictDoUpdate({
         target: users.id,
         set: { 
           ...userData, 
           updatedAt: new Date(),
-          // Don't overwrite arrows on existing users unless explicitly provided
-          arrows: userData.arrows !== undefined ? userData.arrows : sql`${users.arrows}`,
+          // Don't overwrite diamonds on existing users unless explicitly provided
+          diamonds: userData.diamonds !== undefined ? userData.diamonds : sql`${users.diamonds}`,
         },
       })
       .returning();
@@ -48,10 +48,10 @@ export class Storage {
     return await db.select().from(users).orderBy(users.createdAt);
   }
 
-  async updateUserArrows(userId: string, arrows: number): Promise<User> {
+  async updateUserDiamonds(userId: string, diamonds: number): Promise<User> {
     const [user] = await db
       .update(users)
-      .set({ arrows, updatedAt: new Date() })
+      .set({ diamonds, updatedAt: new Date() })
       .where(eq(users.id, userId))
       .returning();
     return user;
@@ -153,7 +153,7 @@ export class Storage {
     choiceText: string;
     order?: number;
     isPremium?: boolean;
-    arrowCost?: number;
+    diamondCost?: number;
   }): Promise<StoryChoice> {
     const [choice] = await db
       .insert(storyChoices)
@@ -163,7 +163,7 @@ export class Storage {
         choiceText: choiceData.choiceText,
         order: choiceData.order || 0,
         isPremium: choiceData.isPremium || false,
-        arrowCost: choiceData.arrowCost || 0,
+        diamondCost: choiceData.diamondCost || 0,
       })
       .returning();
     return choice;
@@ -296,7 +296,7 @@ export class Storage {
     totalChoicesMade: number;
     bookmarkedStories: number;
     premiumChoicesUnlocked: number;
-    arrowsSpent: number;
+    diamondsSpent: number;
   }> {
     // Count stories started (reading progress exists)
     const [startedResult] = await db
@@ -338,7 +338,7 @@ export class Storage {
         eq(storyChoices.isPremium, true)
       ));
 
-    // Get user for arrows spent (would need transaction history for real calculation)
+    // Get user for diamonds spent (would need transaction history for real calculation)
     const user = await this.getUser(userId);
     
     return {
@@ -347,7 +347,7 @@ export class Storage {
       totalChoicesMade: choicesResult?.count || 0,
       bookmarkedStories: bookmarkedResult?.count || 0,
       premiumChoicesUnlocked: premiumResult?.count || 0,
-      arrowsSpent: 0, // Would need transaction history
+      diamondsSpent: 0, // Would need transaction history
     };
   }
 

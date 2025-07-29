@@ -8,10 +8,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { apiRequest } from "@/lib/queryClient";
 
-interface ArrowPackage {
+interface DiamondPackage {
   id: string;
   name: string;
-  arrows: number;
+  diamonds: number;
   price: number;
   bonus?: number;
   popular?: boolean;
@@ -19,18 +19,18 @@ interface ArrowPackage {
   icon: any;
 }
 
-const arrowPackages: ArrowPackage[] = [
+const diamondPackages: DiamondPackage[] = [
   {
     id: "starter",
     name: "Starter Pack",
-    arrows: 100,
+    diamonds: 100,
     price: 2.99,
-    icon: Gem, // Will be replaced with your SVG arrow
+    icon: Gem,
   },
   {
     id: "popular",
     name: "Popular Choice",
-    arrows: 300,
+    diamonds: 300,
     price: 7.99,
     bonus: 50,
     popular: true,
@@ -39,7 +39,7 @@ const arrowPackages: ArrowPackage[] = [
   {
     id: "premium",
     name: "Premium Pack",
-    arrows: 600,
+    diamonds: 600,
     price: 14.99,
     bonus: 150,
     bestValue: true,
@@ -48,7 +48,7 @@ const arrowPackages: ArrowPackage[] = [
   {
     id: "mega",
     name: "Mega Pack",
-    arrows: 1200,
+    diamonds: 1200,
     price: 24.99,
     bonus: 400,
     icon: Gift,
@@ -69,7 +69,7 @@ export default function Store() {
           <div>
             <h2 className="text-2xl font-bold text-text-primary mb-2">Sign In Required</h2>
             <p className="text-text-muted leading-relaxed">
-              Sign in to purchase arrows and unlock premium story content.
+              Sign in to purchase diamonds and unlock premium story content.
             </p>
           </div>
         </div>
@@ -92,10 +92,10 @@ export default function Store() {
     );
   }
 
-  const currentArrows = (user as any)?.arrows || 0;
+  const currentDiamonds = (user as any)?.diamonds || 0;
 
   const handlePurchase = async (packageId: string) => {
-    const pkg = arrowPackages.find(p => p.id === packageId);
+    const pkg = diamondPackages.find(p => p.id === packageId);
     if (!pkg) return;
 
     setSelectedPackage(packageId);
@@ -107,15 +107,15 @@ export default function Store() {
         packageId: pkg.id,
       });
       
-      // For demo purposes, simulate successful payment and add arrows
+      // For demo purposes, simulate successful payment and add diamonds
       // In production, this would happen via Stripe webhook after payment confirmation
-      await apiRequest("POST", "/api/add-arrows", {
+      await apiRequest("POST", "/api/add-diamonds", {
         packageId: pkg.id,
       });
       
-      alert(`Successfully purchased ${pkg.arrows + (pkg.bonus || 0)} arrows!`);
+      alert(`Successfully purchased ${pkg.diamonds + (pkg.bonus || 0)} diamonds!`);
       
-      // Refresh user data to show updated arrow balance
+      // Refresh user data to show updated diamond balance
       window.location.reload();
     } catch (error) {
 
@@ -139,12 +139,12 @@ export default function Store() {
             >
               <ArrowLeft size={16} className="text-text-muted" />
             </Button>
-            <h1 className="text-xl font-bold tracking-tight text-text-primary">Arrow Store</h1>
+            <h1 className="text-xl font-bold tracking-tight text-text-primary">Diamond Store</h1>
           </div>
           <div className="flex items-center space-x-1 bg-dark-tertiary px-3 py-1.5 rounded-full">
             <Gem className="text-gold-accent" size={14} />
             <span className="text-sm font-medium text-text-primary">
-              {currentArrows}
+              {currentDiamonds}
             </span>
           </div>
         </div>
@@ -160,7 +160,7 @@ export default function Store() {
               </div>
               <h2 className="text-lg font-bold text-text-primary">Unlock Premium Stories</h2>
               <p className="text-sm text-text-muted">
-                Use arrows to access exclusive story paths and premium content
+                Use diamonds to access exclusive story paths and premium content
               </p>
             </div>
           </CardContent>
@@ -169,12 +169,12 @@ export default function Store() {
 
       {/* Packages */}
       <main className="px-4 space-y-4">
-        <h3 className="text-lg font-semibold text-text-primary">Arrow Packages</h3>
+        <h3 className="text-lg font-semibold text-text-primary">Diamond Packages</h3>
         
         <div className="space-y-3">
-          {arrowPackages.map((pkg) => {
+          {diamondPackages.map((pkg) => {
             const Icon = pkg.icon;
-            const totalArrows = pkg.arrows + (pkg.bonus || 0);
+            const totalDiamonds = pkg.diamonds + (pkg.bonus || 0);
             const isLoading = selectedPackage === pkg.id;
             
             return (
@@ -206,7 +206,7 @@ export default function Store() {
                         <h4 className="font-semibold text-text-primary">{pkg.name}</h4>
                         <div className="flex items-center space-x-2">
                           <span className="text-lg font-bold text-gold-accent">
-                            {pkg.arrows.toLocaleString()}
+                            {pkg.diamonds.toLocaleString()}
                           </span>
                           {pkg.bonus && (
                             <>
@@ -220,7 +220,7 @@ export default function Store() {
                         </div>
                         {pkg.bonus && (
                           <p className="text-xs text-text-muted">
-                            Total: {totalArrows.toLocaleString()} arrows
+                            Total: {totalDiamonds.toLocaleString()} diamonds
                           </p>
                         )}
                       </div>
@@ -248,7 +248,7 @@ export default function Store() {
         {/* Usage Info */}
         <Card className="bg-dark-secondary border-dark-tertiary mt-8">
           <CardHeader>
-            <CardTitle className="text-lg text-text-primary">How Arrows Work</CardTitle>
+            <CardTitle className="text-lg text-text-primary">How Diamonds Work</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex items-start space-x-3">
@@ -257,7 +257,7 @@ export default function Store() {
               </div>
               <div>
                 <p className="text-sm text-text-primary font-medium">Unlock Premium Paths</p>
-                <p className="text-xs text-text-muted">Use arrows to access exclusive story branches</p>
+                <p className="text-xs text-text-muted">Use diamonds to access exclusive story branches</p>
               </div>
             </div>
             <div className="flex items-start space-x-3">

@@ -462,7 +462,7 @@ export default function StoryReader() {
               // Silently handle reading progress save error
             });
             
-            // Refresh user data to update arrow count
+            // Refresh user data to update diamond count
             queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
           }
           
@@ -597,7 +597,7 @@ export default function StoryReader() {
     },
   });
 
-  const handleChoiceSelect = (choiceId: string, isPremium?: boolean, arrowCost?: number) => {
+  const handleChoiceSelect = (choiceId: string, isPremium?: boolean, diamondCost?: number) => {
     // Only require authentication for premium choices
     if (isPremium && !isAuthenticated) {
       // Save current reading position before login
@@ -611,7 +611,7 @@ export default function StoryReader() {
       
       toast({
         title: "Sign In Required",
-        description: "Sign in to unlock premium story paths with arrows",
+        description: "Sign in to unlock premium story paths with diamonds",
         variant: "destructive",
       });
       
@@ -650,14 +650,14 @@ export default function StoryReader() {
       return;
     }
 
-    // Check arrow balance only for authenticated premium choices
+    // Check diamond balance only for authenticated premium choices
     if (isPremium && isAuthenticated) {
-      const userArrows = (user as any)?.arrows || 0;
+      const userDiamonds = (user as any)?.diamonds || 0;
       
-      if ((arrowCost || 0) > userArrows) {
+      if ((diamondCost || 0) > userDiamonds) {
         toast({
-          title: "Not Enough Arrows",
-          description: `You need ${arrowCost || 0} arrows to unlock this choice. Visit the store to get more!`,
+          title: "Not Enough Diamonds",
+          description: `You need ${diamondCost || 0} diamonds to unlock this choice. Visit the store to get more!`,
           variant: "destructive",
         });
         return;
@@ -720,7 +720,7 @@ export default function StoryReader() {
     bookmarkMutation.mutate();
   };
 
-  const userArrows = (user as any)?.arrows || 0;
+  const userDiamonds = (user as any)?.diamonds || 0;
 
   if (!match) {
     return null;
@@ -776,7 +776,7 @@ export default function StoryReader() {
                 className="flex items-center space-x-1 px-3 py-1 bg-dark-secondary/50 rounded-full hover:bg-dark-secondary/70 transition-colors cursor-pointer"
               >
                 <Gem className="w-4 h-4 text-rose-gold" />
-                <span className="text-sm font-medium text-kindle">{userArrows}</span>
+                <span className="text-sm font-medium text-kindle">{userDiamonds}</span>
               </button>
               <Button
                 variant="ghost"
@@ -834,7 +834,7 @@ export default function StoryReader() {
                   <div key={choice.id} className="kindle-text relative">
                     <button
                       onClick={() => {
-                        handleChoiceSelect(choice.id, choice.isPremium || false, choice.arrowCost || undefined);
+                        handleChoiceSelect(choice.id, choice.isPremium || false, choice.diamondCost || undefined);
                       }}
                       disabled={selectChoiceMutation.isPending || showChoiceAnimation}
                       className={`w-full text-left transition-all duration-300 group relative overflow-hidden rounded-lg ${
@@ -862,7 +862,7 @@ export default function StoryReader() {
                         {choice.isPremium && (
                           <span className="ml-3 inline-flex items-center gap-1.5 px-2 py-1 bg-rose-gold/15 text-rose-gold border border-rose-gold/30 rounded-full text-xs font-semibold">
                             <Gem className="w-3 h-3 fill-current" />
-                            <span>{choice.arrowCost || 0} arrows</span>
+                            <span>{choice.diamondCost || 0} diamonds</span>
                           </span>
                         )}
                       </p>
