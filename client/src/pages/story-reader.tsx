@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Gem, Heart, ChevronRight } from "lucide-react";
+import { ArrowLeft, Gem, Heart } from "lucide-react";
+import { StoryNavigation } from "@/components/story-navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation, useRoute } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -91,7 +92,16 @@ export default function StoryReader() {
     setShowChoices(choices.length > 0);
   }, [choices]);
 
-
+  // Go back handler  
+  const handleGoBack = () => {
+    if (pageHistory.length > 0) {
+      const previousNodeId = pageHistory[pageHistory.length - 1];
+      setPageHistory(prev => prev.slice(0, -1));
+      setCurrentNodeId(previousNodeId);
+      setShowChoices(false);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
 
   // Add touch event listeners for swipe gestures
   useEffect(() => {
@@ -124,11 +134,7 @@ export default function StoryReader() {
       if (isHorizontalSwipe && isFastEnough && !showChoices) {
         if (deltaX > 0 && pageHistory.length > 0) {
           // Swipe right - go back
-          const previousPageId = pageHistory[pageHistory.length - 1];
-          setPageHistory(prev => prev.slice(0, -1));
-          setCurrentNodeId(previousPageId);
-          setShowChoices(false);
-          window.scrollTo({ top: 0, behavior: 'smooth' });
+          handleGoBack();
         } else if (deltaX < 0) {
           // Swipe left - continue reading
           handleContinueReading();
@@ -394,7 +400,7 @@ export default function StoryReader() {
                 size="sm"
                 onClick={handleBookmark}
                 className={isBookmarked ? "text-rose-gold" : "text-kindle-secondary hover:text-kindle"}
-                disabled={bookmarkMutation.isPending}
+                disabled={bookmarkMutation.isPending || false}
               >
                 <Heart className={`w-5 h-5 ${isBookmarked ? "fill-current" : ""}`} />
               </Button>
@@ -458,7 +464,7 @@ export default function StoryReader() {
               <div className="flex justify-center gap-3">
                 {pageHistory.length > 0 && (
                   <button
-                    onClick={handleSwipeBack}
+                    onClick={handleGoBack}
                     disabled={selectChoiceMutation.isPending}
                     className="flex items-center gap-2 px-4 py-2 bg-dark-secondary/50 text-kindle hover:bg-dark-secondary/70 rounded-full font-medium transition-colors"
                   >
@@ -472,13 +478,22 @@ export default function StoryReader() {
                   className="flex items-center gap-2 px-6 py-2 bg-rose-gold text-dark-primary hover:bg-rose-gold/90 rounded-full font-medium transition-colors"
                 >
                   {getNavigationText(currentNodeId, false)}
-                  <ChevronRight className="w-4 h-4" />
+                  →
                 </button>
               </div>
             )
           )}
         </div>
       </footer>
+
+      {/* Story Navigation - Like your sketch */}
+      <StoryNavigation
+        storyTitle={story?.title || ""}
+        canGoBack={pageHistory.length > 0}
+        onGoBack={handleGoBack}
+        onContinue={handleContinueReading}
+        showChoices={showChoices}
+      />
     </div>
   );
 }
