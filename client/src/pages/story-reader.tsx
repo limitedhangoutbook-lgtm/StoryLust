@@ -299,12 +299,17 @@ export default function StoryReader() {
   });
 
   const handleChoiceSelect = (choiceId: string, isPremium?: boolean, diamondCost?: number) => {
-    if (!isAuthenticated && isPremium) {
+    if (!isAuthenticated) {
       toast({
         title: "Sign In Required",
-        description: "Sign in to unlock premium story paths with diamonds",
+        description: isPremium 
+          ? "Sign in to unlock premium story paths with diamonds"
+          : "Sign in to continue your story",
         variant: "destructive",
       });
+      setTimeout(() => {
+        window.location.href = "/api/login";
+      }, 1000);
       return;
     }
 
@@ -468,7 +473,7 @@ export default function StoryReader() {
                   <button
                     onClick={() => {
                       console.log('Choice clicked:', choice.id, choice.isPremium, choice.diamondCost);
-                      handleChoiceSelect(choice.id, choice.isPremium, choice.diamondCost);
+                      handleChoiceSelect(choice.id, choice.isPremium || false, choice.diamondCost);
                     }}
                     disabled={selectChoiceMutation.isPending}
                     className={`w-full text-left transition-all duration-200 group ${
@@ -487,9 +492,9 @@ export default function StoryReader() {
                         {choice.choiceText}
                       </span>
                       {choice.isPremium && (
-                        <span className="ml-2 inline-flex items-center gap-1 text-rose-gold">
+                        <span className="ml-3 inline-flex items-center gap-1.5 px-2 py-1 bg-rose-gold/15 text-rose-gold border border-rose-gold/30 rounded-full text-xs font-semibold">
                           <Gem className="w-3 h-3 fill-current" />
-                          <span className="text-sm font-medium">{choice.diamondCost || 5}</span>
+                          <span>{choice.diamondCost || 5} diamonds</span>
                         </span>
                       )}
                     </p>
