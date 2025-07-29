@@ -31,10 +31,16 @@ export function BottomNavigation() {
   const { user } = useAuth();
 
   const handleNavClick = (item: typeof navigationItems[0], e: React.MouseEvent) => {
-    // Allow browsing for guests, but require login for user-specific pages
+    // Allow browsing for guests, but show modal for user-specific pages
     if (!user && (item.path === "/my-reading" || item.path === "/profile" || item.path === "/store")) {
       e.preventDefault();
-      window.location.href = "/api/login";
+      // Show a user-friendly modal instead of immediate redirect
+      const shouldLogin = window.confirm(
+        `Sign in required to access ${item.name}. Would you like to sign in now?`
+      );
+      if (shouldLogin) {
+        window.location.href = "/api/login";
+      }
       return;
     }
   };

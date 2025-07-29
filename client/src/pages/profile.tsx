@@ -12,14 +12,34 @@ export default function Profile() {
   const { user, isLoading } = useAuth();
   const [, setLocation] = useLocation();
 
-  // Redirect to login if not authenticated
+  // Show sign-in prompt for unauthenticated users
   if (!isLoading && !user) {
-    setTimeout(() => {
-      window.location.href = "/api/login";
-    }, 100);
     return (
-      <div className="max-w-md mx-auto bg-dark-primary min-h-screen flex items-center justify-center">
-        <p className="text-text-muted">Redirecting to sign in...</p>
+      <div className="max-w-md mx-auto bg-dark-primary min-h-screen flex flex-col items-center justify-center p-6 space-y-6">
+        <div className="text-center space-y-4">
+          <User className="w-16 h-16 text-rose-gold mx-auto" />
+          <div>
+            <h2 className="text-2xl font-bold text-text-primary mb-2">Sign In Required</h2>
+            <p className="text-text-muted leading-relaxed">
+              Sign in to view your profile, reading stats, and manage your account settings.
+            </p>
+          </div>
+        </div>
+        <div className="flex flex-col space-y-3 w-full max-w-xs">
+          <Button
+            onClick={() => window.location.href = "/api/login"}
+            className="bg-rose-gold text-dark-primary hover:bg-rose-gold/90 font-semibold"
+          >
+            Sign In
+          </Button>
+          <Button
+            onClick={() => setLocation("/")}
+            variant="outline"
+            className="border-dark-tertiary text-text-secondary hover:bg-dark-tertiary"
+          >
+            Back to Browse
+          </Button>
+        </div>
       </div>
     );
   }

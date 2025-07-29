@@ -21,19 +21,34 @@ export default function MyReading() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Redirect to login if not authenticated
+  // Show sign-in prompt for unauthenticated users
   if (!authLoading && !user) {
-    toast({
-      title: "Sign In Required",
-      description: "Please sign in to view your reading progress.",
-      variant: "destructive",
-    });
-    setTimeout(() => {
-      window.location.href = "/api/login";
-    }, 1000);
     return (
-      <div className="max-w-md mx-auto bg-dark-primary min-h-screen flex items-center justify-center">
-        <p className="text-text-muted">Redirecting to sign in...</p>
+      <div className="max-w-md mx-auto bg-dark-primary min-h-screen flex flex-col items-center justify-center p-6 space-y-6">
+        <div className="text-center space-y-4">
+          <BookOpen className="w-16 h-16 text-rose-gold mx-auto" />
+          <div>
+            <h2 className="text-2xl font-bold text-text-primary mb-2">Sign In Required</h2>
+            <p className="text-text-muted leading-relaxed">
+              Sign in to view your reading progress and continue your stories where you left off.
+            </p>
+          </div>
+        </div>
+        <div className="flex flex-col space-y-3 w-full max-w-xs">
+          <Button
+            onClick={() => window.location.href = "/api/login"}
+            className="bg-rose-gold text-dark-primary hover:bg-rose-gold/90 font-semibold"
+          >
+            Sign In
+          </Button>
+          <Button
+            onClick={() => setLocation("/")}
+            variant="outline"
+            className="border-dark-tertiary text-text-secondary hover:bg-dark-tertiary"
+          >
+            Back to Browse
+          </Button>
+        </div>
       </div>
     );
   }
@@ -165,9 +180,8 @@ export default function MyReading() {
                 story={progress.story}
                 onRead={() => openStory(progress.storyId)}
                 onBookmark={() => handleBookmark(progress.storyId)}
-                isBookmarked={!!progress.isBookmarked}
                 showProgress={true}
-                progressText={`Last read: ${progress.lastReadAt ? new Date(progress.lastReadAt).toLocaleDateString() : 'Recently'}`}
+                progressPercent={Math.min(100, (progress.currentNodeId ? 50 : 10))}
               />
             ))}
           </div>
