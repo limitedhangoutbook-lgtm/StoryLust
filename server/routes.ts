@@ -149,8 +149,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userId,
         storyId,
         choiceId,
-        fromNodeId,
-        toNodeId,
       });
       res.json(choice);
     } catch (error) {
@@ -241,6 +239,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Target node not found" });
       }
       
+      // Handle premium choice diamond deduction
+      if (choice.isPremium && (choice.diamondCost || 0) > 0) {
+        if (!req.isAuthenticated?.()) {
+          return res.status(401).json({ message: "Authentication required for premium choices" });
+        }
+        
+        const userId = (req as any).user.claims.sub;
+        const user = await storage.getUser(userId);
+        const cost = choice.diamondCost || 0;
+        
+        if (!user || (user.diamonds || 0) < cost) {
+          return res.status(400).json({ message: "Insufficient diamonds for this premium choice" });
+        }
+        
+        // Deduct diamonds
+        await storage.updateUserDiamonds(userId, (user.diamonds || 0) - cost);
+      }
+      
       // Save user choice if authenticated
       if (req.isAuthenticated?.()) {
         const userId = (req as any).user.claims.sub;
@@ -248,8 +264,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           userId,
           storyId,
           choiceId,
-          fromNodeId: currentNodeId,
-          toNodeId: choice.toNodeId,
         });
         
         // Save reading progress

@@ -432,6 +432,9 @@ export default function StoryReader() {
             }).catch(error => {
               // Silently handle reading progress save error
             });
+            
+            // Refresh user data to update diamond count
+            queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
           }
           
           // Always save to local storage as backup
