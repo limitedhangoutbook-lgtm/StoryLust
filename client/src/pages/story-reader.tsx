@@ -86,15 +86,11 @@ export default function StoryReader() {
               storyId,
               currentNodeId: position.nodeId,
               isBookmarked: false
-            }).catch(error => {
-
-            });
+            }).catch(() => {});
           }
           return;
         }
-      } catch (e) {
-
-      }
+      } catch (e) {}
       sessionStorage.removeItem('returnPosition');
     }
     
@@ -113,9 +109,7 @@ export default function StoryReader() {
           }, 1500);
           return;
         }
-      } catch (e) {
-
-      }
+      } catch (e) {}
       sessionStorage.removeItem('pendingChoice');
     }
 
@@ -166,9 +160,7 @@ export default function StoryReader() {
             return true;
           }
         }
-      } catch (e) {
-
-      }
+      } catch (e) {}
       return false;
     }
 
@@ -180,7 +172,6 @@ export default function StoryReader() {
           setCurrentNodeId(startingNode.id);
         }
       }).catch((error) => {
-        console.error('Error fetching starting node:', error);
         toast({
           title: "Error",
           description: "Failed to load story. Please try again.",
@@ -203,10 +194,7 @@ export default function StoryReader() {
         timestamp: Date.now()
       };
       localStorage.setItem(`story-progress-${storyId}`, JSON.stringify(progress));
-
-    } catch (e) {
-
-    }
+    } catch (e) {}
   };
 
   // Go back handler  
@@ -436,7 +424,7 @@ export default function StoryReader() {
       const deltaY = touch.clientY - touchStartRef.current.y;
       const deltaTime = Date.now() - touchStartRef.current.time;
       
-      console.log('Touch end:', { deltaX, deltaY, deltaTime, showChoices, historyLength: pageHistory.length }); // Debug log
+
       
       // Only handle swipes that are primarily horizontal and fast enough
       const isHorizontalSwipe = Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 30; // Reduced threshold for easier swiping
@@ -447,17 +435,14 @@ export default function StoryReader() {
         
         if (deltaX > 0 && pageHistory.length > 0) {
           // Swipe right - go back (works even with choices visible)
-          console.log('Swipe right - going back');
           handleGoBack();
         } else if (deltaX < 0) {
           // Swipe left behavior depends on context
           if (showChoices) {
             // If choices are visible, just show navigation
-            console.log('Swipe left with choices - showing navigation');
             showNavigationTemporarily();
           } else {
             // Continue reading if no choices
-            console.log('Swipe left - continuing');
             handleContinueReading();
           }
         }
@@ -473,7 +458,6 @@ export default function StoryReader() {
     mainElement.addEventListener('touchend', handleTouchEnd, { passive: false }); // Changed to false to allow preventDefault
 
     return () => {
-      console.log('Cleaning up touch listeners');
       mainElement.removeEventListener('touchstart', handleTouchStart);
       mainElement.removeEventListener('touchend', handleTouchEnd);
     };

@@ -438,7 +438,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         success: true
       });
     } catch (error) {
-      console.error("Error processing choice selection:", error);
       res.status(500).json({ message: "Failed to process your choice" });
     }
   });
@@ -477,7 +476,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: "Story reset to beginning"
       });
     } catch (error) {
-      console.error("Error resetting story to beginning:", error);
       res.status(500).json({ message: "Failed to reset story" });
     }
   });
@@ -521,7 +519,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.json({ isBookmarked: newProgress.isBookmarked });
       }
     } catch (error) {
-      console.error("Error toggling bookmark:", error);
       res.status(500).json({ message: "Failed to toggle bookmark" });
     }
   });
@@ -540,7 +537,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const updatedUser = await storage.updateUserDiamonds(userId, (user.diamonds || 0) - amount);
       res.json(updatedUser);
     } catch (error) {
-      console.error("Error spending diamonds:", error);
       res.status(500).json({ message: "Failed to spend diamonds" });
     }
   });

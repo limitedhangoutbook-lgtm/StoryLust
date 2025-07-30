@@ -33,7 +33,7 @@ export default function Home() {
   });
 
   // Fetch reading progress for authenticated users
-  const { data: readingProgress = [] } = useQuery({
+  const { data: readingProgress = [] } = useQuery<any[]>({
     queryKey: ["/api/reading-progress"],
     enabled: !!user,
   });
@@ -95,7 +95,7 @@ export default function Home() {
             <h1 className="text-xl font-bold tracking-tight text-text-primary">TurnPage</h1>
           </div>
           <div className="flex items-center space-x-3">
-            {user && isAdmin(user) && (
+{user && isAdmin(user) && (
               <Button
                 onClick={() => setLocation("/story-builder")}
                 size="sm"
@@ -195,7 +195,7 @@ export default function Home() {
                   </button>
                   
                   {/* Start from Beginning button for featured story */}
-                  {(() => {
+{(() => {
                     const featuredProgress = readingProgress.find((p: any) => p.storyId === featuredStory.id);
                     return featuredProgress ? (
                       <button 
@@ -233,7 +233,7 @@ export default function Home() {
           ))}
         </section>
 
-        {/* Admin Create Story Section */}
+{/* Admin Create Story Section */}
         {user && isAdmin(user) && (
           <section className="p-4 bg-dark-secondary/50 rounded-xl border border-dark-tertiary/30">
             <div className="flex items-center justify-between">
