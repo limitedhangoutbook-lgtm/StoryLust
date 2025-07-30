@@ -8,7 +8,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/landing";
 import Home from "@/pages/home";
-import StoryReader from "@/pages/story-reader";
+import StoryReaderNew from "@/pages/story-reader-new";
 import MyReading from "@/pages/my-reading";
 import Profile from "@/pages/profile";
 import Store from "@/pages/store";
@@ -25,7 +25,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
-      <Route path="/story/:storyId" component={StoryReader} />
+      <Route path="/story/:storyId" component={StoryReaderNew} />
       <Route path="/my-reading" component={MyReading} />
       <Route path="/bookmarks" component={Bookmarks} />
       <Route path="/profile" component={Profile} />
