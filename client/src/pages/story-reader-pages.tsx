@@ -242,14 +242,15 @@ export default function StoryReaderPages() {
   // Reset story
   const resetMutation = useMutation({
     mutationFn: async () => {
-      if (isAuthenticated) {
-        await apiRequest("DELETE", `/api/reading-progress/${storyId}`);
-      }
+      // Call the proper start-from-beginning endpoint
+      await apiRequest("POST", `/api/stories/${storyId}/start-from-beginning`);
       localStorage.removeItem(`story-${storyId}-page`);
     },
     onSuccess: () => {
       setCurrentPage(1);
       queryClient.invalidateQueries({ queryKey: [`/api/reading-progress/${storyId}`] });
+      // Also refresh story pages to ensure we get the correct starting position
+      queryClient.invalidateQueries({ queryKey: [`/api/stories/${storyId}/pages`] });
     },
   });
 
