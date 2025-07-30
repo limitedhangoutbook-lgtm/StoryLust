@@ -288,8 +288,13 @@ export default function StoryReaderPages() {
             {story.title}
           </h1>
           
-          <div className="text-xs sm:text-sm text-kindle-secondary">
-          </div>
+          <button
+            onClick={() => resetMutation.mutate()}
+            disabled={resetMutation.isPending}
+            className="text-xs text-kindle-secondary hover:text-rose-gold underline"
+          >
+            {resetMutation.isPending ? "Resetting..." : "Start over"}
+          </button>
         </div>
       </header>
 
