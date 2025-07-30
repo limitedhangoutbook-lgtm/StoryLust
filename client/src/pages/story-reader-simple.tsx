@@ -21,25 +21,25 @@ export default function StoryReaderSimple() {
   const storyId = params?.storyId;
 
   // Get story
-  const { data: story } = useQuery({
+  const { data: story } = useQuery<{ id: string; title: string }>({
     queryKey: [`/api/stories/${storyId}`],
     enabled: !!storyId,
   });
 
   // Get current node
-  const { data: currentNode } = useQuery({
+  const { data: currentNode } = useQuery<{ id: string; storyId: string; title: string; content: string }>({
     queryKey: [`/api/nodes/${currentNodeId}`],
     enabled: !!currentNodeId,
   });
 
   // Get choices
-  const { data: choices = [] } = useQuery({
+  const { data: choices = [] } = useQuery<Array<{ id: string; choiceText: string; isPremium: boolean; diamondCost?: number }>>({
     queryKey: [`/api/nodes/${currentNodeId}/choices`],
     enabled: !!currentNodeId,
   });
 
   // Get progress
-  const { data: progress } = useQuery({
+  const { data: progress } = useQuery<{ currentNodeId?: string }>({
     queryKey: [`/api/reading-progress/${storyId}`],
     enabled: !!storyId && isAuthenticated,
   });
@@ -63,6 +63,27 @@ export default function StoryReaderSimple() {
     const nodeId = progress?.currentNodeId || savedNodeId || startNodeId;
     setCurrentNodeId(nodeId);
   }, [storyId, progress]);
+
+  // Go back function
+  const goBack = () => {
+    if (history.length === 0) return;
+    
+    const previousNodeId = history[history.length - 1];
+    setHistory(prev => prev.slice(0, -1));
+    setCurrentNodeId(previousNodeId);
+    
+    // Save progress
+    if (storyId) {
+      localStorage.setItem(`story-${storyId}-node`, previousNodeId);
+      if (isAuthenticated) {
+        apiRequest("POST", "/api/reading-progress", {
+          storyId,
+          currentNodeId: previousNodeId,
+          isBookmarked: false,
+        }).catch(() => {});
+      }
+    }
+  };
 
   // Simple swipe handling
   useEffect(() => {
@@ -91,26 +112,9 @@ export default function StoryReaderSimple() {
       document.removeEventListener('touchstart', handleTouchStart);
       document.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [history.length]);
+  }, [history.length, goBack]);
 
-  // Go back
-  const goBack = () => {
-    if (history.length === 0) return;
-    
-    const previousNodeId = history[history.length - 1];
-    setHistory(prev => prev.slice(0, -1));
-    setCurrentNodeId(previousNodeId);
-    
-    // Save progress
-    localStorage.setItem(`story-${storyId}-node`, previousNodeId);
-    if (isAuthenticated && storyId) {
-      apiRequest("POST", "/api/reading-progress", {
-        storyId,
-        currentNodeId: previousNodeId,
-        isBookmarked: false,
-      }).catch(() => {});
-    }
-  };
+
 
   // Select choice
   const selectChoiceMutation = useMutation({
@@ -130,13 +134,15 @@ export default function StoryReaderSimple() {
         setCurrentNodeId(data.targetNode.id);
         
         // Save progress
-        localStorage.setItem(`story-${storyId}-node`, data.targetNode.id);
-        if (isAuthenticated && storyId) {
-          apiRequest("POST", "/api/reading-progress", {
-            storyId,
-            currentNodeId: data.targetNode.id,
-            isBookmarked: false,
-          }).catch(() => {});
+        if (storyId) {
+          localStorage.setItem(`story-${storyId}-node`, data.targetNode.id);
+          if (isAuthenticated) {
+            apiRequest("POST", "/api/reading-progress", {
+              storyId,
+              currentNodeId: data.targetNode.id,
+              isBookmarked: false,
+            }).catch(() => {});
+          }
         }
         
         // Show feedback
