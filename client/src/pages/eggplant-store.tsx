@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Sparkles, Gift, Crown, Star, PiggyBank, Diamond } from "lucide-react";
+import { Sparkles, Gift, Crown, Star, PiggyBank } from "lucide-react";
 import { EGGPLANT_CONFIG } from "@shared/constants";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -295,7 +295,7 @@ export default function EggplantStore() {
             </div>
             <div className="space-y-2">
               <div className="flex items-center space-x-2">
-                <Diamond className="w-4 h-4 text-yellow-400" />
+                <span className="text-yellow-400 text-lg">🍆</span>
                 <span className="font-medium text-text-primary">Unlimited Story Access</span>
               </div>
               <p className="text-text-muted ml-6">Never worry about eggplant costs again</p>

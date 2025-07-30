@@ -708,7 +708,7 @@ export default function StoryReader() {
 
   return (
     <div className="min-h-screen kindle-reader">
-      {/* Minimal Header - Just back button and diamonds */}
+      {/* Minimal Header - Just back button and eggplants */}
       <header className="absolute top-0 left-0 right-0 z-10 px-4 py-3">
         <div className="flex items-center justify-between">
           <Button

@@ -1,7 +1,7 @@
 # replit.md
 
 ## Overview
-TurnPage is a choose-your-own-adventure mobile web application built with a modern full-stack architecture. The application features interactive storytelling with branching narratives, user authentication, reading progress tracking, and a premium content system with virtual currency (diamonds). The app is optimized for mobile devices with a Progressive Web App (PWA) design.
+TurnPage is a choose-your-own-adventure mobile web application built with a modern full-stack architecture. The application features interactive storytelling with branching narratives, user authentication, reading progress tracking, and a premium content system with virtual currency (eggplants). The app is optimized for mobile devices with a Progressive Web App (PWA) design.
 
 **Version 1.0** - Released January 30, 2025: Core story reading experience complete with page-based navigation, choice branching, and premium content system.
 
@@ -77,7 +77,7 @@ User feedback: Very appreciative of thorough help and comprehensive solutions.
 3. **Home**: Browse stories by category with featured content
 4. **Reading**: Interactive story navigation with choice selection
 5. **Progress**: Automatic saving of reading position and choices
-6. **Store**: Diamond purchases for premium content access
+6. **Store**: Eggplant purchases for premium content access
 
 ### Story Reading Flow
 1. Fetch story metadata and starting node
@@ -140,7 +140,7 @@ User feedback: Very appreciative of thorough help and comprehensive solutions.
 - **Timeline Story Builder Complete**: Implemented visual branching system matching user's original sketch design (January 29, 2025)
   - Visual connection arrows showing story flow between choices and target branches
   - Color-coded timelines with branch naming functionality (Romance Path, Action Route, etc.)
-  - Premium path visualization with dashed rose lines and diamond indicators
+  - Premium path visualization with dashed rose lines and eggplant indicators
   - Real-time SVG connection rendering with curved arrows pointing to correct branch colors
   - Interactive branch renaming with meaningful path descriptions
 - **User Role System Access**: Upgraded project owner (evyatar.perel@gmail.com) to mega-admin status for full system access (January 29, 2025)

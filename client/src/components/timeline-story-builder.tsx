@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Plus, Trash2, Edit, Diamond, Circle, Square } from "lucide-react";
+import { Plus, Trash2, Edit, Circle, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -257,7 +257,7 @@ export function TimelineStoryBuilder({ pages, onPagesChange }: TimelineStoryBuil
             newConnections.push({
               from,
               to,
-              color: choice.isPremium ? '#fb7185' : connectionColors[targetPage.timelineColumn || 0],
+              color: choice.isPremium ? '#fb7185' : connectionColors[pages.find(p => p.id === choice.targetPageId)?.timelineColumn || 0],
               isDashed: choice.isPremium
             });
           }
@@ -315,7 +315,7 @@ export function TimelineStoryBuilder({ pages, onPagesChange }: TimelineStoryBuil
         </div>
         <div className="flex items-center space-x-2">
           <div className="w-6 h-0.5 border-dashed border-rose-400"></div>
-          <Diamond className="w-4 h-4 text-rose-400" />
+          <span className="text-rose-400">🍆</span>
           <span className="text-sm text-text-muted">Premium Path</span>
         </div>
         <div className="flex items-center space-x-2">
@@ -535,7 +535,7 @@ export function TimelineStoryBuilder({ pages, onPagesChange }: TimelineStoryBuil
                                     <span className="text-text-primary">{choice.text}</span>
                                     {choice.isPremium && (
                                       <div className="flex items-center space-x-1">
-                                        <Diamond className="w-3 h-3 text-rose-400" />
+                                        <span className="text-rose-400 text-xs">🍆</span>
                                         <span className="text-rose-400">{choice.eggplantCost}</span>
                                       </div>
                                     )}

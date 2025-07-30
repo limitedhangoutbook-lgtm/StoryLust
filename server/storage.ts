@@ -334,7 +334,7 @@ export class Storage {
     totalChoicesMade: number;
     bookmarkedStories: number;
     premiumChoicesUnlocked: number;
-    diamondsSpent: number;
+    eggplantsSpent: number;
   }> {
     // Count stories started (reading progress exists)
     const [startedResult] = await db
@@ -376,7 +376,7 @@ export class Storage {
         eq(storyChoices.isPremium, true)
       ));
 
-    // Get user for diamonds spent (would need transaction history for real calculation)
+    // Get user for eggplants spent (would need transaction history for real calculation)
     const user = await this.getUser(userId);
     
     return {
@@ -385,7 +385,7 @@ export class Storage {
       totalChoicesMade: choicesResult?.count || 0,
       bookmarkedStories: bookmarkedResult?.count || 0,
       premiumChoicesUnlocked: premiumResult?.count || 0,
-      diamondsSpent: 0, // Would need transaction history
+      eggplantsSpent: 0, // Would need transaction history
     };
   }
 

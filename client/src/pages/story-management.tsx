@@ -49,7 +49,7 @@ interface StoryChoice {
   choiceText: string;
   order: number;
   isPremium: boolean;
-  diamondCost: number;
+  eggplantCost: number;
 }
 
 export default function StoryManagement() {

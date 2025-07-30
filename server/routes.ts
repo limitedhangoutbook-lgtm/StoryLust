@@ -384,7 +384,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const alreadyPurchased = await storage.hasPurchasedPremiumPath(userId, choiceId);
         
         if (!alreadyPurchased) {
-          // User hasn't purchased this path yet, check if they have enough diamonds
+          // User hasn't purchased this path yet, check if they have enough eggplants
           const user = await storage.getUser(userId);
           const cost = choice.eggplantCost || 0;
           const userEggplants = user?.eggplants || 0;

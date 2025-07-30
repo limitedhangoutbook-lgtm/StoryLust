@@ -53,7 +53,7 @@ export default function Profile() {
     totalChoicesMade: 0,
     bookmarkedStories: 0,
     premiumChoicesUnlocked: 0,
-    diamondsSpent: 0,
+    eggplantsSpent: 0,
   }, isLoading: statsLoading } = useQuery({
     queryKey: ["/api/user/stats"],
     enabled: !!user,
@@ -133,7 +133,7 @@ export default function Profile() {
                 <div className="flex items-center space-x-1 mt-2">
                   <Gem className="text-gold-accent" size={14} />
                   <span className="text-sm font-medium text-gold-accent">
-                    {(user as any)?.diamonds || 0} diamonds
+                    {(user as any)?.eggplants || 0} eggplants
                   </span>
                 </div>
               </div>
@@ -237,7 +237,7 @@ export default function Profile() {
               
               {/* Admin Actions */}
               {user && isAdmin(user) && (
-                <>
+                <div key="admin-actions">
                   <Separator className="bg-dark-tertiary" />
                   <Button
                     variant="ghost"
@@ -255,12 +255,13 @@ export default function Profile() {
                     <Edit className="w-4 h-4 mr-3" />
                     Manage My Stories
                   </Button>
-                </>
+                </div>
               )}
               
               {/* Mega Admin Actions */}
               {user && isMegaAdmin(user) && (
                 <Button
+                  key="mega-admin-action"
                   variant="ghost"
                   className="w-full justify-start text-gold-accent hover:bg-dark-tertiary"
                   onClick={() => setLocation("/user-management")}
