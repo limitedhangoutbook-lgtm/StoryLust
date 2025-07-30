@@ -32,30 +32,19 @@ function Router() {
 
   return (
     <Switch>
-      {isLoading || !isAuthenticated ? (
-        <>
-          <Route path="/" component={Landing} />
-          <Route path="/story/:storyId" component={StoryReaderPages} />
-          <Route path="/landing" component={Landing} />
-          <Route component={Landing} />
-        </>
-      ) : (
-        <>
-          <Route path="/" component={Home} />
-          <Route path="/story/:storyId" component={StoryReaderPages} />
-          <Route path="/my-reading" component={MyReading} />
-          <Route path="/bookmarks" component={Bookmarks} />
-          <Route path="/profile" component={Profile} />
-          <Route path="/store" component={Store} />
-          <Route path="/eggplants" component={Store} />
-          <Route path="/story-creator" component={StoryCreator} />
-          <Route path="/story-management" component={StoryManagement} />
-          <Route path="/story-builder" component={StoryBuilder} />
-          <Route path="/user-management" component={UserManagement} />
-          <Route path="/landing" component={Landing} />
-          <Route component={NotFound} />
-        </>
-      )}
+      <Route path="/" component={Home} />
+      <Route path="/story/:storyId" component={StoryReaderPages} />
+      <Route path="/my-reading" component={MyReading} />
+      <Route path="/bookmarks" component={Bookmarks} />
+      <Route path="/profile" component={Profile} />
+      <Route path="/store" component={Store} />
+      <Route path="/eggplants" component={Store} />
+      <Route path="/story-creator" component={StoryCreator} />
+      <Route path="/story-management" component={StoryManagement} />
+      <Route path="/story-builder" component={StoryBuilder} />
+      <Route path="/user-management" component={UserManagement} />
+      <Route path="/landing" component={Landing} />
+      <Route component={NotFound} />
     </Switch>
   );
 }
