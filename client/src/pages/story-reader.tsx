@@ -439,19 +439,27 @@ export default function StoryReader() {
       console.log('Touch end:', { deltaX, deltaY, deltaTime, showChoices, historyLength: pageHistory.length }); // Debug log
       
       // Only handle swipes that are primarily horizontal and fast enough
-      const isHorizontalSwipe = Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50;
-      const isFastEnough = deltaTime < 300;
+      const isHorizontalSwipe = Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 30; // Reduced threshold for easier swiping
+      const isFastEnough = deltaTime < 500; // Increased time threshold for easier swiping
       
-      if (isHorizontalSwipe && isFastEnough && !showChoices) {
+      if (isHorizontalSwipe && isFastEnough) {
         e.preventDefault(); // Prevent default touch behavior
+        
         if (deltaX > 0 && pageHistory.length > 0) {
-          // Swipe right - go back
+          // Swipe right - go back (works even with choices visible)
           console.log('Swipe right - going back');
           handleGoBack();
         } else if (deltaX < 0) {
-          // Swipe left - continue reading
-          console.log('Swipe left - continuing');
-          handleContinueReading();
+          // Swipe left behavior depends on context
+          if (showChoices) {
+            // If choices are visible, just show navigation
+            console.log('Swipe left with choices - showing navigation');
+            showNavigationTemporarily();
+          } else {
+            // Continue reading if no choices
+            console.log('Swipe left - continuing');
+            handleContinueReading();
+          }
         }
       } else if (!isHorizontalSwipe && Math.abs(deltaX) < 20 && Math.abs(deltaY) < 20) {
         // Simple tap - show navigation temporarily
@@ -830,7 +838,7 @@ export default function StoryReader() {
         style={{ touchAction: 'manipulation' }}
       >
         {/* Swipe hint for first time users */}
-        {currentNodeId === "start" && (
+        {currentNodeId && currentNodeId.includes("start") && (
           <div className="text-center mb-4 text-kindle-secondary text-sm">
             💡 Tip: Swipe left to continue, swipe right to go back
           </div>
