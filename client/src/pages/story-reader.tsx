@@ -402,8 +402,6 @@ export default function StoryReader() {
     const mainElement = mainContentRef.current;
     if (!mainElement) return;
 
-    console.log('Setting up touch listeners');
-
     const handleTouchStart = (e: TouchEvent) => {
       if (e.touches.length !== 1) return;
       
@@ -413,7 +411,6 @@ export default function StoryReader() {
         y: touch.clientY,
         time: Date.now()
       };
-      console.log('Touch start:', touchStartRef.current);
     };
 
     const handleTouchEnd = (e: TouchEvent) => {
@@ -424,8 +421,6 @@ export default function StoryReader() {
       const deltaY = touch.clientY - touchStartRef.current.y;
       const deltaTime = Date.now() - touchStartRef.current.time;
       
-      console.log('Touch end:', { deltaX, deltaY, deltaTime, showChoices, historyLength: pageHistory.length });
-      
       // Only handle swipes that are primarily horizontal and fast enough
       const isHorizontalSwipe = Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 30; // Reduced threshold for easier swiping
       const isFastEnough = deltaTime < 500; // Increased time threshold for easier swiping
@@ -435,21 +430,17 @@ export default function StoryReader() {
         
         if (deltaX > 0 && pageHistory.length > 0) {
           // Swipe right - go back (works even with choices visible)
-          console.log('Executing swipe right - going back');
           handleGoBack();
         } else if (deltaX < 0) {
           // Swipe left behavior depends on context
           if (showChoices) {
             // If choices are visible, just show navigation
-            console.log('Executing swipe left with choices - showing navigation');
             showNavigationTemporarily();
           } else {
             // Show choices if they exist, otherwise show navigation
             if (choices.length > 0) {
-              console.log('Executing swipe left - showing choices');
               setShowChoices(true);
             } else {
-              console.log('No choices or at story ending - showing navigation');
               showNavigationTemporarily();
             }
           }
@@ -960,7 +951,13 @@ export default function StoryReader() {
             storyTitle={story?.title || ""}
             canGoBack={pageHistory.length > 0}
             onGoBack={handleGoBack}
-            onContinue={handleContinueReading}
+            onContinue={() => {
+              if (choices.length > 0) {
+                setShowChoices(true);
+              } else {
+                showNavigationTemporarily();
+              }
+            }}
             showChoices={showChoices}
             isStoryEnding={isStoryEnding}
             onGoToFirstChoice={handleGoToFirstChoice}
