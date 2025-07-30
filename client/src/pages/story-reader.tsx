@@ -402,7 +402,7 @@ export default function StoryReader() {
     const mainElement = mainContentRef.current;
     if (!mainElement) return;
 
-    console.log('Setting up touch listeners'); // Debug log
+    console.log('Setting up touch listeners');
 
     const handleTouchStart = (e: TouchEvent) => {
       if (e.touches.length !== 1) return;
@@ -413,7 +413,7 @@ export default function StoryReader() {
         y: touch.clientY,
         time: Date.now()
       };
-      console.log('Touch start:', touchStartRef.current); // Debug log
+      console.log('Touch start:', touchStartRef.current);
     };
 
     const handleTouchEnd = (e: TouchEvent) => {
@@ -424,7 +424,7 @@ export default function StoryReader() {
       const deltaY = touch.clientY - touchStartRef.current.y;
       const deltaTime = Date.now() - touchStartRef.current.time;
       
-
+      console.log('Touch end:', { deltaX, deltaY, deltaTime, showChoices, historyLength: pageHistory.length });
       
       // Only handle swipes that are primarily horizontal and fast enough
       const isHorizontalSwipe = Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 30; // Reduced threshold for easier swiping
@@ -435,14 +435,17 @@ export default function StoryReader() {
         
         if (deltaX > 0 && pageHistory.length > 0) {
           // Swipe right - go back (works even with choices visible)
+          console.log('Executing swipe right - going back');
           handleGoBack();
         } else if (deltaX < 0) {
           // Swipe left behavior depends on context
           if (showChoices) {
             // If choices are visible, just show navigation
+            console.log('Executing swipe left with choices - showing navigation');
             showNavigationTemporarily();
           } else {
             // Continue reading if no choices
+            console.log('Executing swipe left - continuing reading');
             handleContinueReading();
           }
         }
@@ -454,14 +457,14 @@ export default function StoryReader() {
       touchStartRef.current = null;
     };
 
-    mainElement.addEventListener('touchstart', handleTouchStart, { passive: true });
-    mainElement.addEventListener('touchend', handleTouchEnd, { passive: false }); // Changed to false to allow preventDefault
+    mainElement.addEventListener('touchstart', handleTouchStart, { passive: false });
+    mainElement.addEventListener('touchend', handleTouchEnd, { passive: false });
 
     return () => {
       mainElement.removeEventListener('touchstart', handleTouchStart);
       mainElement.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [showChoices, pageHistory.length, handleGoBack, handleContinueReading]); // Added missing dependencies
+  }, [showChoices, pageHistory.length, handleGoBack, handleContinueReading, showNavigationTemporarily]);
 
   // Separate effect for navigation auto-hiding
   useEffect(() => {
@@ -819,7 +822,7 @@ export default function StoryReader() {
         className={`pt-16 px-6 max-w-3xl mx-auto min-h-screen touch-manipulation ${
           showChoices ? 'pb-32' : 'pb-20'
         }`}
-        style={{ touchAction: 'manipulation' }}
+        style={{ touchAction: 'none' }}
       >
         {/* Swipe hint for first time users */}
         {currentNodeId && currentNodeId.includes("start") && (
