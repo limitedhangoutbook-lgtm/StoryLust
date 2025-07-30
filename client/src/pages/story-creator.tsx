@@ -27,9 +27,9 @@ interface StoryNode {
 interface StoryChoice {
   id: string;
   text: string;
-  nextNodeId: string;
+  toNodeId: string;
   isPremium?: boolean;
-  diamondCost?: number;
+  eggplantCost?: number;
 }
 
 interface Connection {
@@ -119,8 +119,8 @@ export default function StoryCreator() {
       x: 200 + Math.random() * 300,
       y: 200 + Math.random() * 200,
       choices: type === 'choice' ? [
-        { id: `choice-1`, text: "Choice A", nextNodeId: "", isPremium: false },
-        { id: `choice-2`, text: "Choice B", nextNodeId: "", isPremium: false }
+        { id: `choice-1`, text: "Choice A", toNodeId: "", isPremium: false },
+        { id: `choice-2`, text: "Choice B", toNodeId: "", isPremium: false }
       ] : undefined
     };
     
@@ -153,9 +153,9 @@ export default function StoryCreator() {
     const newChoice: StoryChoice = {
       id: `choice-${Date.now()}`,
       text: "New Choice",
-      nextNodeId: "",
+      toNodeId: "",
       isPremium: false,
-      diamondCost: 0
+      eggplantCost: 0
     };
     
     updateNode(nodeId, {
@@ -181,7 +181,7 @@ export default function StoryCreator() {
     ]);
     
     // Update the choice with the target node
-    updateChoice(fromNodeId, choiceId, { nextNodeId: toNodeId });
+    updateChoice(fromNodeId, choiceId, { toNodeId: toNodeId });
   };
 
   const saveStory = () => {
@@ -215,9 +215,9 @@ export default function StoryCreator() {
         choices: node.choices?.map(choice => ({
           id: choice.id,
           text: choice.text,
-          nextPageId: choice.nextNodeId,
+          nextPageId: choice.toNodeId,
           isPremium: choice.isPremium,
-          diamondCost: choice.diamondCost
+          eggplantCost: choice.eggplantCost
         }))
       }))
     };
@@ -418,9 +418,9 @@ export default function StoryCreator() {
                           {choice.isPremium && (
                             <Input
                               type="number"
-                              placeholder="Diamonds"
-                              value={choice.diamondCost || 0}
-                              onChange={(e) => updateChoice(selectedNode!, choice.id, { diamondCost: parseInt(e.target.value) || 0 })}
+                              placeholder="Eggplants"
+                              value={choice.eggplantCost || 0}
+                              onChange={(e) => updateChoice(selectedNode!, choice.id, { eggplantCost: parseInt(e.target.value) || 0 })}
                               className="w-20 bg-dark-primary border-dark-tertiary/50 text-kindle"
                             />
                           )}

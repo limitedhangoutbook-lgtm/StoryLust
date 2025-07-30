@@ -222,18 +222,21 @@ export default function StoryReader() {
   // Check if current node is a story ending
   const isStoryEnding = currentNode?.content?.includes("**THE END**") || false;
 
-  // Go to first choice handler
+  // Go to first choice handler - navigate to the first page with choices
   const handleGoToFirstChoice = () => {
-    // Navigate to page-5 which has the first choice
-    setCurrentNodeId("page-5");
-    setPageHistory(["start", "page-2", "page-3", "page-4"]); // Set proper history to get to page-5
+    // Find first page with choices (usually page 5 in desert story)
+    const firstChoicePage = allStoryNodes.find(node => node.choices && node.choices.length > 0);
+    const firstChoiceNodeId = firstChoicePage?.id || "start";
+    
+    setCurrentNodeId(firstChoiceNodeId);
+    setPageHistory(["start"]); // Reset history for clean navigation
     setShowChoices(false);
     
     // Save reading progress
     if (isAuthenticated) {
       apiRequest("POST", "/api/reading-progress", {
         storyId,
-        currentNodeId: "page-5",
+        currentNodeId: firstChoiceNodeId,
         isBookmarked: isBookmarked
       }).catch(error => {
         // Silently handle reading progress save error
@@ -241,7 +244,7 @@ export default function StoryReader() {
     }
     
     // Save to local storage as backup
-    saveLocalProgress("page-5");
+    saveLocalProgress(firstChoiceNodeId);
     
     // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });

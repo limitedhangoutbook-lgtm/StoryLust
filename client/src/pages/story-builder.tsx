@@ -29,7 +29,7 @@ interface Choice {
   id: string;
   text: string;
   isPremium: boolean;
-  diamondCost: number;
+  eggplantCost: number;
   targetPageId: string;
 }
 
@@ -137,7 +137,7 @@ export default function StoryBuilder() {
           id: choice.id,
           text: choice.text,
           isPremium: choice.isPremium,
-          diamondCost: choice.diamondCost,
+          eggplantCost: choice.eggplantCost,
           targetPageId: choice.targetPageId
         })) || []
       })),

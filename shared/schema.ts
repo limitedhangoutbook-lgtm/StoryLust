@@ -65,7 +65,7 @@ export const storyNodes = pgTable("story_nodes", {
   content: text("content").notNull(),
   isStarting: boolean("is_starting").default(false),
   order: integer("order").notNull(),
-  nextNodeId: varchar("next_node_id"),
+
   createdAt: timestamp("created_at").defaultNow(),
 });
 

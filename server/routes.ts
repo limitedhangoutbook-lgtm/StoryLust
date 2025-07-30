@@ -82,43 +82,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get next page in story progression
-  app.get('/api/stories/:storyId/next/:currentNodeId', async (req, res) => {
-    try {
-      const { storyId, currentNodeId } = req.params;
-      
-      // Get current node to check for next_node_id
-      const [currentNode] = await db
-        .select()
-        .from(storyNodes)
-        .where(and(
-          eq(storyNodes.storyId, storyId),
-          eq(storyNodes.id, currentNodeId)
-        ));
-      
-      if (!currentNode) {
-        return res.status(404).json({ message: "Current node not found" });
-      }
-      
-      // Check if current node has a direct next_node_id
-      if (currentNode.nextNodeId) {
-        const [nextNode] = await db
-          .select()
-          .from(storyNodes)
-          .where(eq(storyNodes.id, currentNode.nextNodeId));
-        
-        if (nextNode) {
-          return res.json(nextNode);
-        }
-      }
-      
-      // No next node found
-      return res.status(404).json({ message: "No next page found" });
-    } catch (error) {
-      console.error("Error getting next page:", error);
-      res.status(500).json({ message: "Failed to get next page" });
-    }
-  });
+
 
   // === READING PROGRESS ROUTES ===
   app.get('/api/reading-progress/:storyId', isAuthenticated, async (req: any, res) => {
