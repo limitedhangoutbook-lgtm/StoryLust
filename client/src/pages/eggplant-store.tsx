@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { BottomNavigation } from "@/components/bottom-navigation";
+import BottomNavigation from "@/components/bottom-navigation";
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 // Eggplant checkout component will be imported when needed

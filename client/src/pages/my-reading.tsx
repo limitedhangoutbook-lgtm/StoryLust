@@ -3,7 +3,7 @@ import { BookOpen, Heart, Clock, ArrowLeft, CheckCircle, Target, TrendingUp, Sta
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation } from "wouter";
-import { BottomNavigation } from "@/components/bottom-navigation";
+import BottomNavigation from "@/components/bottom-navigation";
 import { StoryCard } from "@/components/story-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

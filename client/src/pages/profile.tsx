@@ -1,7 +1,7 @@
 import { ArrowLeft, LogOut, Gem, BookOpen, Heart, User, Settings, Plus, Edit } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation } from "wouter";
-import { BottomNavigation } from "@/components/bottom-navigation";
+import BottomNavigation from "@/components/bottom-navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
