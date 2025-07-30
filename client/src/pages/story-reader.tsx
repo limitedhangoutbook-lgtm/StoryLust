@@ -293,13 +293,13 @@ export default function StoryReader() {
     startFromBeginningMutation.mutate();
   };
 
-  // Continue reading handler
+  // Simple page-based continue reading handler
   const handleContinueReading = useCallback(async () => {
     if (choices.length > 0) {
       // This page has choices, show them
       setShowChoices(true);
     } else if (isStoryEnding) {
-      // Mark story as completed for authenticated users
+      // Mark story as completed and return to homepage
       if (isAuthenticated) {
         try {
           await apiRequest("POST", `/api/stories/${storyId}/complete`);
@@ -308,45 +308,48 @@ export default function StoryReader() {
         }
       }
       
-      // This is a story ending, return to homepage
       setLocation("/");
       toast({
         title: "Story Complete",
         description: "Thank you for reading! Check out more stories.",
       });
     } else {
-      // This page doesn't have choices, try to get next page from server
+      // Simple sequential page navigation - get next page by order
       try {
-        const nextNodeResponse = await apiRequest("GET", `/api/stories/${storyId}/next/${currentNodeId}`);
-        const nextNode = await nextNodeResponse.json();
-        if (nextNode && nextNode.id) {
+        const currentPage = pages.find(p => p.id === currentNodeId);
+        if (!currentPage) {
+          throw new Error("Current page not found");
+        }
+        
+        const nextPage = pages.find(p => p.order === currentPage.order + 1);
+        if (nextPage) {
           // Add current page to history before navigating
           if (currentNodeId) {
             setPageHistory(prev => [...prev, currentNodeId]);
           }
           
-          setCurrentNodeId(nextNode.id);
+          setCurrentNodeId(nextPage.id);
           
-          // Save reading progress for authenticated users and local storage for guests
+          // Save reading progress
           if (isAuthenticated) {
             apiRequest("POST", "/api/reading-progress", {
               storyId,
-              currentNodeId: nextNode.id,
+              currentNodeId: nextPage.id,
               isBookmarked: isBookmarked
-            }).catch(error => {
-              // Silently handle reading progress save error
-            });
+            }).catch(() => {});
           }
-          // Always save to local storage as backup
-          saveLocalProgress(nextNode.id);
+          saveLocalProgress(nextPage.id);
           
-          // Reset choices state for new page
           setShowChoices(false);
-          
-          // Scroll to top for new page
           window.scrollTo({ top: 0, behavior: 'smooth' });
         } else {
-          // Story ended - no next node found
+          // No next page - story complete
+          if (isAuthenticated) {
+            try {
+              await apiRequest("POST", `/api/stories/${storyId}/complete`);
+            } catch (completionError) {}
+          }
+          
           setLocation("/");
           toast({
             title: "Story Complete",
@@ -354,33 +357,14 @@ export default function StoryReader() {
           });
         }
       } catch (error: any) {
-
-        // If it's a 404 (no next page), treat as story ending
-        if (error.message?.includes('404')) {
-          // Mark story as completed for authenticated users
-          if (isAuthenticated) {
-            try {
-              await apiRequest("POST", `/api/stories/${storyId}/complete`);
-            } catch (completionError) {
-              // Silently handle completion error
-            }
-          }
-          
-          setLocation("/");
-          toast({
-            title: "Story Complete",
-            description: "You've reached the end of this story path!",
-          });
-        } else {
-          toast({
-            title: "Error",
-            description: "Failed to load next page. Please try again.",
-            variant: "destructive",
-          });
-        }
+        toast({
+          title: "Error",
+          description: "Failed to load next page. Please try again.",
+          variant: "destructive",
+        });
       }
     }
-  }, [choices.length, isStoryEnding, isAuthenticated, storyId, currentNodeId, isBookmarked, setLocation, toast]);
+  }, [choices.length, isStoryEnding, isAuthenticated, storyId, currentNodeId, isBookmarked, setLocation, toast, pages]);
 
 
 
@@ -418,57 +402,73 @@ export default function StoryReader() {
 
   const selectChoiceMutation = useMutation({
     mutationFn: async (choiceId: string) => {
-
-      const response = await apiRequest("POST", `/api/choices/${choiceId}/select`, {
-        storyId,
-        currentNodeId,
-      });
-      const data = await response.json();
-
-      return data;
+      // Find the choice and its target
+      const selectedChoice = choices.find(c => c.id === choiceId);
+      if (!selectedChoice) {
+        throw new Error("Choice not found");
+      }
+      
+      // For authenticated users with premium choices, process payment
+      if (selectedChoice.isPremium && isAuthenticated) {
+        const response = await apiRequest("POST", `/api/choices/${choiceId}/select`, {
+          storyId,
+          currentNodeId,
+        });
+        return response.json();
+      }
+      
+      // For regular choices, just return the target
+      return { 
+        targetNodeId: selectedChoice.toNodeId,
+        choiceId: choiceId,
+        isPremium: selectedChoice.isPremium 
+      };
     },
     onSuccess: (data) => {
-
-      if (data.targetNode && data.targetNode.id) {
+      const targetNodeId = data.targetNodeId || data.targetNode?.id;
+      
+      if (targetNodeId) {
         // Add current page to history before navigating
         if (currentNodeId) {
           setPageHistory(prev => [...prev, currentNodeId]);
         }
         
-        setCurrentNodeId(data.targetNode.id);
+        setCurrentNodeId(targetNodeId);
         setShowChoices(false);
         
         // Scroll to top for new content
         window.scrollTo({ top: 0, behavior: 'smooth' });
         
-        // Save reading progress for authenticated users and local storage for guests
-        if (data.targetNode?.id) {
-          if (isAuthenticated) {
-            apiRequest("POST", "/api/reading-progress", {
-              storyId,
-              currentNodeId: data.targetNode.id,
-              isBookmarked: isBookmarked
-            }).catch(error => {
-              // Silently handle reading progress save error
-            });
-            
-            // Refresh user data to update diamond count
-            queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-          }
+        // Save reading progress
+        if (isAuthenticated) {
+          apiRequest("POST", "/api/reading-progress", {
+            storyId,
+            currentNodeId: targetNodeId,
+            isBookmarked: isBookmarked
+          }).catch(() => {});
           
-          // Always save to local storage as backup
-          saveLocalProgress(data.targetNode.id);
+          // Refresh user data to update eggplant count
+          queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
         }
         
-        // Find the selected choice to determine if it was premium
-        const selectedChoice = choices.find(c => c.id === (selectChoiceMutation.variables as string));
-        toast({
-          title: selectedChoice?.isPremium ? "🍆✨ Premium Choice Made! ✨🍆" : "✨ Choice Made! ✨", 
-          description: "Your story path unfolds...",
-          duration: 1000, // Disappear after 1 second to avoid blocking navigation
-        });
+        // Always save to local storage as backup
+        saveLocalProgress(targetNodeId);
+        
+        // Show choice feedback
+        if (data.isPremium) {
+          toast({
+            title: "🍆✨ Premium Choice Made! ✨🍆",
+            description: "Your eggplants have been deducted.",
+            duration: 2000,
+          });
+        } else {
+          toast({
+            title: "✨ Choice Made! ✨",
+            description: "Your story path unfolds...",
+            duration: 1500,
+          });
+        }
       } else {
-
         toast({
           title: "Error",
           description: "Failed to navigate to next story section.",
@@ -476,8 +476,7 @@ export default function StoryReader() {
         });
       }
       
-      // Invalidate queries to refresh data
-      queryClient.invalidateQueries({ queryKey: ["/api/nodes"] });
+      // Refresh progress
       queryClient.invalidateQueries({ queryKey: ["/api/reading-progress"] });
     },
     onError: (error) => {
