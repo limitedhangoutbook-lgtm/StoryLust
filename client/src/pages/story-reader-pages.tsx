@@ -152,6 +152,32 @@ export default function StoryReaderPages() {
     }
   };
 
+  // Handle choice click with authentication check
+  const handleChoiceClick = (choice: any) => {
+    // Check if this is a premium choice and user is not authenticated
+    if (choice.isPremium && !isAuthenticated) {
+      toast({
+        title: "Premium Content",
+        description: "Sign in to unlock premium story paths and get 20 free eggplants!",
+        action: (
+          <div className="flex gap-2">
+            <button
+              onClick={() => window.location.href = "/api/login"}
+              className="bg-rose-gold text-dark-primary px-3 py-1 rounded text-sm font-semibold"
+            >
+              Sign In
+            </button>
+          </div>
+        ),
+        duration: 8000,
+      });
+      return;
+    }
+    
+    // Proceed with regular choice selection
+    selectChoiceMutation.mutate(choice.id);
+  };
+
   // Select choice - navigate to target page
   const selectChoiceMutation = useMutation({
     mutationFn: async (choiceId: string) => {
@@ -288,7 +314,7 @@ export default function StoryReaderPages() {
             {choices.map((choice, index) => (
               <button
                 key={choice.id}
-                onClick={() => selectChoiceMutation.mutate(choice.id)}
+                onClick={() => handleChoiceClick(choice)}
                 disabled={selectChoiceMutation.isPending}
                 className={`w-full text-left p-3 sm:p-4 rounded-lg border transition-all ${
                   choice.isPremium 

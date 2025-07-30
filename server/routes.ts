@@ -384,7 +384,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (choice.isPremium && (choice.eggplantCost || 0) > 0) {
         // Check if user is authenticated for premium content
         if (!req.isAuthenticated()) {
-          return res.status(401).json({ message: "Login required for premium choices" });
+          return res.status(401).json({ 
+            message: "Login required for premium choices",
+            requiresAuth: true,
+            isPremium: true,
+            eggplantCost: choice.eggplantCost || 0
+          });
         }
 
         const userId = (req as any).user.claims.sub;
