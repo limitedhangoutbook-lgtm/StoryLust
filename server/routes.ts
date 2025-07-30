@@ -383,7 +383,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check if this is a premium choice and handle payment/access
       if (choice.isPremium && (choice.eggplantCost || 0) > 0) {
         // Check if user is authenticated for premium content
-        if (!req.isAuthenticated?.()) {
+        if (!req.isAuthenticated()) {
           return res.status(401).json({ message: "Login required for premium choices" });
         }
 
@@ -425,7 +425,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Save user choice if authenticated
-      if (req.isAuthenticated?.()) {
+      if (req.isAuthenticated()) {
         const userId = (req as any).user.claims.sub;
         await storage.saveUserChoice({
           userId,
