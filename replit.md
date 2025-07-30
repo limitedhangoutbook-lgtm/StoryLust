@@ -3,6 +3,8 @@
 ## Overview
 TurnPage is a choose-your-own-adventure mobile web application built with a modern full-stack architecture. The application features interactive storytelling with branching narratives, user authentication, reading progress tracking, and a premium content system with virtual currency (diamonds). The app is optimized for mobile devices with a Progressive Web App (PWA) design.
 
+**Version 1.0** - Released January 30, 2025: Core story reading experience complete with page-based navigation, choice branching, and premium content system.
+
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 User feedback: Very appreciative of thorough help and comprehensive solutions.
@@ -92,6 +94,7 @@ User feedback: Very appreciative of thorough help and comprehensive solutions.
 - **Session State**: Maintained across browser sessions
 
 ## Recent Progress (January 2025)
+- **Version 1.0 Release**: TurnPage officially released as Version 1.0 with fully functional story reading system (January 30, 2025)
 - **Page-Based Story Reader Success**: Successfully rebuilt story reader to match actual database structure with sequential page navigation, progress bars, and choice branching - user confirmed "Works beautifully now!!!" (January 30, 2025)
 - **Final Production Cleanup**: Completed comprehensive codebase cleanup removing all debug logs, empty catch blocks, and LSP errors in preparation for story upload testing (January 30, 2025)
 - **Swipe Functionality Enhancement**: Fixed swipe gestures to work even when choices are visible with improved sensitivity (30px threshold, 500ms timing) (January 30, 2025)
