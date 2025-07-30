@@ -37,15 +37,15 @@ export class Storage {
       .insert(users)
       .values({
         ...userData,
-        diamonds: userData.diamonds ?? (userData.role === 'mega-admin' ? 999 : 20), // Give mega-admin 999 diamonds
+        eggplants: userData.eggplants ?? (userData.role === 'mega-admin' ? 999 : 20), // Give mega-admin 999 eggplants
       })
       .onConflictDoUpdate({
         target: users.id,
         set: { 
           ...userData, 
           updatedAt: new Date(),
-          // Don't overwrite diamonds on existing users unless explicitly provided
-          diamonds: userData.diamonds !== undefined ? userData.diamonds : sql`${users.diamonds}`,
+          // Don't overwrite eggplants on existing users unless explicitly provided
+          eggplants: userData.eggplants !== undefined ? userData.eggplants : sql`${users.eggplants}`,
         },
       })
       .returning();
@@ -56,20 +56,20 @@ export class Storage {
     return await db.select().from(users).orderBy(users.createdAt);
   }
 
-  async updateUserDiamonds(userId: string, diamonds: number): Promise<User> {
+  async updateUserEggplants(userId: string, eggplants: number): Promise<User> {
     const [user] = await db
       .update(users)
-      .set({ diamonds, updatedAt: new Date() })
+      .set({ eggplants, updatedAt: new Date() })
       .where(eq(users.id, userId))
       .returning();
     return user;
   }
 
-  async addDiamondsToUser(userId: string, diamondsToAdd: number): Promise<User> {
+  async addEggplantsToUser(userId: string, eggplantsToAdd: number): Promise<User> {
     const [user] = await db
       .update(users)
       .set({ 
-        diamonds: sql`COALESCE(${users.diamonds}, 0) + ${diamondsToAdd}`,
+        eggplants: sql`COALESCE(${users.eggplants}, 0) + ${eggplantsToAdd}`,
         updatedAt: new Date()
       })
       .where(eq(users.id, userId))
@@ -181,7 +181,7 @@ export class Storage {
     choiceText: string;
     order?: number;
     isPremium?: boolean;
-    diamondCost?: number;
+    eggplantCost?: number;
   }): Promise<StoryChoice> {
     const [choice] = await db
       .insert(storyChoices)
@@ -191,7 +191,7 @@ export class Storage {
         choiceText: choiceData.choiceText,
         order: choiceData.order || 0,
         isPremium: choiceData.isPremium || false,
-        diamondCost: choiceData.diamondCost || 0,
+        eggplantCost: choiceData.eggplantCost || 0,
       })
       .returning();
     return choice;

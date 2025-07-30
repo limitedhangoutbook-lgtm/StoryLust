@@ -29,7 +29,7 @@ interface Choice {
   id: string;
   text: string;
   isPremium: boolean;
-  diamondCost: number;
+  eggplantCost: number;
   targetPageId: string;
   color?: string; // Color for the connection line
 }
@@ -160,7 +160,7 @@ export function TimelineStoryBuilder({ pages, onPagesChange }: TimelineStoryBuil
       id: `choice-${Date.now()}`,
       text: "New choice",
       isPremium: false,
-      diamondCost: 0,
+      eggplantCost: 0,
       targetPageId: "",
       color: connectionColors[page.timelineColumn || 0]
     };
@@ -536,7 +536,7 @@ export function TimelineStoryBuilder({ pages, onPagesChange }: TimelineStoryBuil
                                     {choice.isPremium && (
                                       <div className="flex items-center space-x-1">
                                         <Diamond className="w-3 h-3 text-rose-400" />
-                                        <span className="text-rose-400">{choice.diamondCost}</span>
+                                        <span className="text-rose-400">{choice.eggplantCost}</span>
                                       </div>
                                     )}
                                   </div>
@@ -600,12 +600,12 @@ export function TimelineStoryBuilder({ pages, onPagesChange }: TimelineStoryBuil
                                       
                                       {choice.isPremium && (
                                         <div>
-                                          <Label className="text-text-primary">Diamond Cost</Label>
+                                          <Label className="text-text-primary">Eggplant Cost</Label>
                                           <Input
                                             type="number"
                                             min="1"
-                                            value={choice.diamondCost}
-                                            onChange={(e) => updateChoice(page.id, choice.id, { diamondCost: parseInt(e.target.value) || 0 })}
+                                            value={choice.eggplantCost}
+                                            onChange={(e) => updateChoice(page.id, choice.id, { eggplantCost: parseInt(e.target.value) || 0 })}
                                             className="bg-dark-tertiary border-dark-tertiary text-text-primary"
                                           />
                                         </div>

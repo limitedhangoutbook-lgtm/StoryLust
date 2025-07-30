@@ -33,7 +33,7 @@ export const users = pgTable("users", {
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
   role: varchar("role", { enum: ["guest", "registered", "admin", "mega-admin"] }).default("registered"),
-  diamonds: integer("diamonds").default(20),
+  eggplants: integer("eggplants").default(20),
   stripeCustomerId: varchar("stripe_customer_id"),
   stripeSubscriptionId: varchar("stripe_subscription_id"),
   createdAt: timestamp("created_at").defaultNow(),
@@ -76,7 +76,7 @@ export const storyChoices = pgTable("story_choices", {
   toNodeId: varchar("to_node_id").notNull().references(() => storyNodes.id, { onDelete: "cascade" }),
   choiceText: text("choice_text").notNull(),
   isPremium: boolean("is_premium").default(false),
-  diamondCost: integer("diamond_cost").default(0),
+  eggplantCost: integer("eggplant_cost").default(0),
   order: integer("order").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -341,4 +341,3 @@ export type InsertAuthorMessage = typeof authorMessages.$inferInsert;
 export type InsertStory = z.infer<typeof insertStorySchema>;
 export type InsertStoryNode = z.infer<typeof insertStoryNodeSchema>;
 export type InsertStoryChoice = z.infer<typeof insertStoryChoiceSchema>;
-export type InsertUserChoice = z.infer<typeof insertUserChoiceSchema>;

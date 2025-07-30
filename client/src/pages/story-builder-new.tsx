@@ -30,7 +30,7 @@ interface Choice {
   id: string;
   text: string;
   isPremium: boolean;
-  diamondCost: number;
+  eggplantCost: number;
   targetPageId: string;
   color?: string;
 }
@@ -103,6 +103,28 @@ export default function StoryBuilder() {
     },
   });
 
+  // Save draft mutation
+  const saveDraftMutation = useMutation({
+    mutationFn: async (draftData: any) => {
+      const response = await apiRequest("POST", "/api/stories/draft", draftData);
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Draft Saved",
+        description: "Your story draft has been saved successfully.",
+        className: "bg-dark-secondary border-dark-tertiary text-text-primary",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save draft",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleStorySubmit = () => {
     if (!storyData.title || !storyData.description) {
       toast({
@@ -151,13 +173,40 @@ export default function StoryBuilder() {
           id: choice.id,
           text: choice.text,
           isPremium: choice.isPremium,
-          diamondCost: choice.diamondCost,
+          eggplantCost: choice.eggplantCost,
           targetPageId: choice.targetPageId
         })) || []
       }))
     };
 
     createStoryMutation.mutate(finalStoryData);
+  };
+
+  const handleSaveDraft = () => {
+    const draftData = {
+      title: storyData.title,
+      description: storyData.description,
+      imageUrl: storyData.imageUrl,
+      spiceLevel: storyData.spiceLevel,
+      category: storyData.category,
+      pages: pages.map(page => ({
+        id: page.id,
+        title: page.title,
+        content: page.content,
+        order: page.order,
+        timelineColumn: page.timelineColumn,
+        choices: page.choices?.map(choice => ({
+          id: choice.id,
+          text: choice.text,
+          isPremium: choice.isPremium,
+          eggplantCost: choice.eggplantCost,
+          targetPageId: choice.targetPageId
+        })) || [],
+        isEnding: page.isEnding
+      }))
+    };
+
+    saveDraftMutation.mutate(draftData);
   };
 
   const MetadataDialog = () => (
@@ -284,6 +333,16 @@ export default function StoryBuilder() {
             >
               <Edit className="w-4 h-4 mr-2" />
               Story Info
+            </Button>
+            
+            <Button
+              onClick={handleSaveDraft}
+              disabled={saveDraftMutation.isPending}
+              variant="outline"
+              className="border-rose-gold/50 text-rose-gold hover:bg-rose-gold/10"
+            >
+              <Save className="w-4 h-4 mr-2" />
+              {saveDraftMutation.isPending ? "Saving..." : "Save Draft"}
             </Button>
             
             <Button

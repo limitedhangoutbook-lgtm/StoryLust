@@ -533,21 +533,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // === DIAMOND ROUTES ===
-  app.post('/api/diamonds/spend', isAuthenticated, async (req: any, res) => {
+  // === EGGPLANT ROUTES ===
+  app.post('/api/eggplants/spend', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const { amount } = req.body;
       
       const user = await storage.getUser(userId);
-      if (!user || (user.diamonds || 0) < amount) {
-        return res.status(400).json({ message: "Insufficient diamonds" });
+      if (!user || (user.eggplants || 0) < amount) {
+        return res.status(400).json({ message: "Insufficient eggplants" });
       }
       
-      const updatedUser = await storage.updateUserDiamonds(userId, (user.diamonds || 0) - amount);
+      const updatedUser = await storage.updateUserEggplants(userId, (user.eggplants || 0) - amount);
       res.json(updatedUser);
     } catch (error) {
-      res.status(500).json({ message: "Failed to spend diamonds" });
+      res.status(500).json({ message: "Failed to spend eggplants" });
     }
   });
 
@@ -693,7 +693,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 choiceText: choice.text,
                 order: i,
                 isPremium: choice.isPremium || false,
-                diamondCost: choice.diamondCost || 0,
+                eggplantCost: choice.eggplantCost || 0,
               });
             }
           }
@@ -823,7 +823,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const { fromNodeId } = req.params;
-      const { toNodeId, choiceText, isPremium, diamondCost } = req.body;
+      const { toNodeId, choiceText, isPremium, eggplantCost } = req.body;
       
       if (!toNodeId || !choiceText) {
         return res.status(400).json({ message: "Missing required fields" });
@@ -834,7 +834,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         toNodeId,
         choiceText,
         isPremium,
-        diamondCost,
+        eggplantCost,
       });
 
       res.status(201).json(choice);
@@ -844,35 +844,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // === ADMIN DIAMOND MANAGEMENT ===
-  app.post('/api/admin/grant-starting-diamonds', isAuthenticated, async (req: any, res) => {
+  // === ADMIN EGGPLANT MANAGEMENT ===
+  app.post('/api/admin/grant-starting-eggplants', isAuthenticated, async (req: any, res) => {
     try {
       const currentUser = await storage.getUser(req.user.claims.sub);
       if (currentUser?.role !== 'mega-admin') {
         return res.status(403).json({ message: "Mega-admin access required" });
       }
 
-      // Grant 20 diamonds to all users who have null or 0 diamonds
+      // Grant 20 eggplants to all users who have null or 0 eggplants
       const result = await db
         .update(users)
-        .set({ diamonds: 20, updatedAt: new Date() })
-        .where(sql`${users.diamonds} IS NULL OR ${users.diamonds} = 0`)
+        .set({ eggplants: 20, updatedAt: new Date() })
+        .where(sql`${users.eggplants} IS NULL OR ${users.eggplants} = 0`)
         .returning();
 
       res.json({ 
-        message: "Starting diamonds (20) granted to all users without diamonds",
+        message: "Starting eggplants (20) granted to all users without eggplants",
         usersUpdated: result.length 
       });
     } catch (error) {
-      console.error("Error granting starting diamonds:", error);
-      res.status(500).json({ message: "Failed to grant starting diamonds" });
+      console.error("Error granting starting eggplants:", error);
+      res.status(500).json({ message: "Failed to grant starting eggplants" });
     }
   });
 
-  // === DIAMOND PURCHASE ROUTES ===
-  app.post('/api/diamonds/create-payment', isAuthenticated, async (req: any, res) => {
+  // === EGGPLANT PURCHASE ROUTES ===
+  app.post('/api/eggplants/create-payment', isAuthenticated, async (req: any, res) => {
     try {
-      const { packageId, amount, diamonds } = req.body;
+      const { packageId, amount, eggplants } = req.body;
       const userId = req.user.claims.sub;
 
       // Create Stripe payment intent
@@ -882,9 +882,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         metadata: {
           userId,
           packageId,
-          diamonds: diamonds.toString()
+          eggplants: eggplants.toString()
         },
-        description: `Diamond Purchase: ${diamonds} diamonds`
+        description: `Eggplant Purchase: ${eggplants} eggplants`
       });
 
       res.json({ 
@@ -892,13 +892,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         paymentIntentId: paymentIntent.id
       });
     } catch (error: any) {
-      console.error("Error creating diamond payment:", error);
+      console.error("Error creating eggplant payment:", error);
       res.status(500).json({ message: "Error creating payment: " + error.message });
     }
   });
 
   // Stripe webhook to handle successful payments
-  app.post('/api/diamonds/webhook', async (req, res) => {
+  app.post('/api/eggplants/webhook', async (req, res) => {
     const sig = req.headers['stripe-signature'];
     let event;
 
@@ -914,15 +914,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // Handle the payment_intent.succeeded event
     if (event.type === 'payment_intent.succeeded') {
       const paymentIntent = event.data.object as Stripe.PaymentIntent;
-      const { userId, diamonds } = paymentIntent.metadata;
+      const { userId, eggplants } = paymentIntent.metadata;
 
-      if (userId && diamonds) {
+      if (userId && eggplants) {
         try {
-          // Add diamonds to user account
-          await storage.addDiamondsToUser(userId, parseInt(diamonds));
-          console.log(`Added ${diamonds} diamonds to user ${userId}`);
+          // Add eggplants to user account
+          await storage.addEggplantsToUser(userId, parseInt(eggplants));
+          console.log(`Added ${eggplants} eggplants to user ${userId}`);
         } catch (error) {
-          console.error('Error adding diamonds to user:', error);
+          console.error('Error adding eggplants to user:', error);
         }
       }
     }
