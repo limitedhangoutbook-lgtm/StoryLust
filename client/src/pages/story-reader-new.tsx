@@ -22,7 +22,7 @@ interface Choice {
   id: string;
   choiceText: string;
   isPremium: boolean;
-  diamondCost?: number;
+  eggplantCost?: number;
 }
 
 export default function StoryReaderNew() {
@@ -129,10 +129,10 @@ export default function StoryReaderNew() {
 
   // Select choice mutation
   const selectChoiceMutation = useMutation({
-    mutationFn: async ({ choiceId, isPremium, diamondCost }: { 
+    mutationFn: async ({ choiceId, isPremium, eggplantCost }: { 
       choiceId: string; 
       isPremium: boolean; 
-      diamondCost?: number; 
+      eggplantCost?: number; 
     }) => {
       const response = await apiRequest("POST", `/api/choices/${choiceId}/select`, {
         storyId,
@@ -185,8 +185,8 @@ export default function StoryReaderNew() {
   };
 
   // Handle choice selection
-  const handleChoiceSelect = (choiceId: string, isPremium: boolean, diamondCost?: number) => {
-    selectChoiceMutation.mutate({ choiceId, isPremium, diamondCost });
+  const handleChoiceSelect = (choiceId: string, isPremium: boolean, eggplantCost?: number) => {
+    selectChoiceMutation.mutate({ choiceId, isPremium, eggplantCost });
   };
 
   // Reset story mutation
@@ -278,7 +278,7 @@ export default function StoryReaderNew() {
             {choices.map((choice, index) => (
               <button
                 key={choice.id}
-                onClick={() => handleChoiceSelect(choice.id, choice.isPremium || false, choice.diamondCost)}
+                onClick={() => handleChoiceSelect(choice.id, choice.isPremium || false, choice.eggplantCost)}
                 disabled={selectChoiceMutation.isPending}
                 className={`w-full text-left p-4 rounded-lg border transition-all ${
                   choice.isPremium 
@@ -297,7 +297,7 @@ export default function StoryReaderNew() {
                     {choice.isPremium && (
                       <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-1 bg-rose-gold/15 text-rose-gold border border-rose-gold/30 rounded-full text-xs font-semibold">
                         <span>🍆</span>
-                        <span>{choice.diamondCost || 0} eggplants</span>
+                        <span>{choice.eggplantCost || 0} eggplants</span>
                       </div>
                     )}
                   </div>

@@ -324,7 +324,7 @@ export class Storage {
     totalChoicesMade: number;
     bookmarkedStories: number;
     premiumChoicesUnlocked: number;
-    diamondsSpent: number;
+    eggplantsSpent: number;
   }> {
     // Count stories started (reading progress exists)
     const [startedResult] = await db
@@ -375,7 +375,7 @@ export class Storage {
       totalChoicesMade: choicesResult?.count || 0,
       bookmarkedStories: bookmarkedResult?.count || 0,
       premiumChoicesUnlocked: premiumResult?.count || 0,
-      diamondsSpent: 0, // Would need transaction history
+      eggplantsSpent: 0, // Would need transaction history
     };
   }
 
@@ -617,7 +617,7 @@ export class Storage {
         userId: purchasedPremiumPaths.userId,
         storyId: purchasedPremiumPaths.storyId,
         choiceId: purchasedPremiumPaths.choiceId,
-        diamondCost: purchasedPremiumPaths.diamondCost,
+        eggplantCost: purchasedPremiumPaths.eggplantCost,
         createdAt: purchasedPremiumPaths.createdAt,
         // Include choice and story details
         choiceText: storyChoices.choiceText,

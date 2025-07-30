@@ -53,7 +53,7 @@ export default function Profile() {
     totalChoicesMade: 0,
     bookmarkedStories: 0,
     premiumChoicesUnlocked: 0,
-    diamondsSpent: 0,
+    eggplantsSpent: 0,
   }, isLoading: statsLoading } = useQuery({
     queryKey: ["/api/user/stats"],
     enabled: !!user,
@@ -133,7 +133,7 @@ export default function Profile() {
                 <div className="flex items-center space-x-1 mt-2">
                   <Gem className="text-gold-accent" size={14} />
                   <span className="text-sm font-medium text-gold-accent">
-                    {(user as any)?.diamonds || 0} diamonds
+                    {(user as any)?.eggplants || 0} eggplants
                   </span>
                 </div>
               </div>

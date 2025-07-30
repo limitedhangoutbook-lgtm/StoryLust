@@ -29,7 +29,7 @@ interface Choice {
   id: string;
   text: string;
   isPremium: boolean;
-  diamondCost: number;
+  eggplantCost: number;
   targetPageId: string;
 }
 
@@ -137,7 +137,7 @@ export default function StoryBuilder() {
           id: choice.id,
           text: choice.text,
           isPremium: choice.isPremium,
-          diamondCost: choice.diamondCost,
+          eggplantCost: choice.eggplantCost,
           targetPageId: choice.targetPageId
         })) || []
       })),
@@ -167,7 +167,7 @@ export default function StoryBuilder() {
             id: `choice-${Date.now()}`,
             text: "",
             isPremium: false,
-            diamondCost: 0,
+            eggplantCost: 0,
             targetPageId: "",
           }]
         };
@@ -447,13 +447,13 @@ export default function StoryBuilder() {
                                 </div>
                                 
                                 <div>
-                                  <Label className="text-text-secondary">Diamond Cost</Label>
+                                  <Label className="text-text-secondary">Eggplant Cost</Label>
                                   <div className="flex items-center space-x-2">
                                     <Input
                                       type="number"
-                                      value={choice.diamondCost}
+                                      value={choice.eggplantCost}
                                       onChange={(e) => updateChoice(page.id, choiceIndex, { 
-                                        diamondCost: parseInt(e.target.value) || 0,
+                                        eggplantCost: parseInt(e.target.value) || 0,
                                         isPremium: parseInt(e.target.value) > 0
                                       })}
                                       className="bg-dark-tertiary border-dark-tertiary text-text-primary"

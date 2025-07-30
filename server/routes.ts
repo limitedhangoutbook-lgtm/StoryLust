@@ -393,7 +393,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const alreadyPurchased = await storage.hasPurchasedPremiumPath(userId, choiceId);
         
         if (!alreadyPurchased) {
-          // User hasn't purchased this path yet, check if they have enough diamonds
+          // User hasn't purchased this path yet, check if they have enough eggplants
           const user = await storage.getUser(userId);
           const cost = choice.eggplantCost || 0;
           const userEggplants = user?.eggplants || 0;
@@ -944,6 +944,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // === EGGPLANT PURCHASE ROUTES ===
+  app.post('/api/add-eggplants', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { packageId } = req.body;
+      
+      // Mock eggplant packages for demo (in production, these would come from database)
+      const packages = [
+        { id: "starter", eggplants: 50, price: 4.99 },
+        { id: "premium", eggplants: 150, bonus: 25, price: 12.99 },
+        { id: "deluxe", eggplants: 300, bonus: 75, price: 24.99 },
+        { id: "vip", eggplants: "∞", price: 49.99 }
+      ];
+      
+      const selectedPackage = packages.find(p => p.id === packageId);
+      if (!selectedPackage) {
+        return res.status(400).json({ message: "Invalid package" });
+      }
+      
+      // For demo purposes, add eggplants directly (in production, this would be triggered by Stripe webhook)
+      if (selectedPackage.eggplants === "∞") {
+        // Set to 9999 for VIP package
+        await storage.updateUserEggplants(userId, 9999);
+      } else {
+        const totalEggplants = (selectedPackage.eggplants as number) + (selectedPackage.bonus || 0);
+        const user = await storage.getUser(userId);
+        const currentEggplants = user?.eggplants || 0;
+        await storage.updateUserEggplants(userId, currentEggplants + totalEggplants);
+      }
+      
+      res.json({ success: true, message: "Eggplants added successfully" });
+    } catch (error) {
+      console.error("Error adding eggplants:", error);
+      res.status(500).json({ message: "Failed to add eggplants" });
+    }
+  });
+
   app.post('/api/eggplants/create-payment', isAuthenticated, async (req: any, res) => {
     try {
       const { packageId, amount, eggplants } = req.body;

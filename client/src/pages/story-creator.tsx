@@ -29,7 +29,7 @@ interface StoryChoice {
   text: string;
   nextNodeId: string;
   isPremium?: boolean;
-  diamondCost?: number;
+  eggplantCost?: number;
 }
 
 interface Connection {
@@ -155,7 +155,7 @@ export default function StoryCreator() {
       text: "New Choice",
       nextNodeId: "",
       isPremium: false,
-      diamondCost: 0
+      eggplantCost: 0
     };
     
     updateNode(nodeId, {
@@ -217,7 +217,7 @@ export default function StoryCreator() {
           text: choice.text,
           nextPageId: choice.nextNodeId,
           isPremium: choice.isPremium,
-          diamondCost: choice.diamondCost
+          eggplantCost: choice.eggplantCost
         }))
       }))
     };
@@ -419,8 +419,8 @@ export default function StoryCreator() {
                             <Input
                               type="number"
                               placeholder="Diamonds"
-                              value={choice.diamondCost || 0}
-                              onChange={(e) => updateChoice(selectedNode!, choice.id, { diamondCost: parseInt(e.target.value) || 0 })}
+                              value={choice.eggplantCost || 0}
+                              onChange={(e) => updateChoice(selectedNode!, choice.id, { eggplantCost: parseInt(e.target.value) || 0 })}
                               className="w-20 bg-dark-primary border-dark-tertiary/50 text-kindle"
                             />
                           )}

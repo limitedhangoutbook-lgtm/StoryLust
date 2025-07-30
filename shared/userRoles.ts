@@ -22,7 +22,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, UserPermissions> = {
   },
   registered: {
     canRead: true,
-    canReadPremium: true, // Can buy diamonds for premium content
+    canReadPremium: true, // Can buy eggplants for premium content
     canCreateStories: false,
     canManageUsers: false,
     canManageSystem: false,
@@ -80,5 +80,5 @@ export function isRegistered(user: any): boolean {
 
 // VIP users (have purchased VIP package)
 export function isVip(user: any): boolean {
-  return user?.diamonds >= 9999 || user?.role === "mega-admin";
+  return user?.eggplants >= 9999 || user?.role === "mega-admin";
 }

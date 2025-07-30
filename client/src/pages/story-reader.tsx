@@ -452,7 +452,7 @@ export default function StoryReader() {
               // Silently handle reading progress save error
             });
             
-            // Refresh user data to update diamond count
+            // Refresh user data to update eggplant count
             queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
           }
           
@@ -590,7 +590,7 @@ export default function StoryReader() {
     },
   });
 
-  const handleChoiceSelect = (choiceId: string, isPremium?: boolean, diamondCost?: number) => {
+  const handleChoiceSelect = (choiceId: string, isPremium?: boolean, eggplantCost?: number) => {
     // Only require authentication for premium choices
     if (isPremium && !isAuthenticated) {
       toast({
@@ -605,14 +605,14 @@ export default function StoryReader() {
       return;
     }
 
-    // Check diamond balance only for authenticated premium choices
+    // Check eggplant balance only for authenticated premium choices
     if (isPremium && isAuthenticated) {
-      const userDiamonds = (user as any)?.diamonds || 0;
+      const userEggplants = (user as any)?.eggplants || 0;
       
-      if ((diamondCost || 0) > userDiamonds) {
+      if ((eggplantCost || 0) > userEggplants) {
         toast({
-          title: "Not Enough Diamonds",
-          description: `You need ${diamondCost || 0} diamonds to unlock this choice. Visit the store to get more!`,
+          title: "Not Enough Eggplants",
+          description: `You need ${eggplantCost || 0} eggplants to unlock this choice. Visit the store to get more!`,
           variant: "destructive",
         });
         return;
@@ -664,7 +664,7 @@ export default function StoryReader() {
     bookmarkMutation.mutate();
   };
 
-  const userDiamonds = (user as any)?.diamonds || 0;
+  const userEggplants = (user as any)?.eggplants || 0;
 
   if (!match) {
     return null;
@@ -701,7 +701,7 @@ export default function StoryReader() {
 
   return (
     <div className="min-h-screen kindle-reader">
-      {/* Minimal Header - Just back button and diamonds */}
+      {/* Minimal Header - Just back button and eggplants */}
       <header className="absolute top-0 left-0 right-0 z-10 px-4 py-3">
         <div className="flex items-center justify-between">
           <Button
@@ -720,7 +720,7 @@ export default function StoryReader() {
                 className="flex items-center space-x-1 px-3 py-1 bg-dark-secondary/50 rounded-full hover:bg-dark-secondary/70 transition-colors cursor-pointer"
               >
                 <span className="text-sm">🍆</span>
-                <span className="text-sm font-medium text-kindle">{userDiamonds}</span>
+                <span className="text-sm font-medium text-kindle">{userEggplants}</span>
               </button>
               <Button
                 variant="ghost"
@@ -785,7 +785,7 @@ export default function StoryReader() {
                   <div key={choice.id} className="kindle-text relative">
                     <button
                       onClick={() => {
-                        handleChoiceSelect(choice.id, choice.isPremium || false, choice.diamondCost || undefined);
+                        handleChoiceSelect(choice.id, choice.isPremium || false, choice.eggplantCost || undefined);
                       }}
                       disabled={selectChoiceMutation.isPending}
                       className={`w-full text-left transition-all duration-300 group relative overflow-hidden rounded-lg ${
@@ -806,7 +806,7 @@ export default function StoryReader() {
                         {choice.isPremium && (
                           <span className="ml-3 inline-flex items-center gap-1.5 px-2 py-1 bg-rose-gold/15 text-rose-gold border border-rose-gold/30 rounded-full text-xs font-semibold">
                             <span className="text-xs">🍆</span>
-                            <span>{choice.diamondCost || 0} eggplants</span>
+                            <span>{choice.eggplantCost || 0} eggplants</span>
                           </span>
                         )}
                       </p>

@@ -21,7 +21,7 @@ interface Choice {
   id: string;
   text: string;
   isPremium: boolean;
-  diamondCost: number;
+  eggplantCost: number;
   targetPageId: string;
 }
 
@@ -73,7 +73,7 @@ export function StoryFlowBuilder({ pages, onPagesChange }: StoryFlowBuilderProps
       id: `choice-${Date.now()}`,
       text: "New choice",
       isPremium: false,
-      diamondCost: 0,
+      eggplantCost: 0,
       targetPageId: ""
     };
     
@@ -222,7 +222,7 @@ export function StoryFlowBuilder({ pages, onPagesChange }: StoryFlowBuilderProps
                       {choice.isPremium && (
                         <span className="ml-2">
                           <Diamond className="w-3 h-3 inline text-gold-accent" />
-                          {choice.diamondCost}
+                          {choice.eggplantCost}
                         </span>
                       )}
                     </div>
@@ -294,8 +294,8 @@ export function StoryFlowBuilder({ pages, onPagesChange }: StoryFlowBuilderProps
                                 id="diamond-cost"
                                 type="number"
                                 min="1"
-                                value={choice.diamondCost}
-                                onChange={(e) => updateChoice(page.id, choice.id, { diamondCost: parseInt(e.target.value) || 0 })}
+                                value={choice.eggplantCost}
+                                onChange={(e) => updateChoice(page.id, choice.id, { eggplantCost: parseInt(e.target.value) || 0 })}
                                 className="bg-dark-tertiary border-dark-tertiary text-text-primary"
                               />
                             </div>

@@ -82,7 +82,7 @@ export default function Store() {
     );
   }
 
-  const currentEggplants = (user as any)?.diamonds || 0;
+  const currentEggplants = (user as any)?.eggplants || 0;
 
   const handlePurchase = async (packageId: string) => {
     const pkg = eggplantPackages.find(p => p.id === packageId);
@@ -99,11 +99,11 @@ export default function Store() {
       
       // For demo purposes, simulate successful payment and add eggplants
       // In production, this would happen via Stripe webhook after payment confirmation
-      await apiRequest("POST", "/api/add-diamonds", {
+      await apiRequest("POST", "/api/add-eggplants", {
         packageId: pkg.id,
       });
       
-      const eggplantCount = pkg.eggplants === "∞" ? "infinite" : `${pkg.eggplants + (pkg.bonus || 0)}`;
+      const eggplantCount = pkg.eggplants === "∞" ? "infinite" : `${(pkg.eggplants as number) + (pkg.bonus || 0)}`;
       alert(`Successfully purchased ${eggplantCount} eggplants!`);
       
       // Refresh user data to show updated eggplant balance
@@ -243,7 +243,7 @@ export default function Store() {
         {/* Usage Info */}
         <Card className="bg-dark-secondary border-dark-tertiary mt-8">
           <CardHeader>
-            <CardTitle className="text-lg text-text-primary">How Diamonds Work</CardTitle>
+            <CardTitle className="text-lg text-text-primary">How Eggplants Work</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex items-start space-x-3">
@@ -252,7 +252,7 @@ export default function Store() {
               </div>
               <div>
                 <p className="text-sm text-text-primary font-medium">Unlock Premium Paths</p>
-                <p className="text-xs text-text-muted">Use diamonds to access exclusive story branches</p>
+                <p className="text-xs text-text-muted">Use eggplants to access exclusive story branches</p>
               </div>
             </div>
             <div className="flex items-start space-x-3">
