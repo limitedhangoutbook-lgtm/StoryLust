@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowLeft, Zap, Crown, Gift, ShoppingCart } from "lucide-react";
+import { ArrowLeft, Zap, Crown, Gift, ShoppingCart, PiggyBank } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation } from "wouter";
 import { BottomNavigation } from "@/components/bottom-navigation";
@@ -8,29 +8,30 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { apiRequest } from "@/lib/queryClient";
 
-interface DiamondPackage {
+interface EggplantPackage {
   id: string;
   name: string;
-  diamonds: number;
+  eggplants: number | string;
   price: number;
   bonus?: number;
   popular?: boolean;
   bestValue?: boolean;
+  forPerverts?: boolean;
   icon: any;
 }
 
-const diamondPackages: DiamondPackage[] = [
+const eggplantPackages: EggplantPackage[] = [
   {
     id: "starter",
     name: "Starter Pack",
-    diamonds: 100,
+    eggplants: 100,
     price: 2.99,
     icon: "🍆",
   },
   {
     id: "bestvalue",
     name: "Best Value",
-    diamonds: 300,
+    eggplants: 300,
     price: 4.99,
     bestValue: true,
     icon: Zap,
@@ -38,10 +39,18 @@ const diamondPackages: DiamondPackage[] = [
   {
     id: "vip",
     name: "VIP Package",
-    diamonds: 9999,
+    eggplants: 9999,
     price: 49.99,
     popular: true,
     icon: Crown,
+  },
+  {
+    id: "paypig",
+    name: "Pay Pig Ultimate",
+    eggplants: "∞",
+    price: 999.00,
+    forPerverts: true,
+    icon: PiggyBank,
   },
 ];
 
@@ -59,7 +68,7 @@ export default function Store() {
           <div>
             <h2 className="text-2xl font-bold text-text-primary mb-2">Sign In Required</h2>
             <p className="text-text-muted leading-relaxed">
-              Sign in to purchase diamonds and unlock premium story content.
+              Sign in to purchase eggplants and unlock premium story content.
             </p>
           </div>
         </div>
@@ -82,10 +91,10 @@ export default function Store() {
     );
   }
 
-  const currentDiamonds = (user as any)?.diamonds || 0;
+  const currentEggplants = (user as any)?.diamonds || 0;
 
   const handlePurchase = async (packageId: string) => {
-    const pkg = diamondPackages.find(p => p.id === packageId);
+    const pkg = eggplantPackages.find(p => p.id === packageId);
     if (!pkg) return;
 
     setSelectedPackage(packageId);
@@ -97,15 +106,16 @@ export default function Store() {
         packageId: pkg.id,
       });
       
-      // For demo purposes, simulate successful payment and add diamonds
+      // For demo purposes, simulate successful payment and add eggplants
       // In production, this would happen via Stripe webhook after payment confirmation
       await apiRequest("POST", "/api/add-diamonds", {
         packageId: pkg.id,
       });
       
-      alert(`Successfully purchased ${pkg.diamonds + (pkg.bonus || 0)} diamonds!`);
+      const eggplantCount = pkg.eggplants === "∞" ? "infinite" : `${pkg.eggplants + (pkg.bonus || 0)}`;
+      alert(`Successfully purchased ${eggplantCount} eggplants!`);
       
-      // Refresh user data to show updated diamond balance
+      // Refresh user data to show updated eggplant balance
       window.location.reload();
     } catch (error) {
 
@@ -134,7 +144,7 @@ export default function Store() {
           <div className="flex items-center space-x-1 bg-dark-tertiary px-3 py-1.5 rounded-full">
             <span className="text-lg">🍆</span>
             <span className="text-sm font-medium text-text-primary">
-              {currentDiamonds}
+              {currentEggplants}
             </span>
           </div>
         </div>
@@ -162,26 +172,30 @@ export default function Store() {
         <h3 className="text-lg font-semibold text-text-primary">Eggplant Packages</h3>
         
         <div className="space-y-3">
-          {diamondPackages.map((pkg) => {
+          {eggplantPackages.map((pkg) => {
             const Icon = pkg.icon;
-            const totalDiamonds = pkg.diamonds + (pkg.bonus || 0);
+            const totalEggplants = typeof pkg.eggplants === 'string' ? pkg.eggplants : pkg.eggplants + (pkg.bonus || 0);
             const isLoading = selectedPackage === pkg.id;
             
             return (
               <Card 
                 key={pkg.id} 
                 className={`bg-dark-secondary border-dark-tertiary hover:border-rose-gold/30 transition-all duration-200 relative overflow-hidden ${
-                  pkg.popular || pkg.bestValue ? "ring-1 ring-rose-gold/30" : ""
+                  pkg.popular || pkg.bestValue || pkg.forPerverts ? "ring-1 ring-rose-gold/30" : ""
                 }`}
               >
                 {/* Badge */}
-                {(pkg.popular || pkg.bestValue) && (
+                {(pkg.popular || pkg.bestValue || pkg.forPerverts) && (
                   <div className="absolute top-0 right-0">
                     <Badge 
                       variant="secondary" 
-                      className="bg-rose-gold text-dark-primary border-0 rounded-tl-none rounded-br-none"
+                      className={`border-0 rounded-tl-none rounded-br-none ${
+                        pkg.forPerverts 
+                          ? "bg-purple-600 text-white" 
+                          : "bg-rose-gold text-dark-primary"
+                      }`}
                     >
-                      {pkg.popular ? "POPULAR" : "BEST VALUE"}
+                      {pkg.forPerverts ? "FOR PERVERTS" : pkg.popular ? "POPULAR" : "BEST VALUE"}
                     </Badge>
                   </div>
                 )}
@@ -200,7 +214,7 @@ export default function Store() {
                         <h4 className="font-semibold text-text-primary">{pkg.name}</h4>
                         <div className="flex items-center space-x-2">
                           <span className="text-lg font-bold text-gold-accent">
-                            {pkg.diamonds.toLocaleString()}
+                            {typeof pkg.eggplants === 'string' ? pkg.eggplants : pkg.eggplants.toLocaleString()}
                           </span>
                           {pkg.bonus && (
                             <>
@@ -214,7 +228,7 @@ export default function Store() {
                         </div>
                         {pkg.bonus && (
                           <p className="text-xs text-text-muted">
-                            Total: {totalDiamonds.toLocaleString()} eggplants
+                            Total: {totalEggplants} eggplants
                           </p>
                         )}
                       </div>

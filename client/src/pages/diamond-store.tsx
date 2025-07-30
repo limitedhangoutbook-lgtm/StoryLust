@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Sparkles, Gift, Crown, Star } from "lucide-react";
+import { Sparkles, Gift, Crown, Star, PiggyBank } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -17,28 +17,29 @@ if (!import.meta.env.VITE_STRIPE_PUBLIC_KEY) {
 }
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
-interface DiamondPackage {
+interface EggplantPackage {
   id: string;
   name: string;
-  diamonds: number;
-  bonusDiamonds: number;
-  totalDiamonds: number;
+  eggplants: number | string;
+  bonusEggplants: number;
+  totalEggplants: number | string;
   priceUsd: number;
   popular?: boolean;
   bestValue?: boolean;
+  forPerverts?: boolean;
   icon: JSX.Element;
   color: string;
   description?: string;
   vipBadge?: boolean;
 }
 
-const diamondPackages: DiamondPackage[] = [
+const eggplantPackages: EggplantPackage[] = [
   {
     id: "starter",
     name: "Starter Pack",
-    diamonds: 100,
-    bonusDiamonds: 0,
-    totalDiamonds: 100,
+    eggplants: 100,
+    bonusEggplants: 0,
+    totalEggplants: 100,
     priceUsd: 2.99,
     icon: <span className="text-2xl">🍆</span>,
     color: "from-blue-400 to-blue-600",
@@ -47,9 +48,9 @@ const diamondPackages: DiamondPackage[] = [
   {
     id: "bestvalue",
     name: "Best Value",
-    diamonds: 300,
-    bonusDiamonds: 0,
-    totalDiamonds: 300,
+    eggplants: 300,
+    bonusEggplants: 0,
+    totalEggplants: 300,
     priceUsd: 4.99,
     bestValue: true,
     icon: <span className="text-2xl">🍆</span>,
@@ -59,31 +60,43 @@ const diamondPackages: DiamondPackage[] = [
   {
     id: "vip",
     name: "VIP Package",
-    diamonds: 9999,
-    bonusDiamonds: 0,
-    totalDiamonds: 9999,
+    eggplants: 9999,
+    bonusEggplants: 0,
+    totalEggplants: 9999,
     priceUsd: 49.99,
     popular: true,
     vipBadge: true,
     icon: <span className="text-2xl">🍆👑</span>,
     color: "from-yellow-400 to-yellow-600",
     description: "Unlimited access + author contact + custom scenarios"
+  },
+  {
+    id: "paypig",
+    name: "Pay Pig Ultimate",
+    eggplants: "∞",
+    bonusEggplants: 0,
+    totalEggplants: "∞",
+    priceUsd: 999.00,
+    forPerverts: true,
+    icon: <PiggyBank className="text-2xl text-purple-400" />,
+    color: "from-purple-400 to-purple-600",
+    description: "Infinite eggplants for the ultimate degenerate experience"
   }
 ];
 
-export default function DiamondStore() {
+export default function EggplantStore() {
   const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
-  const [selectedPackage, setSelectedPackage] = useState<DiamondPackage | null>(null);
+  const [selectedPackage, setSelectedPackage] = useState<EggplantPackage | null>(null);
   const [clientSecret, setClientSecret] = useState<string>("");
 
   // Create payment intent mutation
   const createPaymentMutation = useMutation({
-    mutationFn: async (packageData: DiamondPackage) => {
+    mutationFn: async (packageData: EggplantPackage) => {
       const response = await apiRequest("POST", "/api/diamonds/create-payment", {
         packageId: packageData.id,
         amount: packageData.priceUsd,
-        diamonds: packageData.totalDiamonds
+        eggplants: packageData.totalEggplants
       });
       return response.json();
     },
@@ -99,11 +112,11 @@ export default function DiamondStore() {
     },
   });
 
-  const handlePurchase = (packageData: DiamondPackage) => {
+  const handlePurchase = (packageData: EggplantPackage) => {
     if (!isAuthenticated) {
       toast({
         title: "Login Required",
-        description: "Please log in to purchase diamonds",
+        description: "Please log in to purchase eggplants",
         variant: "destructive",
       });
       return;
@@ -116,7 +129,7 @@ export default function DiamondStore() {
   const handlePaymentSuccess = () => {
     toast({
       title: "Purchase Successful!",
-      description: `${selectedPackage?.totalDiamonds} diamonds added to your account`,
+      description: `${selectedPackage?.totalEggplants} eggplants added to your account`,
     });
     queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
     setSelectedPackage(null);
@@ -148,17 +161,17 @@ export default function DiamondStore() {
       <div className="bg-gradient-to-r from-rose-600 to-pink-600 p-6">
         <div className="text-center">
           <div className="flex items-center justify-center mb-2">
-            <Diamond className="w-8 h-8 text-white mr-2" />
-            <h1 className="text-2xl font-bold text-white">Diamond Store</h1>
+            <span className="text-4xl mr-2">🍆</span>
+            <h1 className="text-2xl font-bold text-white">Eggplant Store</h1>
           </div>
           <p className="text-rose-100">Unlock premium story paths and exclusive content</p>
           
           {isAuthenticated && user && (
             <div className="mt-4 bg-white/10 rounded-lg p-3 inline-block">
               <div className="flex items-center space-x-2">
-                <Diamond className="w-5 h-5 text-rose-200" />
+                <span className="text-2xl">🍆</span>
                 <span className="text-white font-medium">
-                  Current Balance: {(user as any).diamonds || 0} diamonds
+                  Current Balance: {(user as any).diamonds || 0} eggplants
                 </span>
               </div>
             </div>
@@ -166,10 +179,10 @@ export default function DiamondStore() {
         </div>
       </div>
 
-      {/* Diamond Packages */}
+      {/* Eggplant Packages */}
       <div className="p-6">
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {diamondPackages.map((pkg) => (
+          {eggplantPackages.map((pkg) => (
             <Card 
               key={pkg.id} 
               className={`relative border-2 bg-dark-secondary border-dark-tertiary hover:border-rose-500 transition-all duration-200 ${
@@ -182,7 +195,7 @@ export default function DiamondStore() {
                   Most Popular
                 </Badge>
               )}
-              {pkg.bestValue && !pkg.vipBadge && (
+              {pkg.bestValue && !pkg.vipBadge && !pkg.forPerverts && (
                 <Badge variant="secondary" className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-purple-500 text-white">
                   Best Value
                 </Badge>
@@ -190,6 +203,11 @@ export default function DiamondStore() {
               {pkg.vipBadge && (
                 <Badge className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-yellow-400 to-yellow-600 text-black font-bold">
                   VIP ACCESS
+                </Badge>
+              )}
+              {pkg.forPerverts && (
+                <Badge className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-purple-600 text-white font-bold">
+                  FOR PERVERTS
                 </Badge>
               )}
 
@@ -209,24 +227,24 @@ export default function DiamondStore() {
               </CardHeader>
 
               <CardContent className="text-center space-y-3">
-                {/* Diamond Breakdown */}
+                {/* Eggplant Breakdown */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-text-muted">Base Diamonds:</span>
-                    <span className="font-medium text-text-primary">{pkg.diamonds}</span>
+                    <span className="text-text-muted">Base Eggplants:</span>
+                    <span className="font-medium text-text-primary">{typeof pkg.eggplants === 'string' ? pkg.eggplants : pkg.eggplants}</span>
                   </div>
-                  {pkg.bonusDiamonds > 0 && (
+                  {pkg.bonusEggplants > 0 && (
                     <div className="flex items-center justify-between">
-                      <span className="text-rose-400">Bonus Diamonds:</span>
-                      <span className="font-medium text-rose-400">+{pkg.bonusDiamonds}</span>
+                      <span className="text-rose-400">Bonus Eggplants:</span>
+                      <span className="font-medium text-rose-400">+{pkg.bonusEggplants}</span>
                     </div>
                   )}
                   <div className="border-t border-dark-tertiary pt-2">
                     <div className="flex items-center justify-between text-lg font-bold">
                       <span className="text-text-primary">Total:</span>
                       <div className="flex items-center space-x-1">
-                        <Diamond className="w-4 h-4 text-rose-400" />
-                        <span className="text-rose-400">{pkg.totalDiamonds}</span>
+                        <span className="text-xl">🍆</span>
+                        <span className="text-rose-400">{pkg.totalEggplants}</span>
                       </div>
                     </div>
                   </div>
@@ -234,7 +252,7 @@ export default function DiamondStore() {
 
                 {/* Value Calculation */}
                 <div className="text-xs text-text-muted">
-                  {pkg.totalDiamonds === 9999 ? 'Unlimited Access' : `$${(pkg.priceUsd / pkg.totalDiamonds).toFixed(3)} per eggplant`}
+                  {pkg.totalEggplants === "∞" || pkg.totalEggplants === 9999 ? 'Unlimited Access' : `$${(pkg.priceUsd / (typeof pkg.totalEggplants === 'string' ? 999 : pkg.totalEggplants)).toFixed(3)} per eggplant`}
                 </div>
 
                 <Button
@@ -253,31 +271,31 @@ export default function DiamondStore() {
         <div className="mt-8 p-6 bg-dark-secondary rounded-lg border border-dark-tertiary">
           <h3 className="text-lg font-semibold text-text-primary mb-4 flex items-center">
             <Sparkles className="w-5 h-5 text-rose-400 mr-2" />
-            How to Use Diamonds
+            How to Use Eggplants
           </h3>
           <div className="grid md:grid-cols-2 gap-4 text-sm">
             <div className="space-y-2">
               <div className="flex items-center space-x-2">
-                <Diamond className="w-4 h-4 text-rose-400" />
+                <span className="text-lg">🍆</span>
                 <span className="text-text-muted">Premium story choices:</span>
-                <span className="font-medium text-text-primary">1-5 diamonds</span>
+                <span className="font-medium text-text-primary">1-5 eggplants</span>
               </div>
               <div className="flex items-center space-x-2">
-                <Diamond className="w-4 h-4 text-rose-400" />
+                <span className="text-lg">🍆</span>
                 <span className="text-text-muted">Exclusive story paths:</span>
-                <span className="font-medium text-text-primary">3-10 diamonds</span>
+                <span className="font-medium text-text-primary">3-10 eggplants</span>
               </div>
             </div>
             <div className="space-y-2">
               <div className="flex items-center space-x-2">
-                <Diamond className="w-4 h-4 text-rose-400" />
+                <span className="text-lg">🍆</span>
                 <span className="text-text-muted">Special endings:</span>
-                <span className="font-medium text-text-primary">5-15 diamonds</span>
+                <span className="font-medium text-text-primary">5-15 eggplants</span>
               </div>
               <div className="flex items-center space-x-2">
-                <Diamond className="w-4 h-4 text-rose-400" />
+                <span className="text-lg">🍆</span>
                 <span className="text-text-muted">Early access stories:</span>
-                <span className="font-medium text-text-primary">10-25 diamonds</span>
+                <span className="font-medium text-text-primary">10-25 eggplants</span>
               </div>
             </div>
           </div>

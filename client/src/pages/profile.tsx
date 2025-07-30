@@ -231,8 +231,8 @@ export default function Profile() {
                 className="w-full justify-start text-text-primary hover:bg-dark-tertiary"
                 onClick={() => setLocation("/store")}
               >
-                <Gem className="w-4 h-4 mr-3 text-gold-accent" />
-                Get More Diamonds
+                <span className="text-lg mr-3">🍆</span>
+                Get More Eggplants
               </Button>
               
               {/* Admin Actions */}
