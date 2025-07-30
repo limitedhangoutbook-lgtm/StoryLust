@@ -31,7 +31,7 @@ const navigationItems = [
   },
 ];
 
-export default function BottomNavigation() {
+export function BottomNavigation() {
   const [location] = useLocation();
   const { user } = useAuth();
 
@@ -107,5 +107,4 @@ export default function BottomNavigation() {
   );
 }
 
-
-
+export default BottomNavigation;

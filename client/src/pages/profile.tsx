@@ -1,7 +1,7 @@
 import { ArrowLeft, LogOut, Gem, BookOpen, Heart, User, Settings, Plus, Edit } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation } from "wouter";
-import BottomNavigation from "@/components/bottom-navigation";
+import { BottomNavigation } from "@/components/bottom-navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -53,7 +53,7 @@ export default function Profile() {
     totalChoicesMade: 0,
     bookmarkedStories: 0,
     premiumChoicesUnlocked: 0,
-    eggplantsSpent: 0,
+    diamondsSpent: 0,
   }, isLoading: statsLoading } = useQuery({
     queryKey: ["/api/user/stats"],
     enabled: !!user,
@@ -133,7 +133,7 @@ export default function Profile() {
                 <div className="flex items-center space-x-1 mt-2">
                   <Gem className="text-gold-accent" size={14} />
                   <span className="text-sm font-medium text-gold-accent">
-                    {(user as any)?.eggplants || 0} eggplants
+                    {(user as any)?.diamonds || 0} diamonds
                   </span>
                 </div>
               </div>
@@ -236,7 +236,7 @@ export default function Profile() {
               </Button>
               
               {/* Admin Actions */}
-              {user && isAdmin(user) ? (
+              {user && isAdmin(user) && (
                 <>
                   <Separator className="bg-dark-tertiary" />
                   <Button
@@ -256,10 +256,10 @@ export default function Profile() {
                     Manage My Stories
                   </Button>
                 </>
-              ) : null}
+              )}
               
               {/* Mega Admin Actions */}
-              {user && isMegaAdmin(user) ? (
+              {user && isMegaAdmin(user) && (
                 <Button
                   variant="ghost"
                   className="w-full justify-start text-gold-accent hover:bg-dark-tertiary"
@@ -268,7 +268,7 @@ export default function Profile() {
                   <Settings className="w-4 h-4 mr-3" />
                   User Management
                 </Button>
-              ) : null}
+              )}
               
               <Separator className="bg-dark-tertiary" />
               <Button

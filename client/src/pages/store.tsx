@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ArrowLeft, Zap, Crown, Gift, ShoppingCart, PiggyBank } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation } from "wouter";
-import BottomNavigation from "@/components/bottom-navigation";
+import { BottomNavigation } from "@/components/bottom-navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";

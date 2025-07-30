@@ -1,14 +1,13 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Sparkles, Gift, Crown, Star, PiggyBank } from "lucide-react";
-import { EGGPLANT_CONFIG } from "@shared/constants";
+import { Sparkles, Gift, Crown, Star, PiggyBank, Diamond } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import BottomNavigation from "@/components/bottom-navigation";
+import { BottomNavigation } from "@/components/bottom-navigation";
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 // Eggplant checkout component will be imported when needed
@@ -38,10 +37,10 @@ const eggplantPackages: EggplantPackage[] = [
   {
     id: "starter",
     name: "Starter Pack",
-    eggplants: EGGPLANT_CONFIG.STARTER_PACK,
+    eggplants: 100,
     bonusEggplants: 0,
-    totalEggplants: EGGPLANT_CONFIG.STARTER_PACK,
-    priceUsd: EGGPLANT_CONFIG.STARTER_PRICE / 100,
+    totalEggplants: 100,
+    priceUsd: 2.99,
     icon: <span className="text-2xl">🍆</span>,
     color: "from-blue-400 to-blue-600",
     description: "Perfect for premium story paths"
@@ -49,10 +48,10 @@ const eggplantPackages: EggplantPackage[] = [
   {
     id: "bestvalue",
     name: "Best Value",
-    eggplants: EGGPLANT_CONFIG.BEST_VALUE_PACK,
+    eggplants: 300,
     bonusEggplants: 0,
-    totalEggplants: EGGPLANT_CONFIG.BEST_VALUE_PACK,
-    priceUsd: EGGPLANT_CONFIG.BEST_VALUE_PRICE / 100,
+    totalEggplants: 300,
+    priceUsd: 4.99,
     popular: true,
     icon: <span className="text-2xl">🍆</span>,
     color: "from-rose-400 to-rose-600",
@@ -61,10 +60,10 @@ const eggplantPackages: EggplantPackage[] = [
   {
     id: "vip",
     name: "VIP Package",
-    eggplants: EGGPLANT_CONFIG.VIP_PACK,
+    eggplants: 9999,
     bonusEggplants: 0,
-    totalEggplants: EGGPLANT_CONFIG.VIP_PACK,
-    priceUsd: EGGPLANT_CONFIG.VIP_PRICE / 100,
+    totalEggplants: 9999,
+    priceUsd: 49.99,
     icon: <span className="text-2xl">🍆👑</span>,
     color: "from-yellow-400 to-yellow-600",
     description: "Unlimited access + author contact + custom scenarios"
@@ -295,7 +294,7 @@ export default function EggplantStore() {
             </div>
             <div className="space-y-2">
               <div className="flex items-center space-x-2">
-                <span className="text-yellow-400 text-lg">🍆</span>
+                <Diamond className="w-4 h-4 text-yellow-400" />
                 <span className="font-medium text-text-primary">Unlimited Story Access</span>
               </div>
               <p className="text-text-muted ml-6">Never worry about eggplant costs again</p>

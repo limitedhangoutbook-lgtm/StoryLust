@@ -22,7 +22,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, UserPermissions> = {
   },
   registered: {
     canRead: true,
-    canReadPremium: true, // Can buy eggplants for premium content
+    canReadPremium: true, // Can buy diamonds for premium content
     canCreateStories: false,
     canManageUsers: false,
     canManageSystem: false,

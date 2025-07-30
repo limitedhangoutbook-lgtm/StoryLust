@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Trash2, ArrowRight, Edit, X } from "lucide-react";
+import { Plus, Trash2, ArrowRight, Edit, Diamond, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -221,7 +221,7 @@ export function StoryFlowBuilder({ pages, onPagesChange }: StoryFlowBuilderProps
                       {choice.text}
                       {choice.isPremium && (
                         <span className="ml-2">
-                          <span className="text-gold-accent text-xs">🍆</span>
+                          <Diamond className="w-3 h-3 inline text-gold-accent" />
                           {choice.eggplantCost}
                         </span>
                       )}

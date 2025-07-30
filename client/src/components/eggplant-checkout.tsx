@@ -122,7 +122,7 @@ export function EggplantCheckout({ packageData, onSuccess, onCancel }: EggplantC
                 ${packageData.priceUsd}
               </div>
               <div className="text-sm text-text-muted">
-                ${(packageData.priceUsd / packageData.totalEggplants).toFixed(3)} per eggplant
+                ${(packageData.priceUsd / packageData.totalDiamonds).toFixed(3)} per eggplant
               </div>
             </div>
           </CardContent>
@@ -153,7 +153,7 @@ export function EggplantCheckout({ packageData, onSuccess, onCancel }: EggplantC
                 {isProcessing ? (
                   "Processing Payment..."
                 ) : (
-                  `Purchase ${packageData.totalEggplants} Eggplants for $${packageData.priceUsd}`
+                  `Purchase ${packageData.totalDiamonds} Eggplants for $${packageData.priceUsd}`
                 )}
               </Button>
             </form>

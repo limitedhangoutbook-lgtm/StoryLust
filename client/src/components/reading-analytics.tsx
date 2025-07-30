@@ -13,18 +13,9 @@ import {
   Zap
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-import { UI_CONFIG } from "@shared/constants";
-
-interface ReadingStats {
-  totalStoriesRead: number;
-  totalChoicesMade: number;
-  totalReadingTimeMinutes: number;
-  favoriteGenres: Array<{ genre: string; count: number }>;
-  recentActivity: Array<{ storyTitle: string; lastRead: string; progress: number }>;
-}
 
 export function ReadingAnalytics() {
-  const { data: stats, isLoading } = useQuery<ReadingStats>({
+  const { data: stats, isLoading } = useQuery({
     queryKey: ["/api/analytics/reading-stats"],
   });
 
@@ -129,15 +120,15 @@ export function ReadingAnalytics() {
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
-              {stats.favoriteGenres.map((genreItem, index: number) => (
+              {stats.favoriteGenres.map((genre: string, index: number) => (
                 <Badge 
-                  key={genreItem.genre} 
+                  key={genre} 
                   variant={index === 0 ? "default" : "secondary"}
                   className="capitalize"
                 >
-                  {genreItem.genre === "straight" ? "Heterosexual" : 
-                   genreItem.genre === "lgbt" ? "LGBTQ+" : 
-                   genreItem.genre}
+                  {genre === "straight" ? "Heterosexual" : 
+                   genre === "lgbt" ? "LGBTQ+" : 
+                   genre}
                 </Badge>
               ))}
             </div>
@@ -190,25 +181,25 @@ export function ReadingAnalytics() {
           <div>
             <div className="flex justify-between text-sm mb-1">
               <span>Stories Explorer</span>
-              <span>{stats.totalStoriesRead}/{UI_CONFIG.STORIES_EXPLORER_TARGET}</span>
+              <span>{stats.totalStoriesRead}/10</span>
             </div>
-            <Progress value={Math.min((stats.totalStoriesRead / UI_CONFIG.STORIES_EXPLORER_TARGET) * 100, 100)} />
+            <Progress value={Math.min((stats.totalStoriesRead / 10) * 100, 100)} />
           </div>
           
           <div>
             <div className="flex justify-between text-sm mb-1">
               <span>Choice Master</span>
-              <span>{stats.totalChoicesMade}/{UI_CONFIG.CHOICE_MASTER_TARGET}</span>
+              <span>{stats.totalChoicesMade}/100</span>
             </div>
-            <Progress value={Math.min((stats.totalChoicesMade / UI_CONFIG.CHOICE_MASTER_TARGET) * 100, 100)} />
+            <Progress value={Math.min((stats.totalChoicesMade / 100) * 100, 100)} />
           </div>
           
           <div>
             <div className="flex justify-between text-sm mb-1">
               <span>Reading Time Champion</span>
-              <span>{stats.totalReadingTimeMinutes}/{UI_CONFIG.READING_TIME_TARGET} minutes</span>
+              <span>{stats.totalReadingTimeMinutes}/1000 minutes</span>
             </div>
-            <Progress value={Math.min((stats.totalReadingTimeMinutes / UI_CONFIG.READING_TIME_TARGET) * 100, 100)} />
+            <Progress value={Math.min((stats.totalReadingTimeMinutes / 1000) * 100, 100)} />
           </div>
         </CardContent>
       </Card>

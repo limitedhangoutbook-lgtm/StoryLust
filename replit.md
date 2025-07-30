@@ -1,7 +1,7 @@
 # replit.md
 
 ## Overview
-TurnPage is a choose-your-own-adventure mobile web application built with a modern full-stack architecture. The application features interactive storytelling with branching narratives, user authentication, reading progress tracking, and a premium content system with virtual currency (eggplants). The app is optimized for mobile devices with a Progressive Web App (PWA) design.
+TurnPage is a choose-your-own-adventure mobile web application built with a modern full-stack architecture. The application features interactive storytelling with branching narratives, user authentication, reading progress tracking, and a premium content system with virtual currency (diamonds). The app is optimized for mobile devices with a Progressive Web App (PWA) design.
 
 **Version 1.0** - Released January 30, 2025: Core story reading experience complete with page-based navigation, choice branching, and premium content system.
 
@@ -77,7 +77,7 @@ User feedback: Very appreciative of thorough help and comprehensive solutions.
 3. **Home**: Browse stories by category with featured content
 4. **Reading**: Interactive story navigation with choice selection
 5. **Progress**: Automatic saving of reading position and choices
-6. **Store**: Eggplant purchases for premium content access
+6. **Store**: Diamond purchases for premium content access
 
 ### Story Reading Flow
 1. Fetch story metadata and starting node
@@ -94,16 +94,6 @@ User feedback: Very appreciative of thorough help and comprehensive solutions.
 - **Session State**: Maintained across browser sessions
 
 ## Recent Progress (January 2025)
-- **Complete System Alignment & Hard-coded Values Cleanup**: Eliminated all remaining misalignments and hard-coded values for true production readiness (January 30, 2025)
-  - Removed legacy files: story-reader-new.tsx, story-reader-simple.tsx, story-builder-new.tsx
-  - Created shared/constants.ts with centralized configuration values (EGGPLANT_CONFIG, STORY_CONFIG, UI_CONFIG)
-  - Replaced all magic numbers with semantic constants (20, 999, 9999 eggplants → constants)
-  - Updated all pricing to use centralized price constants in cents
-  - Fixed story ending detection to use STORY_CONFIG.STORY_END_MARKER constant
-  - Updated reading analytics milestones to use UI_CONFIG targets
-  - Fixed TypeScript interface for ReadingStats in analytics component
-  - Ensured zero hard-coded story IDs, node references, or magic values throughout codebase
-  - Achieved complete LSP error-free status across entire application
 - **Version 1.0 Release**: TurnPage officially released as Version 1.0 with fully functional story reading system (January 30, 2025)
 - **Complete Page-by-Page System Alignment**: Successfully converted entire system to pure page-by-page logic where decision pages are treated as regular pages with choice options (January 30, 2025)
   - Eliminated all auto-advance chains from database (removed 9 next_node_id references)
@@ -140,7 +130,7 @@ User feedback: Very appreciative of thorough help and comprehensive solutions.
 - **Timeline Story Builder Complete**: Implemented visual branching system matching user's original sketch design (January 29, 2025)
   - Visual connection arrows showing story flow between choices and target branches
   - Color-coded timelines with branch naming functionality (Romance Path, Action Route, etc.)
-  - Premium path visualization with dashed rose lines and eggplant indicators
+  - Premium path visualization with dashed rose lines and diamond indicators
   - Real-time SVG connection rendering with curved arrows pointing to correct branch colors
   - Interactive branch renaming with meaningful path descriptions
 - **User Role System Access**: Upgraded project owner (evyatar.perel@gmail.com) to mega-admin status for full system access (January 29, 2025)

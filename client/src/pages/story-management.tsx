@@ -14,7 +14,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { isAdmin } from "@shared/userRoles";
-import BottomNavigation from "@/components/bottom-navigation";
+import { BottomNavigation } from "@/components/bottom-navigation";
 
 interface Story {
   id: string;
@@ -49,7 +49,7 @@ interface StoryChoice {
   choiceText: string;
   order: number;
   isPremium: boolean;
-  eggplantCost: number;
+  diamondCost: number;
 }
 
 export default function StoryManagement() {

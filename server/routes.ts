@@ -384,7 +384,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const alreadyPurchased = await storage.hasPurchasedPremiumPath(userId, choiceId);
         
         if (!alreadyPurchased) {
-          // User hasn't purchased this path yet, check if they have enough eggplants
+          // User hasn't purchased this path yet, check if they have enough diamonds
           const user = await storage.getUser(userId);
           const cost = choice.eggplantCost || 0;
           const userEggplants = user?.eggplants || 0;
@@ -403,7 +403,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             userId,
             storyId,
             choiceId,
-            eggplantCost: cost
+            diamondCost: cost
           });
         }
         // If already purchased, user can access it for free forever
@@ -983,7 +983,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           // Add eggplants to user account
           await storage.addEggplantsToUser(userId, parseInt(eggplants));
-
+          console.log(`Added ${eggplants} eggplants to user ${userId}`);
         } catch (error) {
           console.error('Error adding eggplants to user:', error);
         }

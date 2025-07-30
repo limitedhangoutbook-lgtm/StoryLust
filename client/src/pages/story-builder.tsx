@@ -167,7 +167,7 @@ export default function StoryBuilder() {
             id: `choice-${Date.now()}`,
             text: "",
             isPremium: false,
-            eggplantCost: 0,
+            diamondCost: 0,
             targetPageId: "",
           }]
         };

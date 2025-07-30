@@ -9,7 +9,6 @@ import { BookmarkManager } from "@/components/bookmark-manager";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 
 import { useAuth } from "@/hooks/useAuth";
-import { STORY_CONFIG, UI_CONFIG } from "@shared/constants";
 import { useLocation, useRoute } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -221,7 +220,7 @@ export default function StoryReader() {
   }, [pageHistory.length, setLocation]);
 
   // Check if current node is a story ending
-  const isStoryEnding = currentNode?.content?.includes(STORY_CONFIG.STORY_END_MARKER) || false;
+  const isStoryEnding = currentNode?.content?.includes("**THE END**") || false;
 
   // Go to first choice handler - navigate to the first page with choices
   const handleGoToFirstChoice = () => {
@@ -708,7 +707,7 @@ export default function StoryReader() {
 
   return (
     <div className="min-h-screen kindle-reader">
-      {/* Minimal Header - Just back button and eggplants */}
+      {/* Minimal Header - Just back button and diamonds */}
       <header className="absolute top-0 left-0 right-0 z-10 px-4 py-3">
         <div className="flex items-center justify-between">
           <Button
@@ -833,7 +832,7 @@ export default function StoryReader() {
             {/* Bold THE END marker */}
             <div className="mb-12">
               <div className="text-6xl font-bold text-rose-gold mb-4">
-                {STORY_CONFIG.STORY_END_MARKER.replace(/\*/g, '')}
+                THE END
               </div>
               <div className="w-32 h-1 bg-gradient-to-r from-transparent via-rose-gold to-transparent mx-auto"></div>
             </div>

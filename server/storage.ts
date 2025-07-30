@@ -24,7 +24,6 @@ import {
   type InsertReadingSession,
 
 } from "@shared/schema";
-import { EGGPLANT_CONFIG, STORY_CONFIG } from "@shared/constants";
 
 export class Storage {
   // === USER OPERATIONS ===
@@ -38,7 +37,7 @@ export class Storage {
       .insert(users)
       .values({
         ...userData,
-        eggplants: userData.eggplants ?? (userData.role === 'mega-admin' ? EGGPLANT_CONFIG.MEGA_ADMIN_EGGPLANTS : EGGPLANT_CONFIG.DEFAULT_STARTING_EGGPLANTS),
+        eggplants: userData.eggplants ?? (userData.role === 'mega-admin' ? 999 : 20), // Give mega-admin 999 eggplants
       })
       .onConflictDoUpdate({
         target: users.id,
@@ -334,7 +333,7 @@ export class Storage {
     totalChoicesMade: number;
     bookmarkedStories: number;
     premiumChoicesUnlocked: number;
-    eggplantsSpent: number;
+    diamondsSpent: number;
   }> {
     // Count stories started (reading progress exists)
     const [startedResult] = await db
@@ -376,7 +375,7 @@ export class Storage {
         eq(storyChoices.isPremium, true)
       ));
 
-    // Get user for eggplants spent (would need transaction history for real calculation)
+    // Get user for diamonds spent (would need transaction history for real calculation)
     const user = await this.getUser(userId);
     
     return {
@@ -385,7 +384,7 @@ export class Storage {
       totalChoicesMade: choicesResult?.count || 0,
       bookmarkedStories: bookmarkedResult?.count || 0,
       premiumChoicesUnlocked: premiumResult?.count || 0,
-      eggplantsSpent: 0, // Would need transaction history
+      diamondsSpent: 0, // Would need transaction history
     };
   }
 

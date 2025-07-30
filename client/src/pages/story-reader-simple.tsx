@@ -5,18 +5,18 @@ import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, Home } from "lucide-react";
+import { ChevronLeft, Home, ChevronRight } from "lucide-react";
 
-export default function StoryReaderPages() {
+export default function StoryReaderSimple() {
   const [match, params] = useRoute("/story/:storyId");
   const [, setLocation] = useLocation();
   const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
-  // Page-based state
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(0);
+  // Simple state
+  const [currentNodeId, setCurrentNodeId] = useState<string>("");
+  const [history, setHistory] = useState<string[]>([]);
   
   const storyId = params?.storyId;
 
@@ -26,30 +26,16 @@ export default function StoryReaderPages() {
     enabled: !!storyId,
   });
 
-  // Get all pages for this story ordered sequentially  
-  const { data: allPages = [] } = useQuery<Array<{ 
-    id: string; 
-    storyId: string; 
-    title: string; 
-    content: string; 
-    order: number;
-
-  }>>({
-    queryKey: [`/api/stories/${storyId}/pages`],
-    enabled: !!storyId,
+  // Get current node
+  const { data: currentNode } = useQuery<{ id: string; storyId: string; title: string; content: string }>({
+    queryKey: [`/api/nodes/${currentNodeId}`],
+    enabled: !!currentNodeId,
   });
 
-  // Get choices for current page - use array index since pages might not have sequential order values
-  const currentNode = allPages[currentPage - 1]; // Convert 1-based page to 0-based index
-  const { data: choices = [] } = useQuery<Array<{ 
-    id: string; 
-    choiceText: string; 
-    isPremium: boolean; 
-    eggplantCost?: number;
-    toNodeId: string;
-  }>>({
-    queryKey: [`/api/nodes/${currentNode?.id}/choices`],
-    enabled: !!currentNode?.id,
+  // Get choices
+  const { data: choices = [] } = useQuery<Array<{ id: string; choiceText: string; isPremium: boolean; diamondCost?: number }>>({
+    queryKey: [`/api/nodes/${currentNodeId}/choices`],
+    enabled: !!currentNodeId,
   });
 
   // Get progress
@@ -58,34 +44,48 @@ export default function StoryReaderPages() {
     enabled: !!storyId && isAuthenticated,
   });
 
-  // Set total pages when data loads
+  // Initialize starting node
   useEffect(() => {
-    if (allPages.length > 0) {
-      setTotalPages(allPages.length);
-      
-      // Find current page from progress or start at page 1
-      if (progress?.currentNodeId) {
-        const pageIndex = allPages.findIndex(page => page.id === progress.currentNodeId);
-        if (pageIndex !== -1) {
-          setCurrentPage(pageIndex + 1); // Convert 0-based index to 1-based page
-        }
-      } else {
-        // Check localStorage for guests
-        const savedPage = localStorage.getItem(`story-${storyId}-page`);
-        if (savedPage) {
-          const savedPageNum = parseInt(savedPage);
-          // Ensure saved page is within valid range
-          if (savedPageNum >= 1 && savedPageNum <= allPages.length) {
-            setCurrentPage(savedPageNum);
-          } else {
-            setCurrentPage(1); // Reset to first page if invalid
-          }
-        }
+    if (!storyId) return;
+    
+    // Get from progress, localStorage, or use starting node
+    const savedNodeId = localStorage.getItem(`story-${storyId}-node`);
+    let startNodeId;
+    
+    if (storyId === 'desert-seduction') {
+      startNodeId = 'desert-start';
+    } else if (storyId === 'campus-encounter') {
+      startNodeId = 'start';
+    } else {
+      startNodeId = 'start'; // default
+    }
+    
+    const nodeId = progress?.currentNodeId || savedNodeId || startNodeId;
+    setCurrentNodeId(nodeId);
+  }, [storyId, progress]);
+
+  // Go back function
+  const goBack = () => {
+    if (history.length === 0) return;
+    
+    const previousNodeId = history[history.length - 1];
+    setHistory(prev => prev.slice(0, -1));
+    setCurrentNodeId(previousNodeId);
+    
+    // Save progress
+    if (storyId) {
+      localStorage.setItem(`story-${storyId}-node`, previousNodeId);
+      if (isAuthenticated) {
+        apiRequest("POST", "/api/reading-progress", {
+          storyId,
+          currentNodeId: previousNodeId,
+          isBookmarked: false,
+        }).catch(() => {});
       }
     }
-  }, [allPages, progress, storyId]);
+  };
 
-  // Simple swipe handling for page navigation
+  // Simple swipe handling
   useEffect(() => {
     let startX = 0;
 
@@ -98,12 +98,9 @@ export default function StoryReaderPages() {
       const deltaX = endX - startX;
       
       if (Math.abs(deltaX) > 100) {
-        if (deltaX > 0 && currentPage > 1) {
+        if (deltaX > 0 && history.length > 0) {
           // Swipe right - go back
-          goToPreviousPage();
-        } else if (deltaX < 0 && choices.length === 0 && currentPage < totalPages) {
-          // Swipe left - go forward (only if no choices)
-          goToNextPage();
+          goBack();
         }
       }
     };
@@ -115,60 +112,37 @@ export default function StoryReaderPages() {
       document.removeEventListener('touchstart', handleTouchStart);
       document.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [currentPage, totalPages, choices.length]);
+  }, [history.length, goBack]);
 
-  // Navigation functions
-  const goToPreviousPage = () => {
-    if (currentPage > 1) {
-      const newPage = currentPage - 1;
-      setCurrentPage(newPage);
-      saveProgress(newPage);
-    }
-  };
 
-  const goToNextPage = () => {
-    if (currentPage < totalPages) {
-      const newPage = currentPage + 1;
-      setCurrentPage(newPage);
-      saveProgress(newPage);
-    }
-  };
 
-  const saveProgress = (pageNumber: number) => {
-    // Use array index instead of page.order for consistency
-    const page = allPages[pageNumber - 1]; // Convert 1-based to 0-based index
-    if (!page || !storyId) return;
-
-    // Save locally
-    localStorage.setItem(`story-${storyId}-page`, pageNumber.toString());
-    
-    // Save to server if authenticated
-    if (isAuthenticated) {
-      apiRequest("POST", "/api/reading-progress", {
-        storyId,
-        currentNodeId: page.id,
-        isBookmarked: false,
-      }).catch(() => {});
-    }
-  };
-
-  // Select choice - navigate to target page
+  // Select choice
   const selectChoiceMutation = useMutation({
     mutationFn: async (choiceId: string) => {
       const response = await apiRequest("POST", `/api/choices/${choiceId}/select`, {
         storyId,
-        currentNodeId: currentNode?.id,
+        currentNodeId,
       });
       return response.json();
     },
     onSuccess: (data, choiceId) => {
       if (data.targetNode?.id) {
-        // Find the page index for the target node (convert to 1-based page number)
-        const targetPageIndex = allPages.findIndex(page => page.id === data.targetNode.id);
-        if (targetPageIndex !== -1) {
-          const targetPageNumber = targetPageIndex + 1;
-          setCurrentPage(targetPageNumber);
-          saveProgress(targetPageNumber);
+        // Add current node to history
+        setHistory(prev => [...prev, currentNodeId]);
+        
+        // Navigate to new node
+        setCurrentNodeId(data.targetNode.id);
+        
+        // Save progress
+        if (storyId) {
+          localStorage.setItem(`story-${storyId}-node`, data.targetNode.id);
+          if (isAuthenticated) {
+            apiRequest("POST", "/api/reading-progress", {
+              storyId,
+              currentNodeId: data.targetNode.id,
+              isBookmarked: false,
+            }).catch(() => {});
+          }
         }
         
         // Show feedback
@@ -179,6 +153,7 @@ export default function StoryReaderPages() {
           duration: 1500,
         });
         
+        // Scroll to top
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     },
@@ -197,10 +172,20 @@ export default function StoryReaderPages() {
       if (isAuthenticated) {
         await apiRequest("DELETE", `/api/reading-progress/${storyId}`);
       }
-      localStorage.removeItem(`story-${storyId}-page`);
+      localStorage.removeItem(`story-${storyId}-node`);
     },
     onSuccess: () => {
-      setCurrentPage(1);
+      let startNodeId;
+      if (storyId === 'desert-seduction') {
+        startNodeId = 'desert-start';
+      } else if (storyId === 'campus-encounter') {
+        startNodeId = 'start';
+      } else {
+        startNodeId = 'start';
+      }
+      
+      setCurrentNodeId(startNodeId);
+      setHistory([]);
       queryClient.invalidateQueries({ queryKey: [`/api/reading-progress/${storyId}`] });
     },
   });
@@ -208,7 +193,7 @@ export default function StoryReaderPages() {
   // Check if story is ending
   const isEnding = currentNode?.content?.includes("**THE END**") || false;
 
-  if (!story || !currentNode || allPages.length === 0) {
+  if (!story || !currentNode) {
     return (
       <div className="h-screen flex items-center justify-center bg-kindle">
         <div className="animate-spin w-8 h-8 border-4 border-rose-gold border-t-transparent rounded-full" />
@@ -220,45 +205,38 @@ export default function StoryReaderPages() {
     <div className="min-h-screen bg-kindle text-kindle">
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 bg-kindle/95 backdrop-blur-sm border-b border-dark-tertiary/30 z-50">
-        <div className="flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4">
+        <div className="flex items-center justify-between px-6 py-4">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setLocation("/")}
-            className="text-kindle-secondary hover:text-kindle p-2 sm:px-3"
+            className="text-kindle-secondary hover:text-kindle"
           >
-            <ChevronLeft className="w-5 h-5 sm:mr-2" />
-            <span className="hidden sm:inline">Home</span>
+            <ChevronLeft className="w-5 h-5 mr-2" />
+            Home
           </Button>
           
-          <h1 className="text-base sm:text-lg font-semibold text-kindle truncate max-w-[120px] sm:max-w-xs">
+          <h1 className="text-lg font-semibold text-kindle truncate max-w-xs">
             {story.title}
           </h1>
           
-          <div className="text-xs sm:text-sm text-kindle-secondary">
-          </div>
+          <div className="w-20" /> {/* Spacer for center alignment */}
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="pt-16 sm:pt-20 px-4 sm:px-6 max-w-3xl mx-auto pb-32">
-        {/* Page Progress Bar */}
-        <div className="mb-6">
-          <div className="w-full bg-dark-tertiary rounded-full h-2">
-            <div 
-              className="bg-gradient-to-r from-rose-gold to-gold-accent h-2 rounded-full transition-all duration-300"
-              style={{ width: `${(currentPage / totalPages) * 100}%` }}
-            />
+      <main className="pt-20 px-6 max-w-3xl mx-auto pb-32">
+        {/* Swipe hint for first-time users */}
+        {currentNodeId.includes("start") && (
+          <div className="text-center mb-6 text-kindle-secondary text-sm">
+            💡 Swipe right to go back to previous choices
           </div>
-          <div className="text-center mt-2 text-sm text-kindle-secondary">
-          </div>
-        </div>
+        )}
         
         {/* Story Content */}
-        <div className="kindle-text text-kindle space-y-4 sm:space-y-6 mb-8">
-          <h2 className="text-lg sm:text-xl font-bold text-kindle mb-3 sm:mb-4">{currentNode.title}</h2>
+        <div className="kindle-text text-kindle space-y-6 mb-8">
           {currentNode.content.split('\n\n').map((paragraph, index) => (
-            <p key={index} className="kindle-paragraph leading-relaxed text-sm sm:text-base">
+            <p key={index} className="kindle-paragraph leading-relaxed">
               {paragraph}
             </p>
           ))}
@@ -266,31 +244,31 @@ export default function StoryReaderPages() {
 
         {/* Choices */}
         {choices.length > 0 && !isEnding && (
-          <div className="space-y-3 sm:space-y-4 mb-8">
-            <h3 className="text-base sm:text-lg font-semibold text-kindle mb-3 sm:mb-4">What do you do?</h3>
+          <div className="space-y-4 mb-8">
+            <h3 className="text-lg font-semibold text-kindle mb-4">What do you do?</h3>
             {choices.map((choice, index) => (
               <button
                 key={choice.id}
                 onClick={() => selectChoiceMutation.mutate(choice.id)}
                 disabled={selectChoiceMutation.isPending}
-                className={`w-full text-left p-3 sm:p-4 rounded-lg border transition-all ${
+                className={`w-full text-left p-4 rounded-lg border transition-all ${
                   choice.isPremium 
                     ? 'border-rose-gold/30 hover:border-rose-gold hover:bg-rose-gold/5' 
                     : 'border-dark-tertiary hover:border-kindle-secondary hover:bg-dark-secondary/30'
                 }`}
               >
-                <div className="flex items-start space-x-2 sm:space-x-3">
-                  <span className={`font-bold text-base sm:text-lg ${choice.isPremium ? 'text-rose-gold' : 'text-kindle-secondary'}`}>
+                <div className="flex items-start space-x-3">
+                  <span className={`font-bold text-lg ${choice.isPremium ? 'text-rose-gold' : 'text-kindle-secondary'}`}>
                     {String.fromCharCode(65 + index)}.
                   </span>
                   <div className="flex-1">
-                    <span className="text-sm sm:text-base">
+                    <span className="text-base">
                       {choice.choiceText}
                     </span>
                     {choice.isPremium && (
-                      <div className="mt-2 inline-flex items-center gap-1.5 px-2 sm:px-3 py-1 bg-rose-gold/15 text-rose-gold border border-rose-gold/30 rounded-full text-xs sm:text-sm font-semibold">
+                      <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 bg-rose-gold/15 text-rose-gold border border-rose-gold/30 rounded-full text-sm font-semibold">
                         <span>🍆</span>
-                        <span>{choice.eggplantCost || 0} eggplants</span>
+                        <span>{choice.diamondCost || 0} eggplants</span>
                       </div>
                     )}
                   </div>
@@ -328,15 +306,15 @@ export default function StoryReaderPages() {
         )}
       </main>
 
-      {/* Bottom Navigation - only show if not at ending */}
+      {/* Bottom Navigation */}
       {!isEnding && (
         <div className="fixed bottom-0 left-0 right-0 bg-kindle/95 backdrop-blur-sm border-t border-dark-tertiary/30">
           <div className="flex items-center justify-between px-6 py-4 max-w-3xl mx-auto">
             <Button
               variant="ghost"
               size="sm"
-              onClick={goToPreviousPage}
-              disabled={currentPage === 1}
+              onClick={goBack}
+              disabled={history.length === 0}
               className="text-kindle hover:text-rose-gold disabled:opacity-30"
             >
               <ChevronLeft className="w-5 h-5 mr-1" />
@@ -355,19 +333,14 @@ export default function StoryReaderPages() {
               </button>
             </div>
             
-            {choices.length === 0 && currentPage < totalPages ? (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={goToNextPage}
-                className="text-kindle hover:text-rose-gold"
-              >
-                Next
-                <ChevronLeft className="w-5 h-5 ml-1 rotate-180" />
-              </Button>
-            ) : (
-              <div className="w-16" /> // Spacer when choices are present
-            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={choices.length === 0}
+              className="text-kindle hover:text-rose-gold disabled:opacity-30"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </Button>
           </div>
         </div>
       )}
