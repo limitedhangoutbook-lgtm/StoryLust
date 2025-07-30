@@ -39,8 +39,8 @@ export default function StoryReaderPages() {
     enabled: !!storyId,
   });
 
-  // Get choices for current page
-  const currentNode = allPages.find(page => page.order === currentPage);
+  // Get choices for current page - use array index since pages might not have sequential order values
+  const currentNode = allPages[currentPage - 1]; // Convert 1-based page to 0-based index
   const { data: choices = [] } = useQuery<Array<{ 
     id: string; 
     choiceText: string; 
@@ -67,13 +67,19 @@ export default function StoryReaderPages() {
       if (progress?.currentNodeId) {
         const pageIndex = allPages.findIndex(page => page.id === progress.currentNodeId);
         if (pageIndex !== -1) {
-          setCurrentPage(pageIndex + 1);
+          setCurrentPage(pageIndex + 1); // Convert 0-based index to 1-based page
         }
       } else {
         // Check localStorage for guests
         const savedPage = localStorage.getItem(`story-${storyId}-page`);
         if (savedPage) {
-          setCurrentPage(parseInt(savedPage));
+          const savedPageNum = parseInt(savedPage);
+          // Ensure saved page is within valid range
+          if (savedPageNum >= 1 && savedPageNum <= allPages.length) {
+            setCurrentPage(savedPageNum);
+          } else {
+            setCurrentPage(1); // Reset to first page if invalid
+          }
         }
       }
     }
@@ -129,7 +135,8 @@ export default function StoryReaderPages() {
   };
 
   const saveProgress = (pageNumber: number) => {
-    const page = allPages.find(p => p.order === pageNumber);
+    // Use array index instead of page.order for consistency
+    const page = allPages[pageNumber - 1]; // Convert 1-based to 0-based index
     if (!page || !storyId) return;
 
     // Save locally
@@ -156,11 +163,12 @@ export default function StoryReaderPages() {
     },
     onSuccess: (data, choiceId) => {
       if (data.targetNode?.id) {
-        // Find the page order for the target node
-        const targetPage = allPages.find(page => page.id === data.targetNode.id);
-        if (targetPage) {
-          setCurrentPage(targetPage.order);
-          saveProgress(targetPage.order);
+        // Find the page index for the target node (convert to 1-based page number)
+        const targetPageIndex = allPages.findIndex(page => page.id === data.targetNode.id);
+        if (targetPageIndex !== -1) {
+          const targetPageNumber = targetPageIndex + 1;
+          setCurrentPage(targetPageNumber);
+          saveProgress(targetPageNumber);
         }
         
         // Show feedback
