@@ -133,7 +133,7 @@ export default function Home() {
               >
                 <span className="text-lg">🍆</span>
                 <span className="text-sm font-medium text-text-primary">
-                  {(user as any)?.eggplants || 0}
+                  {(user as any)?.diamonds || 0}
                 </span>
               </button>
             ) : (

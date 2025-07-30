@@ -82,7 +82,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-
+  // Get next page in story progression
+  app.get('/api/stories/:storyId/next/:currentNodeId', async (req, res) => {
+    try {
+      const { storyId, currentNodeId } = req.params;
+      
+      // Get current node to check for next_node_id
+      const [currentNode] = await db
+        .select()
+        .from(storyNodes)
+        .where(and(
+          eq(storyNodes.storyId, storyId),
+          eq(storyNodes.id, currentNodeId)
+        ));
+      
+      if (!currentNode) {
+        return res.status(404).json({ message: "Current node not found" });
+      }
+      
+      // Check if current node has a direct next_node_id
+      if (currentNode.nextNodeId) {
+        const [nextNode] = await db
+          .select()
+          .from(storyNodes)
+          .where(eq(storyNodes.id, currentNode.nextNodeId));
+        
+        if (nextNode) {
+          return res.json(nextNode);
+        }
+      }
+      
+      // No next node found
+      return res.status(404).json({ message: "No next page found" });
+    } catch (error) {
+      console.error("Error getting next page:", error);
+      res.status(500).json({ message: "Failed to get next page" });
+    }
+  });
 
   // === READING PROGRESS ROUTES ===
   app.get('/api/reading-progress/:storyId', isAuthenticated, async (req: any, res) => {
@@ -172,33 +208,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching reading progress with stories:", error);
       res.status(500).json({ message: "Failed to fetch reading progress" });
-    }
-  });
-
-  // === START FROM BEGINNING ROUTE ===
-  app.post('/api/stories/:storyId/start-from-beginning', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const { storyId } = req.params;
-      
-      // Find the actual starting node for this story (order = 1)
-      const startingNode = await storage.getStoryStartingNode(storyId);
-      if (!startingNode) {
-        return res.status(404).json({ message: "Story not found or no starting node" });
-      }
-      
-      // Reset reading progress to the beginning
-      const progress = await storage.saveReadingProgress({
-        userId,
-        storyId,
-        currentNodeId: startingNode.id,
-        isBookmarked: false
-      });
-      
-      res.json({ success: true, progress, startingNodeId: startingNode.id });
-    } catch (error) {
-      console.error("Error resetting story progress:", error);
-      res.status(500).json({ message: "Failed to reset story progress" });
     }
   });
 
@@ -591,7 +600,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         imageUrl: imageUrl || "",
         spiceLevel: spiceLevel || 1,
         category: category || "straight",
-
+        authorId: req.user.claims.sub,
         isPublished: false, // Always save as draft
         isFeatured: false,
       });
@@ -608,7 +617,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             content: page.content || "",
             order: page.order,
             isStarting: page.order === 1,
-
+            isEnding: page.isEnding || false,
           });
           nodeMap[page.id] = node.id;
         }

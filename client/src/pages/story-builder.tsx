@@ -29,7 +29,7 @@ interface Choice {
   id: string;
   text: string;
   isPremium: boolean;
-  eggplantCost: number;
+  diamondCost: number;
   targetPageId: string;
 }
 
@@ -137,7 +137,7 @@ export default function StoryBuilder() {
           id: choice.id,
           text: choice.text,
           isPremium: choice.isPremium,
-          eggplantCost: choice.eggplantCost,
+          diamondCost: choice.diamondCost,
           targetPageId: choice.targetPageId
         })) || []
       })),
@@ -447,19 +447,19 @@ export default function StoryBuilder() {
                                 </div>
                                 
                                 <div>
-                                  <Label className="text-text-secondary">Eggplant Cost</Label>
+                                  <Label className="text-text-secondary">Diamond Cost</Label>
                                   <div className="flex items-center space-x-2">
                                     <Input
                                       type="number"
-                                      value={choice.eggplantCost}
+                                      value={choice.diamondCost}
                                       onChange={(e) => updateChoice(page.id, choiceIndex, { 
-                                        eggplantCost: parseInt(e.target.value) || 0,
+                                        diamondCost: parseInt(e.target.value) || 0,
                                         isPremium: parseInt(e.target.value) > 0
                                       })}
                                       className="bg-dark-tertiary border-dark-tertiary text-text-primary"
                                       min="0"
                                     />
-                                    {choice.isPremium && <span className="text-rose-gold">🍆</span>}
+                                    {choice.isPremium && <Gem className="w-4 h-4 text-rose-gold" />}
                                   </div>
                                 </div>
                               </div>

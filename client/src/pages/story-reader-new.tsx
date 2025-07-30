@@ -185,8 +185,8 @@ export default function StoryReaderNew() {
   };
 
   // Handle choice selection
-  const handleChoiceSelect = (choiceId: string, isPremium: boolean, eggplantCost?: number) => {
-    selectChoiceMutation.mutate({ choiceId, isPremium, diamondCost: eggplantCost });
+  const handleChoiceSelect = (choiceId: string, isPremium: boolean, diamondCost?: number) => {
+    selectChoiceMutation.mutate({ choiceId, isPremium, diamondCost });
   };
 
   // Reset story mutation

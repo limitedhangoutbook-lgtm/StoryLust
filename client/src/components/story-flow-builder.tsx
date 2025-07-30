@@ -21,7 +21,7 @@ interface Choice {
   id: string;
   text: string;
   isPremium: boolean;
-  eggplantCost: number;
+  diamondCost: number;
   targetPageId: string;
 }
 
@@ -73,7 +73,7 @@ export function StoryFlowBuilder({ pages, onPagesChange }: StoryFlowBuilderProps
       id: `choice-${Date.now()}`,
       text: "New choice",
       isPremium: false,
-      eggplantCost: 0,
+      diamondCost: 0,
       targetPageId: ""
     };
     
@@ -222,7 +222,7 @@ export function StoryFlowBuilder({ pages, onPagesChange }: StoryFlowBuilderProps
                       {choice.isPremium && (
                         <span className="ml-2">
                           <Diamond className="w-3 h-3 inline text-gold-accent" />
-                          {choice.eggplantCost}
+                          {choice.diamondCost}
                         </span>
                       )}
                     </div>
@@ -289,13 +289,13 @@ export function StoryFlowBuilder({ pages, onPagesChange }: StoryFlowBuilderProps
                           
                           {choice.isPremium && (
                             <div>
-                              <Label htmlFor="eggplant-cost" className="text-text-primary">Eggplant Cost</Label>
+                              <Label htmlFor="diamond-cost" className="text-text-primary">Diamond Cost</Label>
                               <Input
-                                id="eggplant-cost"
+                                id="diamond-cost"
                                 type="number"
                                 min="1"
-                                value={choice.eggplantCost}
-                                onChange={(e) => updateChoice(page.id, choice.id, { eggplantCost: parseInt(e.target.value) || 0 })}
+                                value={choice.diamondCost}
+                                onChange={(e) => updateChoice(page.id, choice.id, { diamondCost: parseInt(e.target.value) || 0 })}
                                 className="bg-dark-tertiary border-dark-tertiary text-text-primary"
                               />
                             </div>

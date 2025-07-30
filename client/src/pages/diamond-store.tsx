@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Sparkles, Gift, Crown, Star, PiggyBank, Diamond } from "lucide-react";
+import { Sparkles, Gift, Crown, Star, PiggyBank } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,7 +10,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { BottomNavigation } from "@/components/bottom-navigation";
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
-// Eggplant checkout component will be imported when needed
+// Diamond checkout component will be imported when needed
 
 if (!import.meta.env.VITE_STRIPE_PUBLIC_KEY) {
   throw new Error('Missing required Stripe key: VITE_STRIPE_PUBLIC_KEY');
@@ -79,7 +79,7 @@ export default function EggplantStore() {
   // Create payment intent mutation
   const createPaymentMutation = useMutation({
     mutationFn: async (packageData: EggplantPackage) => {
-      const response = await apiRequest("POST", "/api/eggplants/create-payment", {
+      const response = await apiRequest("POST", "/api/diamonds/create-payment", {
         packageId: packageData.id,
         amount: packageData.priceUsd,
         eggplants: packageData.totalEggplants
@@ -157,7 +157,7 @@ export default function EggplantStore() {
               <div className="flex items-center space-x-2">
                 <span className="text-2xl">🍆</span>
                 <span className="text-white font-medium">
-                  Current Balance: {(user as any).eggplants || 0} eggplants
+                  Current Balance: {(user as any).diamonds || 0} eggplants
                 </span>
               </div>
             </div>
@@ -297,7 +297,7 @@ export default function EggplantStore() {
                 <Diamond className="w-4 h-4 text-yellow-400" />
                 <span className="font-medium text-text-primary">Unlimited Story Access</span>
               </div>
-              <p className="text-text-muted ml-6">Never worry about eggplant costs again</p>
+              <p className="text-text-muted ml-6">Never worry about diamond costs again</p>
               
               <div className="flex items-center space-x-2">
                 <Gift className="w-4 h-4 text-yellow-400" />
@@ -313,10 +313,10 @@ export default function EggplantStore() {
             <Card className="bg-dark-secondary border-dark-tertiary">
               <CardContent className="p-6">
                 <h3 className="text-lg font-semibold text-text-primary mb-2">
-                  Create an Account to Purchase Eggplants
+                  Create an Account to Purchase Diamonds
                 </h3>
                 <p className="text-text-muted mb-4">
-                  Sign up to start collecting eggplants and unlock premium content
+                  Sign up to start collecting diamonds and unlock premium content
                 </p>
                 <Button 
                   onClick={() => window.location.href = "/api/login"}

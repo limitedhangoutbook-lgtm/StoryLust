@@ -103,15 +103,6 @@ export class Storage {
       .orderBy(storyNodes.order);
   }
 
-  async getStoryStartingNode(storyId: string): Promise<StoryNode | undefined> {
-    const [node] = await db
-      .select()
-      .from(storyNodes)
-      .where(and(eq(storyNodes.storyId, storyId), eq(storyNodes.order, 1)))
-      .limit(1);
-    return node;
-  }
-
   async getAllStoriesForAdmin(): Promise<Story[]> {
     return await db
       .select()
@@ -595,7 +586,7 @@ export class Storage {
     userId: string;
     storyId: string;
     choiceId: string;
-    eggplantCost: number;
+    diamondCost: number;
   }): Promise<{ success: boolean }> {
     await db.insert(purchasedPremiumPaths).values(pathData);
     return { success: true };
@@ -626,7 +617,7 @@ export class Storage {
         userId: purchasedPremiumPaths.userId,
         storyId: purchasedPremiumPaths.storyId,
         choiceId: purchasedPremiumPaths.choiceId,
-        eggplantCost: purchasedPremiumPaths.eggplantCost,
+        diamondCost: purchasedPremiumPaths.diamondCost,
         createdAt: purchasedPremiumPaths.createdAt,
         // Include choice and story details
         choiceText: storyChoices.choiceText,
@@ -652,6 +643,18 @@ export class Storage {
       eq(userChoices.userId, userId),
       eq(userChoices.storyId, storyId)
     ));
+  }
+
+  async getStoryStartingNode(storyId: string): Promise<StoryNode | undefined> {
+    const [node] = await db
+      .select()
+      .from(storyNodes)
+      .where(and(
+        eq(storyNodes.storyId, storyId),
+        eq(storyNodes.isStarting, true)
+      ))
+      .limit(1);
+    return node;
   }
 }
 
