@@ -69,18 +69,6 @@ const eggplantPackages: EggplantPackage[] = [
     icon: <span className="text-2xl">🍆👑</span>,
     color: "from-yellow-400 to-yellow-600",
     description: "Unlimited access + author contact + custom scenarios"
-  },
-  {
-    id: "paypig",
-    name: "Pay Pig",
-    eggplants: "∞",
-    bonusEggplants: 0,
-    totalEggplants: "∞",
-    priceUsd: 999.00,
-    forPerverts: true,
-    icon: <PiggyBank className="text-2xl text-purple-400" />,
-    color: "from-purple-400 to-purple-600",
-    description: "Infinite eggplants for the ultimate degenerate experience"
   }
 ];
 

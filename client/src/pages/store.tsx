@@ -44,14 +44,6 @@ const eggplantPackages: EggplantPackage[] = [
     popular: true,
     icon: Crown,
   },
-  {
-    id: "paypig",
-    name: "Pay Pig",
-    eggplants: "∞",
-    price: 999.00,
-    forPerverts: true,
-    icon: PiggyBank,
-  },
 ];
 
 export default function Store() {
