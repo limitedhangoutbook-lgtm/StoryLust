@@ -381,7 +381,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Check if this is a premium choice and handle payment/access
-      if (choice.isPremium && (choice.diamondCost || 0) > 0) {
+      if (choice.isPremium && (choice.eggplantCost || 0) > 0) {
         // Check if user is authenticated for premium content
         if (!req.isAuthenticated?.()) {
           return res.status(401).json({ message: "Login required for premium choices" });
@@ -395,19 +395,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (!alreadyPurchased) {
           // User hasn't purchased this path yet, check if they have enough diamonds
           const user = await storage.getUser(userId);
-          const cost = choice.diamondCost || 0;
-          const userDiamonds = user?.diamonds || 0;
+          const cost = choice.eggplantCost || 0;
+          const userEggplants = user?.eggplants || 0;
           
-          if (!user || userDiamonds < cost) {
+          if (!user || userEggplants < cost) {
             return res.status(400).json({ 
-              message: "Not enough diamonds for this premium choice",
+              message: "Not enough eggplants for this premium choice",
               required: cost,
-              available: userDiamonds
+              available: userEggplants
             });
           }
           
-          // Deduct diamonds and record the purchase
-          await storage.updateUserDiamonds(userId, userDiamonds - cost);
+          // Deduct eggplants and record the purchase
+          await storage.updateUserEggplants(userId, userEggplants - cost);
           await storage.purchasePremiumPath({
             userId,
             storyId,
@@ -584,6 +584,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // === STORY CREATION ROUTES (ADMIN ONLY) ===
+  app.post('/api/stories/draft', isAuthenticated, async (req: any, res) => {
+    try {
+      const currentUser = await storage.getUser(req.user.claims.sub);
+      if (currentUser?.role !== 'admin' && currentUser?.role !== 'mega-admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const { title, description, imageUrl, spiceLevel, category, pages } = req.body;
+
+      // Create story as draft (not published)
+      const story = await storage.createStory({
+        title: title || "Untitled Draft",
+        description: description || "Draft story",
+        imageUrl: imageUrl || "",
+        spiceLevel: spiceLevel || 1,
+        category: category || "straight",
+        authorId: req.user.claims.sub,
+        isPublished: false, // Always save as draft
+        isFeatured: false,
+      });
+
+      // Create nodes and choices if pages exist
+      if (pages && pages.length > 0) {
+        const nodeMap: Record<string, string> = {};
+        
+        // First pass: create all nodes
+        for (const page of pages) {
+          const node = await storage.createStoryNode({
+            storyId: story.id,
+            title: page.title || `Page ${page.order}`,
+            content: page.content || "",
+            order: page.order,
+            isStarting: page.order === 1,
+            isEnding: page.isEnding || false,
+          });
+          nodeMap[page.id] = node.id;
+        }
+
+        // Second pass: create choices with correct node references
+        for (const page of pages) {
+          if (page.choices && page.choices.length > 0) {
+            for (let i = 0; i < page.choices.length; i++) {
+              const choice = page.choices[i];
+              if (choice.text.trim() && choice.targetPageId && nodeMap[choice.targetPageId]) {
+                await storage.createStoryChoice({
+                  fromNodeId: nodeMap[page.id],
+                  toNodeId: nodeMap[choice.targetPageId],
+                  choiceText: choice.text,
+                  order: i,
+                  isPremium: choice.isPremium || false,
+                  eggplantCost: choice.eggplantCost || 0,
+                });
+              }
+            }
+          }
+        }
+      }
+
+      res.status(201).json({ 
+        message: "Draft saved successfully",
+        story: {
+          id: story.id,
+          title: story.title,
+          isPublished: story.isPublished
+        }
+      });
+    } catch (error) {
+      console.error("Error saving story draft:", error);
+      res.status(500).json({ message: "Failed to save story draft" });
+    }
+  });
+
   app.post('/api/stories', isAuthenticated, async (req: any, res) => {
     try {
       const currentUser = await storage.getUser(req.user.claims.sub);

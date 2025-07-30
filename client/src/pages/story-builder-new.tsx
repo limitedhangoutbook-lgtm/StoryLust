@@ -209,101 +209,7 @@ export default function StoryBuilder() {
     saveDraftMutation.mutate(draftData);
   };
 
-  const MetadataDialog = () => (
-    <Dialog open={showMetadata} onOpenChange={setShowMetadata}>
-      <DialogContent className="bg-dark-secondary border-dark-tertiary max-w-2xl">
-        <DialogHeader>
-          <DialogTitle className="text-text-primary">Story Metadata</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div>
-            <Label className="text-text-primary">Story Title</Label>
-            <Input
-              value={storyData.title}
-              onChange={(e) => setStoryData({ ...storyData, title: e.target.value })}
-              placeholder="Enter your story title"
-              className="bg-dark-tertiary border-dark-tertiary text-text-primary"
-            />
-          </div>
-          
-          <div>
-            <Label className="text-text-primary">Description</Label>
-            <Textarea
-              value={storyData.description}
-              onChange={(e) => setStoryData({ ...storyData, description: e.target.value })}
-              placeholder="Describe your story in a few sentences"
-              className="bg-dark-tertiary border-dark-tertiary text-text-primary"
-              rows={3}
-            />
-          </div>
 
-          <div>
-            <Label className="text-text-primary">Cover Image URL (optional)</Label>
-            <Input
-              value={storyData.imageUrl}
-              onChange={(e) => setStoryData({ ...storyData, imageUrl: e.target.value })}
-              placeholder="https://example.com/image.jpg"
-              className="bg-dark-tertiary border-dark-tertiary text-text-primary"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label className="text-text-primary">Spice Level</Label>
-              <Select
-                value={storyData.spiceLevel.toString()}
-                onValueChange={(value) => setStoryData({ ...storyData, spiceLevel: parseInt(value) })}
-              >
-                <SelectTrigger className="bg-dark-tertiary border-dark-tertiary text-text-primary">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-dark-secondary border-dark-tertiary">
-                  <SelectItem value="1">🌶️ Mild</SelectItem>
-                  <SelectItem value="2">🌶️🌶️ Medium</SelectItem>
-                  <SelectItem value="3">🌶️🌶️🌶️ Hot</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div>
-              <Label className="text-text-primary">Category</Label>
-              <Select
-                value={storyData.category}
-                onValueChange={(value) => setStoryData({ ...storyData, category: value })}
-              >
-                <SelectTrigger className="bg-dark-tertiary border-dark-tertiary text-text-primary">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-dark-secondary border-dark-tertiary">
-                  <SelectItem value="straight">Straight</SelectItem>
-                  <SelectItem value="lgbt">LGBT</SelectItem>
-                  <SelectItem value="all">All Audiences</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              <Switch
-                checked={storyData.isPublished}
-                onCheckedChange={(checked) => setStoryData({ ...storyData, isPublished: checked })}
-              />
-              <Label className="text-text-primary">Publish immediately</Label>
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <Switch
-                checked={storyData.isFeatured}
-                onCheckedChange={(checked) => setStoryData({ ...storyData, isFeatured: checked })}
-              />
-              <Label className="text-text-primary">Feature on homepage</Label>
-            </div>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
 
   return (
     <div className="min-h-screen bg-dark-primary pb-20">
@@ -365,7 +271,101 @@ export default function StoryBuilder() {
         />
       </main>
 
-      <MetadataDialog />
+      {/* Story Metadata Dialog */}
+      <Dialog open={showMetadata} onOpenChange={setShowMetadata}>
+        <DialogContent className="bg-dark-secondary border-dark-tertiary max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-text-primary">Story Metadata</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label className="text-text-primary">Story Title</Label>
+              <Input
+                value={storyData.title}
+                onChange={(e) => setStoryData({ ...storyData, title: e.target.value })}
+                placeholder="Enter your story title"
+                className="bg-dark-tertiary border-dark-tertiary text-text-primary"
+              />
+            </div>
+            
+            <div>
+              <Label className="text-text-primary">Description</Label>
+              <Textarea
+                value={storyData.description}
+                onChange={(e) => setStoryData({ ...storyData, description: e.target.value })}
+                placeholder="Describe your story in a few sentences"
+                className="bg-dark-tertiary border-dark-tertiary text-text-primary"
+                rows={3}
+              />
+            </div>
+
+            <div>
+              <Label className="text-text-primary">Cover Image URL (optional)</Label>
+              <Input
+                value={storyData.imageUrl}
+                onChange={(e) => setStoryData({ ...storyData, imageUrl: e.target.value })}
+                placeholder="https://example.com/image.jpg"
+                className="bg-dark-tertiary border-dark-tertiary text-text-primary"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="text-text-primary">Spice Level</Label>
+                <Select
+                  value={storyData.spiceLevel.toString()}
+                  onValueChange={(value) => setStoryData({ ...storyData, spiceLevel: parseInt(value) })}
+                >
+                  <SelectTrigger className="bg-dark-tertiary border-dark-tertiary text-text-primary">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-dark-secondary border-dark-tertiary">
+                    <SelectItem value="1">🌶️ Mild</SelectItem>
+                    <SelectItem value="2">🌶️🌶️ Medium</SelectItem>
+                    <SelectItem value="3">🌶️🌶️🌶️ Hot</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Label className="text-text-primary">Category</Label>
+                <Select
+                  value={storyData.category}
+                  onValueChange={(value) => setStoryData({ ...storyData, category: value })}
+                >
+                  <SelectTrigger className="bg-dark-tertiary border-dark-tertiary text-text-primary">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-dark-secondary border-dark-tertiary">
+                    <SelectItem value="straight">Straight</SelectItem>
+                    <SelectItem value="lgbt">LGBT</SelectItem>
+                    <SelectItem value="all">All Audiences</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <Switch
+                  checked={storyData.isPublished}
+                  onCheckedChange={(checked) => setStoryData({ ...storyData, isPublished: checked })}
+                />
+                <Label className="text-text-primary">Publish immediately</Label>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Switch
+                  checked={storyData.isFeatured}
+                  onCheckedChange={(checked) => setStoryData({ ...storyData, isFeatured: checked })}
+                />
+                <Label className="text-text-primary">Feature on homepage</Label>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <BottomNavigation />
     </div>
   );
