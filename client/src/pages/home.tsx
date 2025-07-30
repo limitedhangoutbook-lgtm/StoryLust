@@ -78,9 +78,10 @@ export default function Home() {
       // Navigate to the story
       setLocation(`/story/${storyId}`);
       
-      // Refresh reading progress for authenticated users
+      // Refresh reading progress and user data for authenticated users
       if (user) {
         queryClient.invalidateQueries({ queryKey: ["/api/reading-progress"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       }
     },
     onError: (error) => {
