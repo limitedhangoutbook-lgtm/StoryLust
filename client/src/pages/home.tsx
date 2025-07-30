@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { BookOpen, Gem, Moon, Sun, GitBranch } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/components/theme-provider";
@@ -17,6 +17,7 @@ export default function Home() {
   const { user } = useAuth();
   const { theme, setTheme } = useTheme();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
@@ -38,6 +39,15 @@ export default function Home() {
     enabled: !!user,
   });
 
+  // For guests, check localStorage for progress
+  const getGuestProgress = (storyId: string) => {
+    if (!user) {
+      const savedPage = localStorage.getItem(`story-${storyId}-page`);
+      return savedPage && parseInt(savedPage) > 1;
+    }
+    return false;
+  };
+
   const getSpiceEmoji = (level: number) => {
     return "🌶️".repeat(level);
   };
@@ -46,11 +56,18 @@ export default function Home() {
     setLocation(`/story/${storyId}`);
   };
 
-  // Start from beginning mutation
+  // Start from beginning mutation - works for both authenticated and guest users
   const startFromBeginningMutation = useMutation({
     mutationFn: async (storyId: string) => {
-      const response = await apiRequest("POST", `/api/stories/${storyId}/start-from-beginning`);
-      return await response.json();
+      // For authenticated users, use API endpoint
+      if (user) {
+        const response = await apiRequest("POST", `/api/stories/${storyId}/start-from-beginning`);
+        return await response.json();
+      } else {
+        // For guests, clear localStorage and navigate directly
+        localStorage.removeItem(`story-${storyId}-page`);
+        return { success: true };
+      }
     },
     onSuccess: (data, storyId) => {
       toast({
@@ -60,6 +77,11 @@ export default function Home() {
       });
       // Navigate to the story
       setLocation(`/story/${storyId}`);
+      
+      // Refresh reading progress for authenticated users
+      if (user) {
+        queryClient.invalidateQueries({ queryKey: ["/api/reading-progress"] });
+      }
     },
     onError: (error) => {
       toast({
@@ -189,15 +211,20 @@ export default function Home() {
                     }}
                   >
                     {(() => {
-                      const featuredProgress = readingProgress.find((p: any) => p.storyId === featuredStory.id);
-                      return featuredProgress ? "Continue Reading" : "Start Reading";
+                      const featuredAuthProgress = readingProgress.find((p: any) => p.storyId === featuredStory.id);
+                      const featuredGuestProgress = getGuestProgress(featuredStory.id);
+                      const hasFeaturedProgress = featuredAuthProgress || featuredGuestProgress;
+                      return hasFeaturedProgress ? "Continue Reading" : "Start Reading";
                     })()}
                   </button>
                   
                   {/* Start from Beginning button for featured story */}
                   {(() => {
-                    const featuredProgress = readingProgress.find((p: any) => p.storyId === featuredStory.id);
-                    return featuredProgress ? (
+                    const featuredAuthProgress = readingProgress.find((p: any) => p.storyId === featuredStory.id);
+                    const featuredGuestProgress = getGuestProgress(featuredStory.id);
+                    const hasFeaturedProgress = featuredAuthProgress || featuredGuestProgress;
+                    
+                    return hasFeaturedProgress ? (
                       <button 
                         className="w-full bg-black/50 text-white font-medium py-2 text-sm rounded-lg border border-white/20 hover:border-rose-gold/50 hover:text-rose-gold transition-all duration-200 active:scale-95"
                         onClick={(e) => {
@@ -278,9 +305,15 @@ export default function Home() {
           
           <div className="space-y-4">
             {stories.map((story) => {
-              // Get reading progress for this story
+              // Get reading progress for this story (authenticated users)
               const storyProgress = readingProgress.find((p: any) => p.storyId === story.id);
-              const hasProgress = !!storyProgress;
+              const hasAuthProgress = !!storyProgress;
+              
+              // Check guest progress from localStorage
+              const hasGuestProgress = getGuestProgress(story.id);
+              
+              // Determine if any progress exists
+              const hasProgress = hasAuthProgress || hasGuestProgress;
               const progressPercent = hasProgress ? 50 : 0; // Simplified progress indicator
               
               return (
