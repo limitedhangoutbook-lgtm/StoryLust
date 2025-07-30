@@ -450,8 +450,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Progress should only be saved through the page-based story reader
       }
       
+      // For page-based stories, use the choice's target_page if available
+      const targetPage = choice.targetPage || (currentPage + 1);
+      
       res.json({
-        targetPage: currentPage + 1, // Move to next page after choice
+        targetPage: targetPage,
         choice,
         success: true
       });
