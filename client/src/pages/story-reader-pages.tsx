@@ -147,6 +147,7 @@ export default function StoryReaderPages() {
       apiRequest("POST", "/api/reading-progress", {
         storyId,
         currentNodeId: page.id,
+        pagesRead: pageNumber, // Add pages read for proper progress tracking
         isBookmarked: false,
       }).catch(() => {});
     }

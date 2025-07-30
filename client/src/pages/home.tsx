@@ -314,7 +314,27 @@ export default function Home() {
               
               // Determine if any progress exists
               const hasProgress = hasAuthProgress || hasGuestProgress;
-              const progressPercent = hasProgress ? 50 : 0; // Simplified progress indicator
+              
+              // Calculate actual progress percentage
+              let progressPercent = 0;
+              if (hasProgress) {
+                if (hasAuthProgress && storyProgress.pagesRead) {
+                  // Use actual pages read for authenticated users
+                  // Estimate 10 pages per story as default (this is reasonable for the current stories)
+                  const estimatedTotalPages = 10;
+                  progressPercent = Math.round((storyProgress.pagesRead / estimatedTotalPages) * 100);
+                } else if (hasGuestProgress) {
+                  // For guests, estimate based on saved page from localStorage
+                  const savedPage = parseInt(localStorage.getItem(`story-${story.id}-page`) || "1");
+                  const estimatedTotalPages = 10; // Default estimate
+                  progressPercent = Math.round((savedPage / estimatedTotalPages) * 100);
+                } else {
+                  // Fallback - show some progress if we know user has started
+                  progressPercent = 10;
+                }
+                // Ensure progress is between 1-99% (never 0% if hasProgress is true, never 100% unless completed)
+                progressPercent = Math.max(1, Math.min(99, progressPercent));
+              }
               
               return (
                 <StoryCard

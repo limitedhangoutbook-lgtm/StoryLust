@@ -290,6 +290,8 @@ export class Storage {
           isBookmarked: progressData.isBookmarked,
           isCompleted: progressData.isCompleted,
           completedAt: progressData.completedAt,
+          pagesRead: progressData.pagesRead, // Ensure pages read is updated
+          choicesMade: progressData.choicesMade, // Ensure choices made is updated
           lastReadAt: new Date(),
         },
       })
