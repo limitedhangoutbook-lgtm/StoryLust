@@ -238,10 +238,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "storyId, pageNumber, and title are required" });
       }
       
+      // Get the current node for this page - simplified approach
+      const pages = await storage.getStoryPages(storyId);
+      const currentNode = pages.find(p => p.order === pageNumber);
+      
+      if (!currentNode) {
+        return res.status(404).json({ message: "Page not found" });
+      }
+      
       const bookmark = await storage.createPersonalBookmark({
         userId,
         storyId,
-        pageNumber,
+        nodeId: currentNode.id,
         title,
         notes,
       });
@@ -642,19 +650,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
           nodeMap[page.id] = node.id;
         }
 
-        // Second pass: create choices with correct node references
+        // Second pass: create choices with PAGE-BASED targeting
         for (const page of pages) {
           if (page.choices && page.choices.length > 0) {
             for (let i = 0; i < page.choices.length; i++) {
               const choice = page.choices[i];
-              if (choice.text.trim() && choice.targetPageId && nodeMap[choice.targetPageId]) {
+              if (choice.text.trim() && choice.targetPageId) {
+                // Find target page number from the targetPageId
+                const targetPage = pages.find((p: any) => p.id === choice.targetPageId);
+                const targetPageNumber = targetPage ? targetPage.order : (page.order + 1);
+                
                 await storage.createStoryChoice({
                   fromNodeId: nodeMap[page.id],
-                  toNodeId: nodeMap[choice.targetPageId],
+                  toNodeId: nodeMap[choice.targetPageId] || nodeMap[page.id], // Fallback to same node
                   choiceText: choice.text,
                   order: i,
                   isPremium: choice.isPremium || false,
                   eggplantCost: choice.eggplantCost || 0,
+                  targetPage: targetPageNumber, // CRITICAL: Add page-based targeting
                 });
               }
             }

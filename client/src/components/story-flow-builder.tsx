@@ -22,7 +22,7 @@ interface Choice {
   text: string;
   isPremium: boolean;
   eggplantCost: number;
-  targetPageId: string;
+  targetPageId: string; // Will be converted to page number when saving
 }
 
 interface StoryFlowBuilderProps {

@@ -182,6 +182,7 @@ export class Storage {
     order?: number;
     isPremium?: boolean;
     eggplantCost?: number;
+    targetPage?: number; // PAGE-BASED NAVIGATION SUPPORT
   }): Promise<StoryChoice> {
     const [choice] = await db
       .insert(storyChoices)
@@ -192,6 +193,7 @@ export class Storage {
         order: choiceData.order || 0,
         isPremium: choiceData.isPremium || false,
         eggplantCost: choiceData.eggplantCost || 0,
+        targetPage: choiceData.targetPage, // PAGE-BASED NAVIGATION
       })
       .returning();
     return choice;
