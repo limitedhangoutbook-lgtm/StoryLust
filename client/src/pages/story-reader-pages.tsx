@@ -285,7 +285,16 @@ export default function StoryReaderPages() {
             {story.title}
           </h1>
           
-          <div className="text-xs sm:text-sm text-kindle-secondary">
+          <div className="flex items-center space-x-2">
+            {/* Floating Eggplant Counter */}
+            {isAuthenticated && user && (
+              <div className="flex items-center space-x-1 bg-dark-tertiary/30 px-2 py-1 rounded-full text-xs">
+                <span className="text-sm">🍆</span>
+                <span className="text-kindle font-medium">
+                  {(user as any)?.eggplants || 0}
+                </span>
+              </div>
+            )}
           </div>
         </div>
       </header>
