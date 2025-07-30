@@ -95,6 +95,14 @@ export class Storage {
       .orderBy(desc(stories.isFeatured), stories.createdAt);
   }
 
+  async getStoryPages(storyId: string): Promise<StoryNode[]> {
+    return await db
+      .select()
+      .from(storyNodes)
+      .where(eq(storyNodes.storyId, storyId))
+      .orderBy(storyNodes.order);
+  }
+
   async getAllStoriesForAdmin(): Promise<Story[]> {
     return await db
       .select()

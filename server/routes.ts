@@ -72,6 +72,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(choices);
   });
 
+  // Get all pages for a story in order
+  app.get("/api/stories/:storyId/pages", async (req, res) => {
+    try {
+      const pages = await storage.getStoryPages(req.params.storyId);
+      res.json(pages);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch story pages" });
+    }
+  });
+
   // Get next page in story progression
   app.get('/api/stories/:storyId/next/:currentNodeId', async (req, res) => {
     try {
