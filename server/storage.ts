@@ -24,6 +24,7 @@ import {
   type InsertReadingSession,
 
 } from "@shared/schema";
+import { EGGPLANT_CONFIG, STORY_CONFIG } from "@shared/constants";
 
 export class Storage {
   // === USER OPERATIONS ===
@@ -37,7 +38,7 @@ export class Storage {
       .insert(users)
       .values({
         ...userData,
-        eggplants: userData.eggplants ?? (userData.role === 'mega-admin' ? 999 : 20), // Give mega-admin 999 eggplants
+        eggplants: userData.eggplants ?? (userData.role === 'mega-admin' ? EGGPLANT_CONFIG.MEGA_ADMIN_EGGPLANTS : EGGPLANT_CONFIG.DEFAULT_STARTING_EGGPLANTS),
       })
       .onConflictDoUpdate({
         target: users.id,

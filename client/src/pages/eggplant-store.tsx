@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Sparkles, Gift, Crown, Star, PiggyBank, Diamond } from "lucide-react";
+import { EGGPLANT_CONFIG } from "@shared/constants";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -37,10 +38,10 @@ const eggplantPackages: EggplantPackage[] = [
   {
     id: "starter",
     name: "Starter Pack",
-    eggplants: 100,
+    eggplants: EGGPLANT_CONFIG.STARTER_PACK,
     bonusEggplants: 0,
-    totalEggplants: 100,
-    priceUsd: 2.99,
+    totalEggplants: EGGPLANT_CONFIG.STARTER_PACK,
+    priceUsd: EGGPLANT_CONFIG.STARTER_PRICE / 100,
     icon: <span className="text-2xl">🍆</span>,
     color: "from-blue-400 to-blue-600",
     description: "Perfect for premium story paths"
@@ -48,10 +49,10 @@ const eggplantPackages: EggplantPackage[] = [
   {
     id: "bestvalue",
     name: "Best Value",
-    eggplants: 300,
+    eggplants: EGGPLANT_CONFIG.BEST_VALUE_PACK,
     bonusEggplants: 0,
-    totalEggplants: 300,
-    priceUsd: 4.99,
+    totalEggplants: EGGPLANT_CONFIG.BEST_VALUE_PACK,
+    priceUsd: EGGPLANT_CONFIG.BEST_VALUE_PRICE / 100,
     popular: true,
     icon: <span className="text-2xl">🍆</span>,
     color: "from-rose-400 to-rose-600",
@@ -60,10 +61,10 @@ const eggplantPackages: EggplantPackage[] = [
   {
     id: "vip",
     name: "VIP Package",
-    eggplants: 9999,
+    eggplants: EGGPLANT_CONFIG.VIP_PACK,
     bonusEggplants: 0,
-    totalEggplants: 9999,
-    priceUsd: 49.99,
+    totalEggplants: EGGPLANT_CONFIG.VIP_PACK,
+    priceUsd: EGGPLANT_CONFIG.VIP_PRICE / 100,
     icon: <span className="text-2xl">🍆👑</span>,
     color: "from-yellow-400 to-yellow-600",
     description: "Unlimited access + author contact + custom scenarios"

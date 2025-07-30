@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, Home } from "lucide-react";
+import { STORY_CONFIG } from "@shared/constants";
 
 export default function StoryReaderPages() {
   const [match, params] = useRoute("/story/:storyId");
@@ -206,7 +207,7 @@ export default function StoryReaderPages() {
   });
 
   // Check if story is ending
-  const isEnding = currentNode?.content?.includes("**THE END**") || false;
+  const isEnding = currentNode?.content?.includes(STORY_CONFIG.STORY_END_MARKER) || false;
 
   if (!story || !currentNode || allPages.length === 0) {
     return (
