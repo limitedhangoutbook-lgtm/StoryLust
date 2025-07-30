@@ -236,7 +236,6 @@ export default function StoryReaderPages() {
           </h1>
           
           <div className="text-xs sm:text-sm text-kindle-secondary">
-            {currentPage}/{totalPages}
           </div>
         </div>
       </header>
@@ -252,7 +251,6 @@ export default function StoryReaderPages() {
             />
           </div>
           <div className="text-center mt-2 text-sm text-kindle-secondary">
-            Page {currentPage} of {totalPages}
           </div>
         </div>
         

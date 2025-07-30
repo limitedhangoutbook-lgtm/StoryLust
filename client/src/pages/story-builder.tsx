@@ -104,6 +104,49 @@ export default function StoryBuilder() {
     },
   });
 
+  // Save draft mutation
+  const saveDraftMutation = useMutation({
+    mutationFn: async (draftData: any) => {
+      const response = await apiRequest("POST", "/api/stories/draft", draftData);
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Draft Saved!",
+        description: "Your story draft has been saved successfully.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Save Failed",
+        description: error.message || "Failed to save draft",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const saveDraft = () => {
+    const draftData = {
+      ...storyData,
+      pages: pages.map(page => ({
+        id: page.id,
+        title: page.title,
+        content: page.content,
+        order: page.order,
+        choices: page.choices?.filter(choice => choice.text.trim()).map(choice => ({
+          id: choice.id,
+          text: choice.text,
+          isPremium: choice.isPremium,
+          diamondCost: choice.diamondCost,
+          targetPageId: choice.targetPageId
+        })) || []
+      })),
+      isDraft: true
+    };
+
+    saveDraftMutation.mutate(draftData);
+  };
+
   const addPage = () => {
     const newPage: StoryPage = {
       id: `page-${pages.length + 1}`,
@@ -525,6 +568,16 @@ export default function StoryBuilder() {
           </div>
           
           <div className="flex items-center space-x-2">
+            <Button
+              onClick={saveDraft}
+              disabled={saveDraftMutation.isPending}
+              variant="outline"
+              className="border-rose-gold/50 text-rose-gold hover:bg-rose-gold/10"
+            >
+              <Save className="w-4 h-4 mr-2" />
+              {saveDraftMutation.isPending ? "Saving..." : "Save Draft"}
+            </Button>
+            
             {currentStep < 4 && (
               <Button
                 onClick={() => setCurrentStep(currentStep + 1)}

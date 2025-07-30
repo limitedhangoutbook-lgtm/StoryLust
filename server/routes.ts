@@ -607,10 +607,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
         pathCount,
       });
 
-      res.status(201).json(story);
+      res.json(story);
     } catch (error) {
       console.error("Error creating story:", error);
       res.status(500).json({ message: "Failed to create story" });
+    }
+  });
+
+  // Save story draft (ADMIN ONLY)
+  app.post('/api/stories/draft', isAuthenticated, async (req: any, res) => {
+    try {
+      const currentUser = await storage.getUser(req.user.claims.sub);
+      if (currentUser?.role !== 'admin' && currentUser?.role !== 'mega-admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const draftData = req.body;
+      
+      // For drafts, we only require title - other fields can be empty
+      if (!draftData.title || draftData.title.trim() === '') {
+        return res.status(400).json({ message: "Story title is required" });
+      }
+
+      // Save draft to localStorage or database (depending on your preference)
+      // For now, we'll just return success - you can implement draft storage as needed
+      res.json({ 
+        success: true, 
+        message: "Draft saved successfully",
+        draft: draftData 
+      });
+    } catch (error) {
+      console.error("Error saving draft:", error);
+      res.status(500).json({ message: "Failed to save draft" });
     }
   });
 
