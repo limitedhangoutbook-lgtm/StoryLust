@@ -5,7 +5,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, Home } from "lucide-react";
+import { ChevronLeft, Home, ChevronRight } from "lucide-react";
 
 export default function StoryReaderSimple() {
   const [match, params] = useRoute("/story/:storyId");
@@ -333,9 +333,14 @@ export default function StoryReaderSimple() {
               </button>
             </div>
             
-            <div className="text-sm text-kindle-secondary">
-              {choices.length > 0 ? `${choices.length} choices` : "Continue"}
-            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={choices.length === 0}
+              className="text-kindle hover:text-rose-gold disabled:opacity-30"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </Button>
           </div>
         </div>
       )}
