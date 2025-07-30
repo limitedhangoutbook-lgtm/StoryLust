@@ -183,11 +183,28 @@ export default function StoryReaderPages() {
       }
     },
     onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to make choice",
-        variant: "destructive",
-      });
+      if (error.message?.includes("401") || error.message?.includes("Login required")) {
+        toast({
+          title: "Login Required",
+          description: "You need to login to access premium content.",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 1500);
+      } else if (error.message?.includes("Not enough eggplants")) {
+        toast({
+          title: "Not Enough Eggplants",
+          description: "You need more eggplants to unlock this premium choice.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to make choice",
+          variant: "destructive",
+        });
+      }
     },
   });
 

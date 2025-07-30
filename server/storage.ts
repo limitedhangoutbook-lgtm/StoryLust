@@ -586,7 +586,7 @@ export class Storage {
     userId: string;
     storyId: string;
     choiceId: string;
-    diamondCost: number;
+    eggplantCost: number;
   }): Promise<{ success: boolean }> {
     await db.insert(purchasedPremiumPaths).values(pathData);
     return { success: true };

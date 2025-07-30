@@ -142,7 +142,7 @@ export const purchasedPremiumPaths = pgTable("purchased_premium_paths", {
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   storyId: varchar("story_id").notNull().references(() => stories.id, { onDelete: "cascade" }),
   choiceId: varchar("choice_id").notNull().references(() => storyChoices.id, { onDelete: "cascade" }),
-  diamondCost: integer("diamond_cost").notNull(), // Track what they paid
+  eggplantCost: integer("eggplant_cost").notNull(), // Track what they paid
   createdAt: timestamp("created_at").defaultNow(),
 }, (table) => [
   unique().on(table.userId, table.choiceId), // Each user can only buy each choice once

@@ -412,7 +412,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             userId,
             storyId,
             choiceId,
-            diamondCost: cost
+            eggplantCost: cost
           });
         }
         // If already purchased, user can access it for free forever
