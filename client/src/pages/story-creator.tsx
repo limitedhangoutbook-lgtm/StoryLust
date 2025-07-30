@@ -418,7 +418,7 @@ export default function StoryCreator() {
                           {choice.isPremium && (
                             <Input
                               type="number"
-                              placeholder="Diamonds"
+                              placeholder="Eggplants"
                               value={choice.eggplantCost || 0}
                               onChange={(e) => updateChoice(selectedNode!, choice.id, { eggplantCost: parseInt(e.target.value) || 0 })}
                               className="w-20 bg-dark-primary border-dark-tertiary/50 text-kindle"

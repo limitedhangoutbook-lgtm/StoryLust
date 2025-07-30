@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Trash2, ArrowRight, Edit, Diamond, X } from "lucide-react";
+import { Plus, Trash2, ArrowRight, Edit, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -221,7 +221,7 @@ export function StoryFlowBuilder({ pages, onPagesChange }: StoryFlowBuilderProps
                       {choice.text}
                       {choice.isPremium && (
                         <span className="ml-2">
-                          <Diamond className="w-3 h-3 inline text-gold-accent" />
+                          <span>🍆</span>
                           {choice.eggplantCost}
                         </span>
                       )}
@@ -289,9 +289,9 @@ export function StoryFlowBuilder({ pages, onPagesChange }: StoryFlowBuilderProps
                           
                           {choice.isPremium && (
                             <div>
-                              <Label htmlFor="diamond-cost" className="text-text-primary">Diamond Cost</Label>
+                              <Label htmlFor="eggplant-cost" className="text-text-primary">Eggplant Cost</Label>
                               <Input
-                                id="diamond-cost"
+                                id="eggplant-cost"
                                 type="number"
                                 min="1"
                                 value={choice.eggplantCost}

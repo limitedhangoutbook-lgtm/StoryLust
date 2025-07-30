@@ -366,7 +366,7 @@ export class Storage {
         eq(storyChoices.isPremium, true)
       ));
 
-    // Get user for diamonds spent (would need transaction history for real calculation)
+    // Get user for eggplants spent (would need transaction history for real calculation)
     const user = await this.getUser(userId);
     
     return {

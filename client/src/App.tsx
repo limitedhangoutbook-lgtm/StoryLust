@@ -14,7 +14,7 @@ import Profile from "@/pages/profile";
 import Store from "@/pages/store";
 import StoryCreator from "@/pages/story-creator";
 import StoryManagement from "@/pages/story-management";
-import StoryBuilder from "@/pages/story-builder-new";
+import StoryBuilder from "@/pages/story-builder";
 import UserManagement from "@/pages/user-management";
 // EggplantStore is handled by the Store component
 import { Bookmarks } from "@/pages/bookmarks";
