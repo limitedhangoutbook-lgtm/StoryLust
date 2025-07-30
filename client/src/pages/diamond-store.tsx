@@ -52,7 +52,7 @@ const eggplantPackages: EggplantPackage[] = [
     bonusEggplants: 0,
     totalEggplants: 300,
     priceUsd: 4.99,
-    bestValue: true,
+    popular: true,
     icon: <span className="text-2xl">🍆</span>,
     color: "from-rose-400 to-rose-600",
     description: "Great value for extended reading"
@@ -64,8 +64,6 @@ const eggplantPackages: EggplantPackage[] = [
     bonusEggplants: 0,
     totalEggplants: 9999,
     priceUsd: 49.99,
-    popular: true,
-    vipBadge: true,
     icon: <span className="text-2xl">🍆👑</span>,
     color: "from-yellow-400 to-yellow-600",
     description: "Unlimited access + author contact + custom scenarios"
@@ -175,27 +173,12 @@ export default function EggplantStore() {
               key={pkg.id} 
               className={`relative border-2 bg-dark-secondary border-dark-tertiary hover:border-rose-500 transition-all duration-200 ${
                 pkg.popular ? 'ring-2 ring-rose-500 scale-105' : ''
-              } ${pkg.bestValue ? 'ring-2 ring-purple-500' : ''}`}
+              }`}
             >
-              {/* Popular/Best Value/VIP Badges */}
+              {/* Popular Badge */}
               {pkg.popular && (
                 <Badge variant="destructive" className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-rose-500 to-pink-500 text-white font-bold shadow-lg">
-                  Most Popular
-                </Badge>
-              )}
-              {pkg.bestValue && !pkg.vipBadge && !pkg.forPerverts && (
-                <Badge variant="secondary" className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-purple-500 text-white">
-                  Best Value
-                </Badge>
-              )}
-              {pkg.vipBadge && (
-                <Badge className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-yellow-400 to-yellow-600 text-black font-bold">
-                  VIP ACCESS
-                </Badge>
-              )}
-              {pkg.forPerverts && (
-                <Badge className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-purple-600 text-white font-bold">
-                  FOR PERVERTS
+                  POPULAR
                 </Badge>
               )}
 

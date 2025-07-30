@@ -33,7 +33,7 @@ const eggplantPackages: EggplantPackage[] = [
     name: "Best Value",
     eggplants: 300,
     price: 4.99,
-    bestValue: true,
+    popular: true,
     icon: Zap,
   },
   {
@@ -41,7 +41,6 @@ const eggplantPackages: EggplantPackage[] = [
     name: "VIP Package",
     eggplants: 9999,
     price: 49.99,
-    popular: true,
     icon: Crown,
   },
 ];
@@ -173,23 +172,17 @@ export default function Store() {
               <Card 
                 key={pkg.id} 
                 className={`bg-dark-secondary border-dark-tertiary hover:border-rose-gold/30 transition-all duration-200 relative overflow-hidden ${
-                  pkg.popular || pkg.bestValue || pkg.forPerverts ? "ring-1 ring-rose-gold/30" : ""
+                  pkg.popular ? "ring-1 ring-rose-gold/30" : ""
                 }`}
               >
                 {/* Badge */}
-                {(pkg.popular || pkg.bestValue || pkg.forPerverts) && (
+                {pkg.popular && (
                   <div className="absolute top-0 right-0">
                     <Badge 
                       variant="secondary" 
-                      className={`border-0 rounded-tl-none rounded-br-none ${
-                        pkg.forPerverts 
-                          ? "bg-purple-600 text-white" 
-                          : pkg.popular
-                          ? "bg-gradient-to-r from-rose-500 to-pink-500 text-white font-bold shadow-lg"
-                          : "bg-rose-gold text-dark-primary"
-                      }`}
+                      className="border-0 rounded-tl-none rounded-br-none bg-gradient-to-r from-rose-500 to-pink-500 text-white font-bold shadow-lg"
                     >
-                      {pkg.forPerverts ? "FOR PERVERTS" : pkg.popular ? "POPULAR" : "BEST VALUE"}
+                      POPULAR
                     </Badge>
                   </div>
                 )}
