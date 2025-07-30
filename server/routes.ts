@@ -112,7 +112,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json(pageBased);
     } catch (error) {
-      res.status(500).json({ message: "Failed to get page choices" });
+      console.error("Page choices error:", error);
+      res.status(500).json({ message: "Failed to get page choices", error: error.message });
     }
   });
 

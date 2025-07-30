@@ -58,29 +58,31 @@ export default function StoryReaderPages() {
     enabled: !!storyId && isAuthenticated,
   });
 
-  // Set total pages when data loads
+  // Set total pages when data loads and fix progress logic
   useEffect(() => {
     if (allPages.length > 0) {
       setTotalPages(allPages.length);
       
-      // Find current page from progress or start at page 1
+      // ALWAYS start at page 1 unless we have valid progress
+      let targetPage = 1;
+      
+      // Check authenticated user progress first
       if (progress?.currentPage && progress.currentPage >= 1 && progress.currentPage <= allPages.length) {
-        setCurrentPage(progress.currentPage);
-      } else {
-        // Check localStorage for guests
+        targetPage = progress.currentPage;
+      } else if (!isAuthenticated) {
+        // Check localStorage for guests only if not authenticated
         const savedPage = localStorage.getItem(`story-${storyId}-page`);
         if (savedPage) {
           const savedPageNum = parseInt(savedPage);
-          // Ensure saved page is within valid range
           if (savedPageNum >= 1 && savedPageNum <= allPages.length) {
-            setCurrentPage(savedPageNum);
-          } else {
-            setCurrentPage(1); // Reset to first page if invalid
+            targetPage = savedPageNum;
           }
         }
       }
+      
+      setCurrentPage(targetPage);
     }
-  }, [allPages, progress, storyId]);
+  }, [allPages, progress, storyId, isAuthenticated]);
 
   // Simple swipe handling for page navigation
   useEffect(() => {
