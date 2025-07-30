@@ -195,7 +195,7 @@ export default function UserManagement() {
                             {roleInfo.icon} {roleInfo.label}
                           </Badge>
                           <span className="text-xs text-text-muted">
-                            💎 {user.diamonds || 0} diamonds
+                            🍆 {user.eggplants || 0} eggplants
                           </span>
                         </div>
                       </div>

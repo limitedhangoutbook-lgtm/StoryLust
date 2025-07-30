@@ -447,19 +447,19 @@ export default function StoryBuilder() {
                                 </div>
                                 
                                 <div>
-                                  <Label className="text-text-secondary">Diamond Cost</Label>
+                                  <Label className="text-text-secondary">Eggplant Cost</Label>
                                   <div className="flex items-center space-x-2">
                                     <Input
                                       type="number"
-                                      value={choice.diamondCost}
+                                      value={choice.eggplantCost}
                                       onChange={(e) => updateChoice(page.id, choiceIndex, { 
-                                        diamondCost: parseInt(e.target.value) || 0,
+                                        eggplantCost: parseInt(e.target.value) || 0,
                                         isPremium: parseInt(e.target.value) > 0
                                       })}
                                       className="bg-dark-tertiary border-dark-tertiary text-text-primary"
                                       min="0"
                                     />
-                                    {choice.isPremium && <Gem className="w-4 h-4 text-rose-gold" />}
+                                    {choice.isPremium && <span className="text-rose-gold">🍆</span>}
                                   </div>
                                 </div>
                               </div>

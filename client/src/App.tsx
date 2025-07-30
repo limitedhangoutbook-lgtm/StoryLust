@@ -16,7 +16,7 @@ import StoryCreator from "@/pages/story-creator";
 import StoryManagement from "@/pages/story-management";
 import StoryBuilder from "@/pages/story-builder-new";
 import UserManagement from "@/pages/user-management";
-import DiamondStore from "@/pages/diamond-store";
+import EggplantStore from "@/pages/eggplant-store";
 import { Bookmarks } from "@/pages/bookmarks";
 
 function Router() {
@@ -30,7 +30,7 @@ function Router() {
       <Route path="/bookmarks" component={Bookmarks} />
       <Route path="/profile" component={Profile} />
       <Route path="/store" component={Store} />
-      <Route path="/diamonds" component={DiamondStore} />
+      <Route path="/eggplants" component={EggplantStore} />
       <Route path="/story-creator" component={StoryCreator} />
       <Route path="/story-management" component={StoryManagement} />
       <Route path="/story-builder" component={StoryBuilder} />

@@ -605,14 +605,14 @@ export default function StoryReader() {
       return;
     }
 
-    // Check diamond balance only for authenticated premium choices
+    // Check eggplant balance only for authenticated premium choices
     if (isPremium && isAuthenticated) {
-      const userDiamonds = (user as any)?.diamonds || 0;
+      const userEggplants = (user as any)?.eggplants || 0;
       
-      if ((diamondCost || 0) > userDiamonds) {
+      if ((diamondCost || 0) > userEggplants) {
         toast({
-          title: "Not Enough Diamonds",
-          description: `You need ${diamondCost || 0} diamonds to unlock this choice. Visit the store to get more!`,
+          title: "Not Enough Eggplants",
+          description: `You need ${diamondCost || 0} eggplants to unlock this choice. Visit the store to get more!`,
           variant: "destructive",
         });
         return;
@@ -664,7 +664,7 @@ export default function StoryReader() {
     bookmarkMutation.mutate();
   };
 
-  const userDiamonds = (user as any)?.diamonds || 0;
+  const userEggplants = (user as any)?.eggplants || 0;
 
   if (!match) {
     return null;
@@ -720,7 +720,7 @@ export default function StoryReader() {
                 className="flex items-center space-x-1 px-3 py-1 bg-dark-secondary/50 rounded-full hover:bg-dark-secondary/70 transition-colors cursor-pointer"
               >
                 <span className="text-sm">🍆</span>
-                <span className="text-sm font-medium text-kindle">{userDiamonds}</span>
+                <span className="text-sm font-medium text-kindle">{userEggplants}</span>
               </button>
               <Button
                 variant="ghost"
@@ -806,7 +806,7 @@ export default function StoryReader() {
                         {choice.isPremium && (
                           <span className="ml-3 inline-flex items-center gap-1.5 px-2 py-1 bg-rose-gold/15 text-rose-gold border border-rose-gold/30 rounded-full text-xs font-semibold">
                             <span className="text-xs">🍆</span>
-                            <span>{choice.diamondCost || 0} eggplants</span>
+                            <span>{choice.eggplantCost || 0} eggplants</span>
                           </span>
                         )}
                       </p>

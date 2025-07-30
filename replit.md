@@ -44,7 +44,7 @@ User feedback: Very appreciative of thorough help and comprehensive solutions.
 ## Key Components
 
 ### Database Schema
-- **Users**: Profile information, diamond balance, Stripe integration
+- **Users**: Profile information, eggplant balance, Stripe integration
 - **Stories**: Metadata including title, description, spice level, category, word count
 - **Story Nodes**: Individual story segments with content and connections
 - **Story Choices**: Decision points linking nodes together
@@ -62,12 +62,12 @@ User feedback: Very appreciative of thorough help and comprehensive solutions.
 - **Story Structure**: Hierarchical node-based storytelling system
 - **Categories**: Content filtering by audience (straight, LGBT, all)
 - **Spice Levels**: Content rating system (1-3 chili peppers)
-- **Premium Content**: Diamond-gated story paths and premium features
+- **Premium Content**: Eggplant-gated story paths and premium features
 
 ### Payment Integration
 - **Provider**: Stripe for payment processing
-- **Virtual Currency**: Diamond system for premium content access
-- **Packages**: Multiple diamond purchase tiers with bonus rewards
+- **Virtual Currency**: Eggplant system for premium content access
+- **Packages**: Multiple eggplant purchase tiers with bonus rewards
 
 ## Data Flow
 
@@ -85,7 +85,7 @@ User feedback: Very appreciative of thorough help and comprehensive solutions.
 3. Present available choices to user
 4. Record user choice and update progress
 5. Navigate to next node based on choice
-6. Handle premium content gates with diamond requirements
+6. Handle premium content gates with eggplant requirements
 
 ### Data Persistence
 - **Reading Progress**: Auto-saved on each choice
@@ -94,6 +94,14 @@ User feedback: Very appreciative of thorough help and comprehensive solutions.
 - **Session State**: Maintained across browser sessions
 
 ## Recent Progress (January 2025)
+- **Complete Diamond-to-Eggplant Conversion**: Successfully converted entire codebase from diamond terminology to eggplant currency system (January 30, 2025)
+  - Updated all frontend components, pages, and UI references
+  - Converted API endpoints from /api/diamonds to /api/eggplants
+  - Renamed diamond-checkout.tsx to eggplant-checkout.tsx
+  - Renamed diamond-store.tsx to eggplant-store.tsx  
+  - Updated routing from /diamond-store to /eggplant-store
+  - Fixed all database schema references and property names
+  - Updated documentation and user interfaces throughout
 - **Version 1.0 Release**: TurnPage officially released as Version 1.0 with fully functional story reading system (January 30, 2025)
 - **Page-Based Story Reader Success**: Successfully rebuilt story reader to match actual database structure with sequential page navigation, progress bars, and choice branching - user confirmed "Works beautifully now!!!" (January 30, 2025)
 - **Final Production Cleanup**: Completed comprehensive codebase cleanup removing all debug logs, empty catch blocks, and LSP errors in preparation for story upload testing (January 30, 2025)
@@ -114,9 +122,9 @@ User feedback: Very appreciative of thorough help and comprehensive solutions.
   - Interactive branch renaming with meaningful path descriptions
 - **User Role System Access**: Upgraded project owner (evyatar.perel@gmail.com) to mega-admin status for full system access (January 29, 2025)
 - **Multiple Story Builder Access Points**: Created comprehensive access system from home, profile, bottom navigation, and floating button (January 29, 2025)
-- **Diamond Economy Optimization**: Reduced starting diamonds from 100 to 20 for better premium content scarcity (January 29, 2025)
+- **Eggplant Economy Optimization**: Reduced starting eggplants from 100 to 20 for better premium content scarcity (January 29, 2025)
   - Creates meaningful premium choice decisions
-  - Encourages strategic diamond spending
+  - Encourages strategic eggplant spending
   - Makes each premium choice more valuable
   - Enhances story engagement through resource management
 - **Typography System**: Implemented professional font system with Crimson Text, EB Garamond, Libre Baskerville, and Georgia
@@ -133,7 +141,7 @@ User feedback: Very appreciative of thorough help and comprehensive solutions.
 - **Database-First Architecture**: Converted system to be fully database-driven for true dynamic content management
 - **Position Restoration**: Automatic story position saving and restoration for both authenticated users and guests
 - **Performance Optimization**: Added caching layers and query optimization for faster page loading
-- **Diamond Cost Display**: Premium choices now properly show rose-gold diamond indicators with accurate costs
+- **Eggplant Cost Display**: Premium choices now properly show rose-gold eggplant indicators with accurate costs
 - **Backend Simplification**: Streamlined backend to focus on core functionality with clean, simple APIs (January 29, 2025)
 - **Reactive System Completion**: All stories and choices now operate as unified reactive elements through database-driven architecture (January 29, 2025)
 - **Unified Backend Architecture**: Consolidated all backend functionality into clean, single-purpose files for maximum maintainability (January 29, 2025)

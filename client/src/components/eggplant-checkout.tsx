@@ -5,12 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 
-interface DiamondPackage {
+interface EggplantPackage {
   id: string;
   name: string;
-  diamonds: number;
-  bonusDiamonds: number;
-  totalDiamonds: number;
+  eggplants: number;
+  bonusEggplants: number;
+  totalEggplants: number;
   priceUsd: number;
   popular?: boolean;
   bestValue?: boolean;
@@ -18,13 +18,13 @@ interface DiamondPackage {
   color: string;
 }
 
-interface DiamondCheckoutProps {
-  packageData: DiamondPackage;
+interface EggplantCheckoutProps {
+  packageData: EggplantPackage;
   onSuccess: () => void;
   onCancel: () => void;
 }
 
-export function DiamondCheckout({ packageData, onSuccess, onCancel }: DiamondCheckoutProps) {
+export function EggplantCheckout({ packageData, onSuccess, onCancel }: EggplantCheckoutProps) {
   const stripe = useStripe();
   const elements = useElements();
   const { toast } = useToast();
@@ -42,7 +42,7 @@ export function DiamondCheckout({ packageData, onSuccess, onCancel }: DiamondChe
     const { error } = await stripe.confirmPayment({
       elements,
       confirmParams: {
-        return_url: window.location.origin + "/diamond-store",
+        return_url: window.location.origin + "/eggplant-store",
       },
       redirect: 'if_required'
     });
@@ -93,24 +93,24 @@ export function DiamondCheckout({ packageData, onSuccess, onCancel }: DiamondChe
               <h3 className="font-semibold text-text-primary">{packageData.name}</h3>
             </div>
 
-            {/* Diamond Breakdown */}
+            {/* Eggplant Breakdown */}
             <div className="bg-dark-tertiary rounded-lg p-4 space-y-2">
               <div className="flex justify-between">
-                <span className="text-text-muted">Base Diamonds:</span>
-                <span className="text-text-primary">{packageData.diamonds}</span>
+                <span className="text-text-muted">Base Eggplants:</span>
+                <span className="text-text-primary">{packageData.eggplants}</span>
               </div>
-              {packageData.bonusDiamonds > 0 && (
+              {packageData.bonusEggplants > 0 && (
                 <div className="flex justify-between">
-                  <span className="text-rose-400">Bonus Diamonds:</span>
-                  <span className="text-rose-400">+{packageData.bonusDiamonds}</span>
+                  <span className="text-rose-400">Bonus Eggplants:</span>
+                  <span className="text-rose-400">+{packageData.bonusEggplants}</span>
                 </div>
               )}
               <div className="border-t border-dark-secondary pt-2">
                 <div className="flex justify-between items-center font-semibold">
-                  <span className="text-text-primary">Total Diamonds:</span>
+                  <span className="text-text-primary">Total Eggplants:</span>
                   <div className="flex items-center space-x-1">
-                    <Diamond className="w-4 h-4 text-rose-400" />
-                    <span className="text-rose-400">{packageData.totalDiamonds}</span>
+                    <span className="text-rose-400 text-lg">🍆</span>
+                    <span className="text-rose-400">{packageData.totalEggplants}</span>
                   </div>
                 </div>
               </div>
@@ -122,7 +122,7 @@ export function DiamondCheckout({ packageData, onSuccess, onCancel }: DiamondChe
                 ${packageData.priceUsd}
               </div>
               <div className="text-sm text-text-muted">
-                ${(packageData.priceUsd / packageData.totalDiamonds).toFixed(3)} per diamond
+                ${(packageData.priceUsd / packageData.totalEggplants).toFixed(3)} per eggplant
               </div>
             </div>
           </CardContent>
@@ -153,7 +153,7 @@ export function DiamondCheckout({ packageData, onSuccess, onCancel }: DiamondChe
                 {isProcessing ? (
                   "Processing Payment..."
                 ) : (
-                  `Purchase ${packageData.totalDiamonds} Diamonds for $${packageData.priceUsd}`
+                  `Purchase ${packageData.totalEggplants} Eggplants for $${packageData.priceUsd}`
                 )}
               </Button>
             </form>
@@ -163,7 +163,7 @@ export function DiamondCheckout({ packageData, onSuccess, onCancel }: DiamondChe
         {/* Security Notice */}
         <div className="mt-4 text-center text-xs text-text-muted">
           <p>🔒 Your payment is processed securely by Stripe</p>
-          <p>Diamonds will be added to your account immediately after payment</p>
+          <p>Eggplants will be added to your account immediately after payment</p>
         </div>
       </div>
     </div>
