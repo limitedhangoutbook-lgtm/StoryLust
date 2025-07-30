@@ -72,7 +72,9 @@ export default function StoryReaderNew() {
     if (!storyId) return;
     
     const savedNodeId = localStorage.getItem(`story-${storyId}-node`);
-    const nodeId = progress?.currentNodeId || savedNodeId || `${storyId}-start`;
+    // Use the actual starting node IDs from database
+    const startNodeId = storyId === 'desert-seduction' ? 'desert-start' : 'start';
+    const nodeId = progress?.currentNodeId || savedNodeId || startNodeId;
     setCurrentNodeId(nodeId);
   }, [storyId, progress]);
 
@@ -196,7 +198,8 @@ export default function StoryReaderNew() {
       localStorage.removeItem(`story-${storyId}-node`);
     },
     onSuccess: () => {
-      setCurrentNodeId(`${storyId}-start`);
+      const startNodeId = storyId === 'desert-seduction' ? 'desert-start' : 'start';
+      setCurrentNodeId(startNodeId);
       setHistory([]);
       setShowChoices(false);
       queryClient.invalidateQueries({ queryKey: [`/api/reading-progress/${storyId}`] });
