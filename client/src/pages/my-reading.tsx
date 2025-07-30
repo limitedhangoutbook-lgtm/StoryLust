@@ -1,13 +1,18 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { BookOpen, Heart, Clock, ArrowLeft } from "lucide-react";
+import { BookOpen, Heart, Clock, ArrowLeft, CheckCircle, Target, TrendingUp, Star, Award, Calendar } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation } from "wouter";
 import { BottomNavigation } from "@/components/bottom-navigation";
 import { StoryCard } from "@/components/story-card";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { formatDistanceToNow } from "date-fns";
 import type { ReadingProgress, Story } from "@shared/schema";
 
 type ReadingProgressWithStory = ReadingProgress & {
@@ -56,6 +61,18 @@ export default function MyReading() {
   // Fetch reading progress
   const { data: readingProgress = [], isLoading } = useQuery<ReadingProgressWithStory[]>({
     queryKey: ["/api/reading-progress"],
+    enabled: !!user,
+  });
+
+  // Fetch user stats for analytics
+  const { data: userStats = {} } = useQuery({
+    queryKey: ["/api/user/stats"],
+    enabled: !!user,
+  });
+
+  // Fetch bookmarks
+  const { data: bookmarks = [] } = useQuery({
+    queryKey: ["/api/bookmarks"],
     enabled: !!user,
   });
 
@@ -116,7 +133,7 @@ export default function MyReading() {
   };
 
   // Filter stories based on active tab and completion status
-  const continueReading = readingProgress.filter(p => !p.isCompleted && (!p.isBookmarked || new Date(p.lastReadAt) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)));
+  const continueReading = readingProgress.filter(p => !p.isCompleted && (!p.isBookmarked || (p.lastReadAt && new Date(p.lastReadAt) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000))));
   const bookmarked = readingProgress.filter(p => p.isBookmarked);
 
   const currentList = activeTab === "continue" ? continueReading : bookmarked;
@@ -185,6 +202,53 @@ export default function MyReading() {
           </button>
         </div>
       </div>
+
+      {/* Reading Stats Overview */}
+      {userStats && Object.keys(userStats).length > 0 && (
+        <div className="px-4 mb-6">
+          <div className="grid grid-cols-2 gap-3">
+            <Card className="bg-dark-secondary border-dark-tertiary">
+              <CardContent className="p-4 text-center">
+                <div className="flex items-center justify-center space-x-2 mb-2">
+                  <BookOpen className="w-5 h-5 text-rose-gold" />
+                  <span className="text-2xl font-bold text-text-primary">{(userStats as any).storiesStarted || 0}</span>
+                </div>
+                <p className="text-xs text-text-muted">Stories Started</p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-dark-secondary border-dark-tertiary">
+              <CardContent className="p-4 text-center">
+                <div className="flex items-center justify-center space-x-2 mb-2">
+                  <CheckCircle className="w-5 h-5 text-green-400" />
+                  <span className="text-2xl font-bold text-text-primary">{(userStats as any).storiesCompleted || 0}</span>
+                </div>
+                <p className="text-xs text-text-muted">Completed</p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-dark-secondary border-dark-tertiary">
+              <CardContent className="p-4 text-center">
+                <div className="flex items-center justify-center space-x-2 mb-2">
+                  <Target className="w-5 h-5 text-blue-400" />
+                  <span className="text-2xl font-bold text-text-primary">{(userStats as any).totalChoicesMade || 0}</span>
+                </div>
+                <p className="text-xs text-text-muted">Choices Made</p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-dark-secondary border-dark-tertiary">
+              <CardContent className="p-4 text-center">
+                <div className="flex items-center justify-center space-x-2 mb-2">
+                  <Heart className="w-5 h-5 text-red-400" />
+                  <span className="text-2xl font-bold text-text-primary">{Array.isArray(bookmarks) ? bookmarks.length : 0}</span>
+                </div>
+                <p className="text-xs text-text-muted">Bookmarks</p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      )}
 
       {/* Content */}
       <main className="px-4 space-y-4">

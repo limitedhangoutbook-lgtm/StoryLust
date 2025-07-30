@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import { Progress } from "@/components/ui/progress";
 import { useQuery } from "@tanstack/react-query";
 import { isAdmin, isMegaAdmin } from "@shared/userRoles";
 
@@ -55,6 +56,18 @@ export default function Profile() {
     diamondsSpent: 0,
   }, isLoading: statsLoading } = useQuery({
     queryKey: ["/api/user/stats"],
+    enabled: !!user,
+  });
+
+  // Fetch reading progress for recent activity
+  const { data: readingProgress = [] } = useQuery({
+    queryKey: ["/api/reading-progress"],
+    enabled: !!user,
+  });
+
+  // Fetch bookmarks
+  const { data: bookmarks = [] } = useQuery({
+    queryKey: ["/api/bookmarks"],
     enabled: !!user,
   });
 
@@ -134,7 +147,7 @@ export default function Profile() {
             <h3 className="text-lg font-semibold text-text-primary mb-4">Reading Stats</h3>
             {statsLoading ? (
               <div className="grid grid-cols-2 gap-4">
-                {[1, 2].map((i) => (
+                {[1, 2, 3, 4].map((i) => (
                   <div key={i} className="text-center p-4 bg-dark-tertiary rounded-lg animate-pulse">
                     <div className="w-6 h-6 bg-dark-primary rounded mx-auto mb-2" />
                     <div className="h-6 bg-dark-primary rounded mb-1" />
@@ -147,25 +160,52 @@ export default function Profile() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="text-center p-4 bg-dark-tertiary rounded-lg">
                     <BookOpen className="w-6 h-6 text-rose-gold mx-auto mb-2" />
-                    <div className="text-2xl font-bold text-text-primary">{stats.storiesStarted}</div>
+                    <div className="text-2xl font-bold text-text-primary">{stats.storiesStarted || 0}</div>
                     <div className="text-xs text-text-muted">Stories Started</div>
                   </div>
                   <div className="text-center p-4 bg-dark-tertiary rounded-lg">
                     <Heart className="w-6 h-6 text-rose-gold mx-auto mb-2" />
-                    <div className="text-2xl font-bold text-text-primary">{stats.bookmarkedStories}</div>
+                    <div className="text-2xl font-bold text-text-primary">{stats.bookmarkedStories || 0}</div>
                     <div className="text-xs text-text-muted">Bookmarked</div>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="text-center p-4 bg-dark-tertiary rounded-lg">
                     <Settings className="w-6 h-6 text-rose-gold mx-auto mb-2" />
-                    <div className="text-2xl font-bold text-text-primary">{stats.storiesCompleted}</div>
+                    <div className="text-2xl font-bold text-text-primary">{stats.storiesCompleted || 0}</div>
                     <div className="text-xs text-text-muted">Completed</div>
                   </div>
                   <div className="text-center p-4 bg-dark-tertiary rounded-lg">
                     <Gem className="w-6 h-6 text-gold-accent mx-auto mb-2" />
-                    <div className="text-2xl font-bold text-text-primary">{stats.totalChoicesMade}</div>
+                    <div className="text-2xl font-bold text-text-primary">{stats.totalChoicesMade || 0}</div>
                     <div className="text-xs text-text-muted">Choices Made</div>
+                  </div>
+                </div>
+
+                {/* Reading Progress Bars */}
+                <div className="space-y-3 mt-6">
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-text-secondary">Story Explorer</span>
+                      <span className="text-text-primary">{stats.storiesStarted || 0}/10</span>
+                    </div>
+                    <Progress value={Math.min(((stats.storiesStarted || 0) / 10) * 100, 100)} className="h-2" />
+                  </div>
+                  
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-text-secondary">Choice Master</span>
+                      <span className="text-text-primary">{stats.totalChoicesMade || 0}/100</span>
+                    </div>
+                    <Progress value={Math.min(((stats.totalChoicesMade || 0) / 100) * 100, 100)} className="h-2" />
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-text-secondary">Story Finisher</span>
+                      <span className="text-text-primary">{stats.storiesCompleted || 0}/5</span>
+                    </div>
+                    <Progress value={Math.min(((stats.storiesCompleted || 0) / 5) * 100, 100)} className="h-2" />
                   </div>
                 </div>
               </div>
@@ -242,6 +282,52 @@ export default function Profile() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Recent Reading Activity */}
+        {Array.isArray(readingProgress) && readingProgress.length > 0 && (
+          <Card className="bg-dark-secondary border-dark-tertiary">
+            <CardContent className="pt-6">
+              <h3 className="text-lg font-semibold text-text-primary mb-4">Recent Activity</h3>
+              <div className="space-y-3">
+                {readingProgress.slice(0, 3).map((progress: any) => (
+                  <div key={progress.id} className="flex items-center space-x-3 p-3 bg-dark-tertiary rounded-lg">
+                    <div className="w-10 h-10 bg-gradient-rose-gold rounded-lg flex items-center justify-center flex-shrink-0">
+                      <BookOpen className="w-5 h-5 text-dark-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-text-primary truncate">
+                        {progress.story?.title || "Unknown Story"}
+                      </p>
+                      <p className="text-xs text-text-muted">
+                        {progress.isCompleted 
+                          ? "✓ Completed" 
+                          : `${progress.pagesRead || 0} pages read`}
+                      </p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setLocation(`/story/${progress.storyId}`)}
+                      className="text-rose-gold hover:bg-rose-gold/10 text-xs px-2 py-1 h-auto"
+                    >
+                      {progress.isCompleted ? "Read Again" : "Continue"}
+                    </Button>
+                  </div>
+                ))}
+                
+                {readingProgress.length > 3 && (
+                  <Button
+                    variant="ghost"
+                    className="w-full text-sm text-text-muted hover:text-text-primary"
+                    onClick={() => setLocation("/my-reading")}
+                  >
+                    View all reading progress →
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* App Info */}
         <Card className="bg-dark-secondary border-dark-tertiary">
