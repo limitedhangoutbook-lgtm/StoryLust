@@ -97,7 +97,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .where(eq(storyChoices.fromNodeId, currentPageNode.id))
         .orderBy(storyChoices.order);
       
-      // Return pure page-based choices
+      // Check which premium choices are already owned (if user is authenticated)
+      let ownedChoices = new Set<string>();
+      if (req.isAuthenticated()) {
+        const userId = (req as any).user.claims.sub;
+        const purchasedPaths = await storage.getUserPurchasedPaths(userId, storyId as string);
+        ownedChoices = new Set(purchasedPaths.map(p => p.choiceId));
+      }
+
+      // Return pure page-based choices with ownership status
       const pageBased = pageChoices.map((choice) => {
         return {
           id: choice.id,
@@ -105,6 +113,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           isPremium: choice.isPremium,
           eggplantCost: choice.eggplantCost,
           targetPage: choice.targetPage || (parseInt(pageNumber as string) + 1), // Default to next page
+          isOwned: choice.isPremium && ownedChoices.has(choice.id), // Show ownership status
         };
       });
 

@@ -347,9 +347,18 @@ export default function StoryReaderPages() {
                       {choice.choiceText}
                     </span>
                     {choice.isPremium && (
-                      <div className="mt-2 inline-flex items-center gap-1.5 px-2 sm:px-3 py-1 bg-rose-gold/15 text-rose-gold border border-rose-gold/30 rounded-full text-xs sm:text-sm font-semibold">
-                        <span>🍆</span>
-                        <span>{choice.eggplantCost || 0} eggplants</span>
+                      <div className="mt-2">
+                        {choice.isOwned ? (
+                          <div className="inline-flex items-center gap-1.5 px-2 sm:px-3 py-1 bg-green-500/15 text-green-400 border border-green-500/30 rounded-full text-xs sm:text-sm font-semibold">
+                            <span>✓</span>
+                            <span>OWNED</span>
+                          </div>
+                        ) : (
+                          <div className="inline-flex items-center gap-1.5 px-2 sm:px-3 py-1 bg-rose-gold/15 text-rose-gold border border-rose-gold/30 rounded-full text-xs sm:text-sm font-semibold">
+                            <span>🍆</span>
+                            <span>{choice.eggplantCost || 0} eggplants</span>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
