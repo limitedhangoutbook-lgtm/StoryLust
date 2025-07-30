@@ -9,6 +9,7 @@ import {
   userChoices,
   personalBookmarks,
   readingSessions,
+  purchasedPremiumPaths,
   type User,
   type UpsertUser,
   type Story,
@@ -21,6 +22,7 @@ import {
   type InsertPersonalBookmark,
   type ReadingSession,
   type InsertReadingSession,
+
 } from "@shared/schema";
 
 export class Storage {
@@ -566,9 +568,85 @@ export class Storage {
       totalReadingTimeMinutes: stats?.totalReadingTime || 0,
       totalStoriesRead: stats?.totalStories || 0,
       totalChoicesMade: stats?.totalChoices || 0,
-      favoriteGenres: favoriteGenres.map(g => g.category).filter(Boolean),
+      favoriteGenres: favoriteGenres.map(g => g.category).filter((cat): cat is string => Boolean(cat)),
       recentActivity,
     };
+  }
+
+  // === PREMIUM PATH OPERATIONS ===
+  async purchasePremiumPath(pathData: {
+    userId: string;
+    storyId: string;
+    choiceId: string;
+    diamondCost: number;
+  }): Promise<{ success: boolean }> {
+    await db.insert(purchasedPremiumPaths).values(pathData);
+    return { success: true };
+  }
+
+  async hasPurchasedPremiumPath(userId: string, choiceId: string): Promise<boolean> {
+    const [result] = await db
+      .select()
+      .from(purchasedPremiumPaths)
+      .where(and(
+        eq(purchasedPremiumPaths.userId, userId),
+        eq(purchasedPremiumPaths.choiceId, choiceId)
+      ))
+      .limit(1);
+    
+    return !!result;
+  }
+
+  async getUserPurchasedPaths(userId: string, storyId?: string): Promise<any[]> {
+    const conditions = [eq(purchasedPremiumPaths.userId, userId)];
+    if (storyId) {
+      conditions.push(eq(purchasedPremiumPaths.storyId, storyId));
+    }
+
+    return await db
+      .select({
+        id: purchasedPremiumPaths.id,
+        userId: purchasedPremiumPaths.userId,
+        storyId: purchasedPremiumPaths.storyId,
+        choiceId: purchasedPremiumPaths.choiceId,
+        diamondCost: purchasedPremiumPaths.diamondCost,
+        createdAt: purchasedPremiumPaths.createdAt,
+        // Include choice and story details
+        choiceText: storyChoices.choiceText,
+        storyTitle: stories.title,
+      })
+      .from(purchasedPremiumPaths)
+      .leftJoin(storyChoices, eq(purchasedPremiumPaths.choiceId, storyChoices.id))
+      .leftJoin(stories, eq(purchasedPremiumPaths.storyId, stories.id))
+      .where(and(...conditions))
+      .orderBy(desc(purchasedPremiumPaths.createdAt));
+  }
+
+  // === START FROM BEGINNING HELPERS ===
+  async deleteReadingProgress(userId: string, storyId: string): Promise<void> {
+    await db.delete(readingProgress).where(and(
+      eq(readingProgress.userId, userId),
+      eq(readingProgress.storyId, storyId)
+    ));
+  }
+
+  async clearUserChoiceHistory(userId: string, storyId: string): Promise<void> {
+    await db.delete(userChoices).where(and(
+      eq(userChoices.userId, userId),
+      eq(userChoices.storyId, storyId)
+    ));
+  }
+
+  async getStoryStartingNode(storyId: string): Promise<StoryNode | undefined> {
+    const [node] = await db
+      .select()
+      .from(storyNodes)
+      .where(and(
+        eq(storyNodes.storyId, storyId),
+        eq(storyNodes.isStarting, true)
+      ))
+      .limit(1);
+    return node;
   }
 }
 

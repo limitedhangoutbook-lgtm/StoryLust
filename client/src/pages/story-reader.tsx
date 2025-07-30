@@ -255,49 +255,54 @@ export default function StoryReader() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Read from beginning handler
-  const handleReadFromBeginning = async () => {
-    // Reset to starting node
-    try {
-      const startingNodeResponse = await queryClient.fetchQuery({
-        queryKey: ["/api/stories", storyId, "start"],
-      });
-      
-      if (startingNodeResponse) {
-        setCurrentNodeId((startingNodeResponse as any).id);
-        setPageHistory([]); // Clear history
+  // Start from beginning mutation
+  const startFromBeginningMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", `/api/stories/${storyId}/start-from-beginning`);
+      return await response.json();
+    },
+    onSuccess: (data) => {
+      if (data.success && data.startingNode) {
+        // Clear local state
+        setPageHistory([]);
+        setCurrentNodeId(data.startingNode.id);
         setShowChoices(false);
         
-        // Reset reading progress
-        if (isAuthenticated) {
-          apiRequest("POST", "/api/reading-progress", {
-            storyId,
-            currentNodeId: (startingNodeResponse as any).id,
-            isBookmarked: false
-          }).catch(error => {
-            // Silently handle error
-          });
+        // Clear local storage progress
+        if (typeof window !== 'undefined') {
+          const progressKey = `story_progress_${storyId}`;
+          localStorage.removeItem(progressKey);
         }
         
-        // Save to local storage
-        saveLocalProgress((startingNodeResponse as any).id);
+        // Save new progress to the starting node
+        saveLocalProgress(data.startingNode.id);
         
         // Scroll to top
         window.scrollTo({ top: 0, behavior: 'smooth' });
         
         toast({
-          title: "Starting Over",
-          description: "Reading from the beginning...",
-          duration: 1500,
+          title: "Story Reset",
+          description: "✨ Starting fresh from the beginning! ✨",
+          duration: 2000,
         });
+        
+        // Refresh user data and reading progress queries
+        queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/reading-progress"] });
       }
-    } catch (error) {
+    },
+    onError: (error) => {
       toast({
         title: "Error",
-        description: "Failed to restart story. Please try again.",
+        description: "Failed to reset story. Please try again.",
         variant: "destructive",
       });
-    }
+    },
+  });
+
+  // Read from beginning handler
+  const handleReadFromBeginning = () => {
+    startFromBeginningMutation.mutate();
   };
 
   // Continue reading handler
@@ -902,6 +907,15 @@ export default function StoryReader() {
                 className="w-full bg-gradient-to-r from-rose-gold to-gold-accent text-dark-primary font-bold py-4 text-lg rounded-xl hover:shadow-lg transition-all duration-200 active:scale-95"
               >
                 Back to Homepage
+              </Button>
+              
+              {/* Start from Beginning Button */}
+              <Button
+                onClick={handleReadFromBeginning}
+                disabled={startFromBeginningMutation.isPending}
+                className="w-full bg-dark-secondary text-kindle font-semibold py-3 rounded-xl border border-dark-tertiary hover:border-rose-gold/50 hover:text-rose-gold transition-all duration-200 active:scale-95"
+              >
+                {startFromBeginningMutation.isPending ? "Resetting..." : "Start from Beginning"}
               </Button>
               
               {/* VIP Message Author Button */}

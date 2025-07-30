@@ -370,28 +370,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Choice not found" });
       }
       
+      // Check if this is a premium choice and handle payment/access
+      if (choice.isPremium && (choice.diamondCost || 0) > 0) {
+        // Check if user is authenticated for premium content
+        if (!req.isAuthenticated?.()) {
+          return res.status(401).json({ message: "Login required for premium choices" });
+        }
+
+        const userId = (req as any).user.claims.sub;
+        
+        // Check if user has already purchased this premium path
+        const alreadyPurchased = await storage.hasPurchasedPremiumPath(userId, choiceId);
+        
+        if (!alreadyPurchased) {
+          // User hasn't purchased this path yet, check if they have enough diamonds
+          const user = await storage.getUser(userId);
+          const cost = choice.diamondCost || 0;
+          const userDiamonds = user?.diamonds || 0;
+          
+          if (!user || userDiamonds < cost) {
+            return res.status(400).json({ 
+              message: "Not enough diamonds for this premium choice",
+              required: cost,
+              available: userDiamonds
+            });
+          }
+          
+          // Deduct diamonds and record the purchase
+          await storage.updateUserDiamonds(userId, userDiamonds - cost);
+          await storage.purchasePremiumPath({
+            userId,
+            storyId,
+            choiceId,
+            diamondCost: cost
+          });
+        }
+        // If already purchased, user can access it for free forever
+      }
+      
       // Get the target node
       const targetNode = await storage.getStoryNode(choice.toNodeId);
       if (!targetNode) {
         return res.status(404).json({ message: "Target node not found" });
-      }
-      
-      // Handle premium choice diamond deduction
-      if (choice.isPremium && (choice.diamondCost || 0) > 0) {
-        if (!req.isAuthenticated?.()) {
-          return res.status(401).json({ message: "Authentication required for premium choices" });
-        }
-        
-        const userId = (req as any).user.claims.sub;
-        const user = await storage.getUser(userId);
-        const cost = choice.diamondCost || 0;
-        
-        if (!user || (user.diamonds || 0) < cost) {
-          return res.status(400).json({ message: "Insufficient diamonds for this premium choice" });
-        }
-        
-        // Deduct diamonds
-        await storage.updateUserDiamonds(userId, (user.diamonds || 0) - cost);
       }
       
       // Save user choice if authenticated
@@ -420,6 +440,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error processing choice selection:", error);
       res.status(500).json({ message: "Failed to process your choice" });
+    }
+  });
+
+  // === START FROM BEGINNING ROUTE ===
+  app.post('/api/stories/:storyId/start-from-beginning', async (req, res) => {
+    try {
+      const { storyId } = req.params;
+      
+      // Clear reading progress for authenticated users
+      if (req.isAuthenticated?.()) {
+        const userId = (req as any).user.claims.sub;
+        
+        // Delete existing reading progress to start fresh
+        await storage.deleteReadingProgress(userId, storyId);
+        
+        // Clear choice history for this story
+        await storage.clearUserChoiceHistory(userId, storyId);
+        
+        // End any active reading sessions
+        const activeSession = await storage.getActiveReadingSession(userId, storyId);
+        if (activeSession) {
+          await storage.endReadingSession(activeSession.id);
+        }
+      }
+      
+      // Get the starting node
+      const startingNode = await storage.getStoryStartingNode(storyId);
+      if (!startingNode) {
+        return res.status(404).json({ message: "Story starting node not found" });
+      }
+      
+      res.json({
+        success: true,
+        startingNode,
+        message: "Story reset to beginning"
+      });
+    } catch (error) {
+      console.error("Error resetting story to beginning:", error);
+      res.status(500).json({ message: "Failed to reset story" });
     }
   });
 

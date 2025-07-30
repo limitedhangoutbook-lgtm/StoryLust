@@ -136,6 +136,18 @@ export const userChoices = pgTable("user_choices", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Premium paths purchased by users - once bought, forever accessible
+export const purchasedPremiumPaths = pgTable("purchased_premium_paths", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  storyId: varchar("story_id").notNull().references(() => stories.id, { onDelete: "cascade" }),
+  choiceId: varchar("choice_id").notNull().references(() => storyChoices.id, { onDelete: "cascade" }),
+  diamondCost: integer("diamond_cost").notNull(), // Track what they paid
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  unique().on(table.userId, table.choiceId), // Each user can only buy each choice once
+]);
+
 // VIP Author Messages table (simple implementation)
 export const authorMessages = pgTable("author_messages", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -182,6 +194,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   userChoices: many(userChoices),
   personalBookmarks: many(personalBookmarks),
   readingSessions: many(readingSessions),
+  purchasedPremiumPaths: many(purchasedPremiumPaths),
 }));
 
 export const personalBookmarksRelations = relations(personalBookmarks, ({ one }) => ({
@@ -258,6 +271,41 @@ export const insertReadingProgressSchema = createInsertSchema(readingProgress).o
 });
 
 export const insertUserChoiceSchema = createInsertSchema(userChoices).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const userChoicesRelations = relations(userChoices, ({ one }) => ({
+  user: one(users, {
+    fields: [userChoices.userId],
+    references: [users.id],
+  }),
+  story: one(stories, {
+    fields: [userChoices.storyId],
+    references: [stories.id],
+  }),
+  choice: one(storyChoices, {
+    fields: [userChoices.choiceId],
+    references: [storyChoices.id],
+  }),
+}));
+
+export const purchasedPremiumPathsRelations = relations(purchasedPremiumPaths, ({ one }) => ({
+  user: one(users, {
+    fields: [purchasedPremiumPaths.userId],
+    references: [users.id],
+  }),
+  story: one(stories, {
+    fields: [purchasedPremiumPaths.storyId],
+    references: [stories.id],
+  }),
+  choice: one(storyChoices, {
+    fields: [purchasedPremiumPaths.choiceId],
+    references: [storyChoices.id],
+  }),
+}));
+
+export const insertPurchasedPremiumPathSchema = createInsertSchema(purchasedPremiumPaths).omit({
   id: true,
   createdAt: true,
 });
