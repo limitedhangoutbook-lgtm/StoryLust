@@ -397,70 +397,35 @@ export default function StoryReader() {
     }, 3000);
   };
 
-  // Add touch event listeners for swipe gestures and navigation control
+  // Simple swipe detection
   useEffect(() => {
-    const mainElement = mainContentRef.current;
-    if (!mainElement) return;
+    let startX = 0;
 
     const handleTouchStart = (e: TouchEvent) => {
-      if (e.touches.length !== 1) return;
-      
-      const touch = e.touches[0];
-      touchStartRef.current = {
-        x: touch.clientX,
-        y: touch.clientY,
-        time: Date.now()
-      };
+      startX = e.touches[0].clientX;
     };
 
     const handleTouchEnd = (e: TouchEvent) => {
-      if (!touchStartRef.current || e.changedTouches.length !== 1) return;
+      const endX = e.changedTouches[0].clientX;
+      const deltaX = endX - startX;
       
-      const touch = e.changedTouches[0];
-      const deltaX = touch.clientX - touchStartRef.current.x;
-      const deltaY = touch.clientY - touchStartRef.current.y;
-      const deltaTime = Date.now() - touchStartRef.current.time;
-      
-      // Only handle swipes that are primarily horizontal and fast enough
-      const isHorizontalSwipe = Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 30; // Reduced threshold for easier swiping
-      const isFastEnough = deltaTime < 500; // Increased time threshold for easier swiping
-      
-      if (isHorizontalSwipe && isFastEnough) {
-        e.preventDefault(); // Prevent default touch behavior
-        
+      if (Math.abs(deltaX) > 100) {
         if (deltaX > 0 && pageHistory.length > 0) {
-          // Swipe right - go back (works even with choices visible)
           handleGoBack();
-        } else if (deltaX < 0) {
-          // Swipe left behavior depends on context
-          if (showChoices) {
-            // If choices are visible, just show navigation
-            showNavigationTemporarily();
-          } else {
-            // Show choices if they exist, otherwise show navigation
-            if (choices.length > 0) {
-              setShowChoices(true);
-            } else {
-              showNavigationTemporarily();
-            }
-          }
+        } else if (deltaX < 0 && choices.length > 0 && !showChoices) {
+          setShowChoices(true);
         }
-      } else if (!isHorizontalSwipe && Math.abs(deltaX) < 20 && Math.abs(deltaY) < 20) {
-        // Simple tap - show navigation temporarily
-        showNavigationTemporarily();
       }
-      
-      touchStartRef.current = null;
     };
 
-    mainElement.addEventListener('touchstart', handleTouchStart, { passive: false });
-    mainElement.addEventListener('touchend', handleTouchEnd, { passive: false });
+    document.addEventListener('touchstart', handleTouchStart);
+    document.addEventListener('touchend', handleTouchEnd);
 
     return () => {
-      mainElement.removeEventListener('touchstart', handleTouchStart);
-      mainElement.removeEventListener('touchend', handleTouchEnd);
+      document.removeEventListener('touchstart', handleTouchStart);
+      document.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [showChoices, pageHistory.length, handleGoBack, showNavigationTemporarily, choices.length]);
+  }, [choices.length, showChoices, pageHistory.length, handleGoBack]);
 
   // Separate effect for navigation auto-hiding
   useEffect(() => {
@@ -818,7 +783,7 @@ export default function StoryReader() {
         className={`pt-16 px-6 max-w-3xl mx-auto min-h-screen touch-manipulation ${
           showChoices ? 'pb-32' : 'pb-20'
         }`}
-        style={{ touchAction: 'none' }}
+        style={{ touchAction: 'pan-y' }}
       >
         {/* Swipe hint for first time users */}
         {currentNodeId && currentNodeId.includes("start") && (
