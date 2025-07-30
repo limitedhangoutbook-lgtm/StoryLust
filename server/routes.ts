@@ -5,7 +5,7 @@ import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./auth";
 import { db } from "./db";
 import { and, eq, gt, sql } from "drizzle-orm";
-import { storyNodes, users } from "@shared/schema";
+import { storyNodes, storyChoices, users } from "@shared/schema";
 
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
