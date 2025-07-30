@@ -5,8 +5,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/components/theme-provider";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { BottomNavigation } from "@/components/bottom-navigation";
-import { FloatingCreateButton } from "@/components/floating-create-button";
+import BottomNavigation from "@/components/bottom-navigation";
+import FloatingCreateButton from "@/components/floating-create-button";
 import { StoryCard } from "@/components/story-card";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -117,7 +117,7 @@ export default function Home() {
             <h1 className="text-xl font-bold tracking-tight text-text-primary">TurnPage</h1>
           </div>
           <div className="flex items-center space-x-3">
-            {user && isAdmin(user) && (
+            {user && isAdmin(user) ? (
               <Button
                 onClick={() => setLocation("/story-builder")}
                 size="sm"
@@ -125,7 +125,7 @@ export default function Home() {
               >
                 Create Story
               </Button>
-            )}
+            ) : null}
             {user ? (
               <button 
                 onClick={() => setLocation("/store")}
@@ -321,8 +321,8 @@ export default function Home() {
                   key={story.id}
                   story={story}
                   onRead={() => openStory(story.id)}
-                  onReadFromBeginning={hasProgress ? () => openStoryFromBeginning(story.id) : undefined}
-                  showProgress={hasProgress}
+                  onReadFromBeginning={hasProgress ? () => openStoryFromBeginning(story.id) : () => {}}
+                  showProgress={hasProgress || false}
                   progressPercent={progressPercent}
                 />
               );

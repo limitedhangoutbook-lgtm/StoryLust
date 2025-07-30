@@ -35,3 +35,5 @@ export function FloatingCreateButton({ className }: FloatingCreateButtonProps) {
     </button>
   );
 }
+
+export default FloatingCreateButton;

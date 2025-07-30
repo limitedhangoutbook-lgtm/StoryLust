@@ -14,7 +14,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { isAdmin } from "@shared/userRoles";
-import { BottomNavigation } from "@/components/bottom-navigation";
+import BottomNavigation from "@/components/bottom-navigation";
 import { StoryFlowBuilder } from "@/components/story-flow-builder";
 
 interface StoryPage {
@@ -38,6 +38,7 @@ export default function StoryBuilder() {
   const { toast } = useToast();
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const [currentStep, setCurrentStep] = useState(1);
 
   // Redirect if not admin
   if (!user || !isAdmin(user)) {

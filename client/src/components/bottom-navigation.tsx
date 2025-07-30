@@ -106,3 +106,5 @@ export function BottomNavigation() {
     </nav>
   );
 }
+
+export default BottomNavigation;
