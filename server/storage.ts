@@ -286,12 +286,12 @@ export class Storage {
       .onConflictDoUpdate({
         target: [readingProgress.userId, readingProgress.storyId],
         set: {
-          currentNodeId: progressData.currentNodeId,
+          currentPage: progressData.currentPage, // PAGE-BASED ONLY
           isBookmarked: progressData.isBookmarked,
           isCompleted: progressData.isCompleted,
           completedAt: progressData.completedAt,
-          pagesRead: progressData.pagesRead, // Ensure pages read is updated
-          choicesMade: progressData.choicesMade, // Ensure choices made is updated
+          pagesRead: progressData.pagesRead,
+          choicesMade: progressData.choicesMade,
           lastReadAt: new Date(),
         },
       })
@@ -305,7 +305,7 @@ export class Storage {
       .values({
         userId,
         storyId,
-        currentNodeId: "", // Will be overridden by conflict update
+        currentPage: 1, // Will be overridden by conflict update
         isCompleted: true,
         completedAt: new Date(),
       })

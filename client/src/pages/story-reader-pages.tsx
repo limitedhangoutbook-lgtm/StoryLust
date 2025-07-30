@@ -52,8 +52,8 @@ export default function StoryReaderPages() {
     enabled: !!currentNode?.id,
   });
 
-  // Get progress
-  const { data: progress } = useQuery<{ currentNodeId?: string }>({
+  // Get progress (page-based only)
+  const { data: progress } = useQuery<{ currentPage?: number }>({
     queryKey: [`/api/reading-progress/${storyId}`],
     enabled: !!storyId && isAuthenticated,
   });
@@ -64,11 +64,8 @@ export default function StoryReaderPages() {
       setTotalPages(allPages.length);
       
       // Find current page from progress or start at page 1
-      if (progress?.currentNodeId) {
-        const pageIndex = allPages.findIndex(page => page.id === progress.currentNodeId);
-        if (pageIndex !== -1) {
-          setCurrentPage(pageIndex + 1); // Convert 0-based index to 1-based page
-        }
+      if (progress?.currentPage && progress.currentPage >= 1 && progress.currentPage <= allPages.length) {
+        setCurrentPage(progress.currentPage);
       } else {
         // Check localStorage for guests
         const savedPage = localStorage.getItem(`story-${storyId}-page`);
@@ -135,19 +132,17 @@ export default function StoryReaderPages() {
   };
 
   const saveProgress = (pageNumber: number) => {
-    // Use array index instead of page.order for consistency
-    const page = allPages[pageNumber - 1]; // Convert 1-based to 0-based index
-    if (!page || !storyId) return;
+    if (!storyId) return;
 
-    // Save locally
+    // Save locally (page-based only)
     localStorage.setItem(`story-${storyId}-page`, pageNumber.toString());
     
-    // Save to server if authenticated
+    // Save to server if authenticated (page-based only)
     if (isAuthenticated) {
       apiRequest("POST", "/api/reading-progress", {
         storyId,
-        currentNodeId: page.id,
-        pagesRead: pageNumber, // Add pages read for proper progress tracking
+        currentPage: pageNumber, // Pure page-based progress
+        pagesRead: pageNumber,
         isBookmarked: false,
       }).catch(() => {});
     }
@@ -184,16 +179,15 @@ export default function StoryReaderPages() {
     mutationFn: async (choiceId: string) => {
       const response = await apiRequest("POST", `/api/choices/${choiceId}/select`, {
         storyId,
-        currentNodeId: currentNode?.id,
+        currentPage: currentPage, // PAGE-BASED ONLY
       });
       return response.json();
     },
     onSuccess: (data, choiceId) => {
-      if (data.targetNode?.id) {
-        // Find the page index for the target node (convert to 1-based page number)
-        const targetPageIndex = allPages.findIndex(page => page.id === data.targetNode.id);
-        if (targetPageIndex !== -1) {
-          const targetPageNumber = targetPageIndex + 1;
+      if (data.targetPage) {
+        // Direct page-based navigation
+        const targetPageNumber = data.targetPage;
+        if (targetPageNumber >= 1 && targetPageNumber <= totalPages) {
           setCurrentPage(targetPageNumber);
           saveProgress(targetPageNumber);
         }

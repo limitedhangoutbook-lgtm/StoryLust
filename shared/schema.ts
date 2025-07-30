@@ -81,12 +81,12 @@ export const storyChoices = pgTable("story_choices", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// User reading progress
+// User reading progress (PAGE-BASED ONLY)
 export const readingProgress = pgTable("reading_progress", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   storyId: varchar("story_id").notNull().references(() => stories.id, { onDelete: "cascade" }),
-  currentNodeId: varchar("current_node_id").notNull().references(() => storyNodes.id, { onDelete: "cascade" }),
+  currentPage: integer("current_page").notNull().default(1), // PAGE-BASED: track page number (1, 2, 3...)
   isBookmarked: boolean("is_bookmarked").default(false),
   isCompleted: boolean("is_completed").default(false),
   completedAt: timestamp("completed_at"),
@@ -236,10 +236,7 @@ export const readingProgressRelations = relations(readingProgress, ({ one }) => 
     fields: [readingProgress.storyId],
     references: [stories.id],
   }),
-  currentNode: one(storyNodes, {
-    fields: [readingProgress.currentNodeId],
-    references: [storyNodes.id],
-  }),
+  // Removed currentNode relation since we're using page-based navigation only
 }));
 
 // Insert schemas

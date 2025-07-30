@@ -130,17 +130,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/reading-progress', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const { storyId, currentNodeId, isBookmarked = false } = req.body;
+      const { storyId, currentPage, pagesRead, isBookmarked = false } = req.body;
       
-      // Validate required fields manually since schema might be missing imports
-      if (!storyId || !currentNodeId) {
-        return res.status(400).json({ message: "storyId and currentNodeId are required" });
+      // Validate required fields (page-based only)
+      if (!storyId || !currentPage) {
+        return res.status(400).json({ message: "storyId and currentPage are required" });
       }
       
       const progress = await storage.saveReadingProgress({
         userId,
         storyId,
-        currentNodeId,
+        currentPage,
+        pagesRead: pagesRead || currentPage,
         isBookmarked,
       });
       res.json(progress);
@@ -372,7 +373,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/choices/:choiceId/select', async (req, res) => {
     try {
       const { choiceId } = req.params;
-      const { storyId, currentNodeId } = req.body;
+      const { storyId, currentPage } = req.body;
       
       // Get the choice details
       const choice = await storage.getChoice(choiceId);
@@ -438,17 +439,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           choiceId,
         });
         
-        // Save reading progress
-        await storage.saveReadingProgress({
-          userId,
-          storyId,
-          currentNodeId: choice.toNodeId,
-          isBookmarked: false,
-        });
+        // Save reading progress (PAGE-BASED: We need to convert this to page navigation)
+        // For now, this choice endpoint shouldn't directly save progress
+        // Progress should only be saved through the page-based story reader
       }
       
       res.json({
-        targetNode,
+        targetPage: currentPage + 1, // Move to next page after choice
         choice,
         success: true
       });
@@ -509,7 +506,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const updatedProgress = await storage.saveReadingProgress({
           userId,
           storyId,
-          currentNodeId: progress.currentNodeId,
+          currentPage: progress.currentPage,
           isBookmarked: !progress.isBookmarked,
         });
         res.json({ isBookmarked: updatedProgress.isBookmarked });
@@ -528,7 +525,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const newProgress = await storage.saveReadingProgress({
           userId,
           storyId,
-          currentNodeId: startingNode.id,
+          currentPage: 1, // Start at first page
           isBookmarked: true,
         });
         res.json({ isBookmarked: newProgress.isBookmarked });
