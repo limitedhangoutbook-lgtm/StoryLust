@@ -310,17 +310,18 @@ export default function Home() {
               
               // Calculate actual progress percentage (PAGE-BASED)
               let progressPercent = 0;
-              if (hasProgress && story.totalPages) {
+              if (hasProgress) {
+                const totalPages = 10; // Stories have 10 pages each
                 if (hasAuthProgress && storyProgress.pagesRead) {
                   // Use actual pages read for authenticated users
-                  progressPercent = Math.round((storyProgress.pagesRead / story.totalPages) * 100);
+                  progressPercent = Math.round((storyProgress.pagesRead / totalPages) * 100);
                 } else if (hasGuestProgress) {
                   // For guests, use saved page from localStorage
                   const savedPage = parseInt(localStorage.getItem(`story-${story.id}-page`) || "1");
-                  progressPercent = Math.round((savedPage / story.totalPages) * 100);
+                  progressPercent = Math.round((savedPage / totalPages) * 100);
                 } else {
                   // Fallback - show minimal progress if we know user has started
-                  progressPercent = Math.round((1 / story.totalPages) * 100);
+                  progressPercent = Math.round((1 / totalPages) * 100);
                 }
                 // Ensure progress is between 1-99% (never 0% if hasProgress is true, never 100% unless completed)
                 progressPercent = Math.max(1, Math.min(99, progressPercent));
