@@ -205,6 +205,11 @@ export default function StoryReaderPages() {
           duration: 1500,
         });
         
+        // Refresh user data if this was a premium choice to update eggplant count
+        if (choice?.isPremium) {
+          queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+        }
+        
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     },
