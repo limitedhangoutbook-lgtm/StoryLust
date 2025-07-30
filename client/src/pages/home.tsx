@@ -218,25 +218,17 @@ export default function Home() {
                     })()}
                   </button>
                   
-                  {/* Start from Beginning button for featured story */}
-                  {(() => {
-                    const featuredAuthProgress = readingProgress.find((p: any) => p.storyId === featuredStory.id);
-                    const featuredGuestProgress = getGuestProgress(featuredStory.id);
-                    const hasFeaturedProgress = featuredAuthProgress || featuredGuestProgress;
-                    
-                    return hasFeaturedProgress ? (
-                      <button 
-                        className="w-full bg-black/50 text-white font-medium py-2 text-sm rounded-lg border border-white/20 hover:border-rose-gold/50 hover:text-rose-gold transition-all duration-200 active:scale-95"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openStoryFromBeginning(featuredStory.id);
-                        }}
-                        disabled={startFromBeginningMutation.isPending}
-                      >
-                        {startFromBeginningMutation.isPending ? "Resetting..." : "Start from Beginning"}
-                      </button>
-                    ) : null;
-                  })()}
+                  {/* ALWAYS show Start from Beginning button */}
+                  <button 
+                    className="w-full bg-black/50 text-white font-medium py-2 text-sm rounded-lg border border-white/20 hover:border-rose-gold/50 hover:text-rose-gold transition-all duration-200 active:scale-95"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openStoryFromBeginning(featuredStory.id);
+                    }}
+                    disabled={startFromBeginningMutation.isPending}
+                  >
+                    {startFromBeginningMutation.isPending ? "Starting..." : "Start from Beginning"}
+                  </button>
                 </div>
               </div>
             </div>
