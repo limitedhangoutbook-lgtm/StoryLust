@@ -403,7 +403,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             userId,
             storyId,
             choiceId,
-            diamondCost: cost
+            eggplantCost: cost
           });
         }
         // If already purchased, user can access it for free forever
@@ -983,7 +983,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           // Add eggplants to user account
           await storage.addEggplantsToUser(userId, parseInt(eggplants));
-          console.log(`Added ${eggplants} eggplants to user ${userId}`);
+
         } catch (error) {
           console.error('Error adding eggplants to user:', error);
         }
