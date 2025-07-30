@@ -249,11 +249,17 @@ export class Storage {
   }
 
   // === STORY CHOICE OPERATIONS ===
-  async getChoicesFromNode(fromNodeId: string): Promise<StoryChoice[]> {
+  async getChoicesForPage(pageNumber: number, storyId: string): Promise<StoryChoice[]> {
+    // Get the page at this position
+    const allPages = await this.getStoryNodes(storyId);
+    const pageIndex = pageNumber - 1;
+    if (pageIndex < 0 || pageIndex >= allPages.length) return [];
+    
+    const currentPage = allPages[pageIndex];
     return await db
       .select()
       .from(storyChoices)
-      .where(eq(storyChoices.fromNodeId, fromNodeId))
+      .where(eq(storyChoices.fromNodeId, currentPage.id))
       .orderBy(storyChoices.order);
   }
 
@@ -491,13 +497,13 @@ export class Storage {
     return session;
   }
 
-  async endReadingSession(sessionId: string, endNodeId?: string): Promise<ReadingSession> {
+  async endReadingSession(sessionId: string, endPageNumber?: number): Promise<ReadingSession> {
     const updates: Partial<ReadingSession> = {
       isActive: false,
       endTime: new Date(),
     };
-    if (endNodeId) {
-      updates.endNodeId = endNodeId;
+    if (endPageNumber) {
+      updates.endPageNumber = endPageNumber;
     }
 
     const [session] = await db

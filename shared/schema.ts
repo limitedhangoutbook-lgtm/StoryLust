@@ -78,6 +78,7 @@ export const storyChoices = pgTable("story_choices", {
   isPremium: boolean("is_premium").default(false),
   eggplantCost: integer("eggplant_cost").default(0),
   order: integer("order").notNull(),
+  targetPage: integer("target_page"), // PAGE-BASED NAVIGATION
   createdAt: timestamp("created_at").defaultNow(),
 });
 

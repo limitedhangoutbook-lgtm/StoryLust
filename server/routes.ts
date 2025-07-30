@@ -84,32 +84,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const currentPageNode = allPages[pageIndex];
       
-      // Get choices for this page (node) but return page-based data
+      // Get choices for this page using pure page-based logic
       const pageChoices = await db
         .select({
           id: storyChoices.id,
           choiceText: storyChoices.choiceText,
           isPremium: storyChoices.isPremium,
           eggplantCost: storyChoices.eggplantCost,
-          toNodeId: storyChoices.toNodeId,
+          targetPage: storyChoices.targetPage,
         })
         .from(storyChoices)
         .where(eq(storyChoices.fromNodeId, currentPageNode.id))
         .orderBy(storyChoices.order);
       
-      // Convert node-based choices to page-based choices
+      // Return pure page-based choices
       const pageBased = pageChoices.map((choice) => {
-        // Find target page by finding the toNodeId in our pages array
-        const targetNodeIndex = allPages.findIndex(page => page.id === choice.toNodeId);
         return {
           id: choice.id,
           choiceText: choice.choiceText,
           isPremium: choice.isPremium,
           eggplantCost: choice.eggplantCost,
-          targetPage: targetNodeIndex >= 0 ? targetNodeIndex + 1 : pageIndex + 2 // Default to next page
+          targetPage: choice.targetPage || (parseInt(pageNumber as string) + 1), // Default to next page
         };
       });
-      
+
       res.json(pageBased);
     } catch (error: any) {
       console.error("Page choices error:", error);
@@ -225,16 +223,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/bookmarks', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const { storyId, nodeId, title, notes } = req.body;
+      const { storyId, pageNumber, title, notes } = req.body;
       
-      if (!storyId || !nodeId || !title) {
-        return res.status(400).json({ message: "storyId, nodeId, and title are required" });
+      if (!storyId || !pageNumber || !title) {
+        return res.status(400).json({ message: "storyId, pageNumber, and title are required" });
       }
       
       const bookmark = await storage.createPersonalBookmark({
         userId,
         storyId,
-        nodeId,
+        pageNumber,
         title,
         notes,
       });
@@ -319,9 +317,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/reading-sessions/:sessionId/end', isAuthenticated, async (req: any, res) => {
     try {
       const { sessionId } = req.params;
-      const { endNodeId } = req.body;
+      const { endPageNumber } = req.body;
       
-      const session = await storage.endReadingSession(sessionId, endNodeId);
+      const session = await storage.endReadingSession(sessionId, endPageNumber);
       res.json(session);
     } catch (error) {
       console.error("Error ending reading session:", error);
