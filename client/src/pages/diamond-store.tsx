@@ -72,7 +72,7 @@ const eggplantPackages: EggplantPackage[] = [
   },
   {
     id: "paypig",
-    name: "Pay Pig Ultimate",
+    name: "Pay Pig",
     eggplants: "∞",
     bonusEggplants: 0,
     totalEggplants: "∞",
@@ -191,7 +191,7 @@ export default function EggplantStore() {
             >
               {/* Popular/Best Value/VIP Badges */}
               {pkg.popular && (
-                <Badge variant="destructive" className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-rose-500">
+                <Badge variant="destructive" className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-rose-500 to-pink-500 text-white font-bold shadow-lg">
                   Most Popular
                 </Badge>
               )}

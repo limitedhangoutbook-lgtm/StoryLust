@@ -46,7 +46,7 @@ const eggplantPackages: EggplantPackage[] = [
   },
   {
     id: "paypig",
-    name: "Pay Pig Ultimate",
+    name: "Pay Pig",
     eggplants: "∞",
     price: 999.00,
     forPerverts: true,
@@ -192,6 +192,8 @@ export default function Store() {
                       className={`border-0 rounded-tl-none rounded-br-none ${
                         pkg.forPerverts 
                           ? "bg-purple-600 text-white" 
+                          : pkg.popular
+                          ? "bg-gradient-to-r from-rose-500 to-pink-500 text-white font-bold shadow-lg"
                           : "bg-rose-gold text-dark-primary"
                       }`}
                     >
