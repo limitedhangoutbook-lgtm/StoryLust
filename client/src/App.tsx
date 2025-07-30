@@ -24,8 +24,8 @@ function Router() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-dark-primary flex items-center justify-center">
-        <div className="animate-spin w-8 h-8 border-4 border-rose-gold border-t-transparent rounded-full" />
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-4 border-rose-400 border-t-transparent rounded-full" />
       </div>
     );
   }
