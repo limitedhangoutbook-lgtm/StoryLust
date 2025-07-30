@@ -210,7 +210,7 @@ export default function StoryReader() {
   };
 
   // Go back handler  
-  const handleGoBack = () => {
+  const handleGoBack = useCallback(() => {
     if (pageHistory.length > 0) {
       const previousNodeId = pageHistory[pageHistory.length - 1];
       setPageHistory(prev => prev.slice(0, -1));
@@ -225,7 +225,7 @@ export default function StoryReader() {
       // If no history, go back to homepage
       setLocation("/");
     }
-  };
+  }, [pageHistory.length, setLocation]);
 
   // Check if current node is a story ending
   const isStoryEnding = currentNode?.content?.includes("**THE END**") || false;
@@ -301,7 +301,7 @@ export default function StoryReader() {
   };
 
   // Continue reading handler
-  const handleContinueReading = async () => {
+  const handleContinueReading = useCallback(async () => {
     if (choices.length > 0) {
       // This page has choices, show them
       setShowChoices(true);
@@ -387,7 +387,7 @@ export default function StoryReader() {
         }
       }
     }
-  };
+  }, [choices.length, isStoryEnding, isAuthenticated, storyId, currentNodeId, isBookmarked, setLocation, toast]);
 
   // Auto-hide navigation after inactivity
   const showNavigationTemporarily = () => {
@@ -409,6 +409,8 @@ export default function StoryReader() {
     const mainElement = mainContentRef.current;
     if (!mainElement) return;
 
+    console.log('Setting up touch listeners'); // Debug log
+
     const handleTouchStart = (e: TouchEvent) => {
       if (e.touches.length !== 1) return;
       
@@ -418,6 +420,7 @@ export default function StoryReader() {
         y: touch.clientY,
         time: Date.now()
       };
+      console.log('Touch start:', touchStartRef.current); // Debug log
     };
 
     const handleTouchEnd = (e: TouchEvent) => {
@@ -428,16 +431,21 @@ export default function StoryReader() {
       const deltaY = touch.clientY - touchStartRef.current.y;
       const deltaTime = Date.now() - touchStartRef.current.time;
       
+      console.log('Touch end:', { deltaX, deltaY, deltaTime, showChoices, historyLength: pageHistory.length }); // Debug log
+      
       // Only handle swipes that are primarily horizontal and fast enough
       const isHorizontalSwipe = Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50;
       const isFastEnough = deltaTime < 300;
       
       if (isHorizontalSwipe && isFastEnough && !showChoices) {
+        e.preventDefault(); // Prevent default touch behavior
         if (deltaX > 0 && pageHistory.length > 0) {
           // Swipe right - go back
+          console.log('Swipe right - going back');
           handleGoBack();
         } else if (deltaX < 0) {
           // Swipe left - continue reading
+          console.log('Swipe left - continuing');
           handleContinueReading();
         }
       } else if (!isHorizontalSwipe && Math.abs(deltaX) < 20 && Math.abs(deltaY) < 20) {
@@ -449,13 +457,14 @@ export default function StoryReader() {
     };
 
     mainElement.addEventListener('touchstart', handleTouchStart, { passive: true });
-    mainElement.addEventListener('touchend', handleTouchEnd, { passive: true });
+    mainElement.addEventListener('touchend', handleTouchEnd, { passive: false }); // Changed to false to allow preventDefault
 
     return () => {
+      console.log('Cleaning up touch listeners');
       mainElement.removeEventListener('touchstart', handleTouchStart);
       mainElement.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [showChoices, pageHistory.length]); // Minimized dependencies
+  }, [showChoices, pageHistory.length, handleGoBack, handleContinueReading]); // Added missing dependencies
 
   // Separate effect for navigation auto-hiding
   useEffect(() => {
@@ -810,10 +819,10 @@ export default function StoryReader() {
       {/* Story Content - Full screen like Kindle with touch area */}
       <main 
         ref={mainContentRef} 
-        className={`pt-16 px-6 max-w-3xl mx-auto min-h-screen touch-manipulation select-none ${
+        className={`pt-16 px-6 max-w-3xl mx-auto min-h-screen touch-manipulation ${
           showChoices ? 'pb-32' : 'pb-20'
         }`}
-        style={{ touchAction: 'pan-y' }}
+        style={{ touchAction: 'manipulation' }}
       >
         {/* Swipe hint for first time users */}
         {currentNodeId === "start" && (
