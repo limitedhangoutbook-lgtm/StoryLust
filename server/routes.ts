@@ -600,8 +600,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         imageUrl: imageUrl || "",
         spiceLevel: spiceLevel || 1,
         category: category || "straight",
-        authorId: req.user.claims.sub,
-        isPublished: false, // Always save as draft
+      });
+
+      // Update story to set as draft (not published)
+      await storage.updateStory(story.id, {
+        isPublished: false,
         isFeatured: false,
       });
 
@@ -617,7 +620,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
             content: page.content || "",
             order: page.order,
             isStarting: page.order === 1,
-            isEnding: page.isEnding || false,
           });
           nodeMap[page.id] = node.id;
         }

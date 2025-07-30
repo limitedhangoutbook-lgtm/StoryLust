@@ -16,27 +16,46 @@ import StoryCreator from "@/pages/story-creator";
 import StoryManagement from "@/pages/story-management";
 import StoryBuilder from "@/pages/story-builder-new";
 import UserManagement from "@/pages/user-management";
-import DiamondStore from "@/pages/diamond-store";
+// EggplantStore is handled by the Store component
 import { Bookmarks } from "@/pages/bookmarks";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-dark-primary flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-4 border-rose-gold border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+
   return (
     <Switch>
-      <Route path="/" component={Home} />
-      <Route path="/story/:storyId" component={StoryReaderPages} />
-      <Route path="/my-reading" component={MyReading} />
-      <Route path="/bookmarks" component={Bookmarks} />
-      <Route path="/profile" component={Profile} />
-      <Route path="/store" component={Store} />
-      <Route path="/diamonds" component={DiamondStore} />
-      <Route path="/story-creator" component={StoryCreator} />
-      <Route path="/story-management" component={StoryManagement} />
-      <Route path="/story-builder" component={StoryBuilder} />
-      <Route path="/user-management" component={UserManagement} />
-      <Route path="/landing" component={Landing} />
-      <Route component={NotFound} />
+      {isLoading || !isAuthenticated ? (
+        <>
+          <Route path="/" component={Landing} />
+          <Route path="/story/:storyId" component={StoryReaderPages} />
+          <Route path="/landing" component={Landing} />
+          <Route component={Landing} />
+        </>
+      ) : (
+        <>
+          <Route path="/" component={Home} />
+          <Route path="/story/:storyId" component={StoryReaderPages} />
+          <Route path="/my-reading" component={MyReading} />
+          <Route path="/bookmarks" component={Bookmarks} />
+          <Route path="/profile" component={Profile} />
+          <Route path="/store" component={Store} />
+          <Route path="/eggplants" component={Store} />
+          <Route path="/story-creator" component={StoryCreator} />
+          <Route path="/story-management" component={StoryManagement} />
+          <Route path="/story-builder" component={StoryBuilder} />
+          <Route path="/user-management" component={UserManagement} />
+          <Route path="/landing" component={Landing} />
+          <Route component={NotFound} />
+        </>
+      )}
     </Switch>
   );
 }
