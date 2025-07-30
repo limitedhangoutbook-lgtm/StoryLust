@@ -211,6 +211,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // === START FROM BEGINNING ROUTE ===
+  app.post('/api/stories/:storyId/start-from-beginning', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { storyId } = req.params;
+      
+      // Find the actual starting node for this story (order = 1)
+      const startingNode = await storage.getStoryStartingNode(storyId);
+      if (!startingNode) {
+        return res.status(404).json({ message: "Story not found or no starting node" });
+      }
+      
+      // Reset reading progress to the beginning
+      const progress = await storage.saveReadingProgress({
+        userId,
+        storyId,
+        currentNodeId: startingNode.id,
+        isBookmarked: false
+      });
+      
+      res.json({ success: true, progress, startingNodeId: startingNode.id });
+    } catch (error) {
+      console.error("Error resetting story progress:", error);
+      res.status(500).json({ message: "Failed to reset story progress" });
+    }
+  });
+
   // === PERSONAL BOOKMARK ROUTES ===
   app.post('/api/bookmarks', isAuthenticated, async (req: any, res) => {
     try {

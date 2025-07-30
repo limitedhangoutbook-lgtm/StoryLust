@@ -103,6 +103,15 @@ export class Storage {
       .orderBy(storyNodes.order);
   }
 
+  async getStoryStartingNode(storyId: string): Promise<StoryNode | undefined> {
+    const [node] = await db
+      .select()
+      .from(storyNodes)
+      .where(and(eq(storyNodes.storyId, storyId), eq(storyNodes.order, 1)))
+      .limit(1);
+    return node;
+  }
+
   async getAllStoriesForAdmin(): Promise<Story[]> {
     return await db
       .select()
