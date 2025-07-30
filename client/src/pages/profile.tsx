@@ -236,8 +236,8 @@ export default function Profile() {
               </Button>
               
               {/* Admin Actions */}
-              {user && isAdmin(user) && (
-                <div key="admin-actions">
+              {user && isAdmin(user) ? (
+                <>
                   <Separator className="bg-dark-tertiary" />
                   <Button
                     variant="ghost"
@@ -255,13 +255,12 @@ export default function Profile() {
                     <Edit className="w-4 h-4 mr-3" />
                     Manage My Stories
                   </Button>
-                </div>
-              )}
+                </>
+              ) : null}
               
               {/* Mega Admin Actions */}
-              {user && isMegaAdmin(user) && (
+              {user && isMegaAdmin(user) ? (
                 <Button
-                  key="mega-admin-action"
                   variant="ghost"
                   className="w-full justify-start text-gold-accent hover:bg-dark-tertiary"
                   onClick={() => setLocation("/user-management")}
@@ -269,7 +268,7 @@ export default function Profile() {
                   <Settings className="w-4 h-4 mr-3" />
                   User Management
                 </Button>
-              )}
+              ) : null}
               
               <Separator className="bg-dark-tertiary" />
               <Button
