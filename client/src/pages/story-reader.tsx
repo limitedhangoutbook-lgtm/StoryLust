@@ -50,13 +50,17 @@ export default function StoryReader() {
     gcTime: 30 * 60 * 1000, // 30 minutes
   });
 
-  // Fetch current node with caching
-  const { data: currentNode, isLoading: nodeLoading } = useQuery<StoryNode>({
-    queryKey: ["/api/nodes", currentNodeId],
-    enabled: !!currentNodeId,
+  // Fetch all story pages for page-by-page navigation
+  const { data: pages = [] } = useQuery<StoryNode[]>({
+    queryKey: ["/api/stories", storyId, "pages"],
+    enabled: !!storyId,
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
   });
+
+  // Get current page from pages array
+  const currentNode = pages.find(page => page.id === currentNodeId);
+  const nodeLoading = pages.length === 0;
 
   // Fetch choices for current node with caching
   const { data: choices = [] } = useQuery<StoryChoice[]>({
