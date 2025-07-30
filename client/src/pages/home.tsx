@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { BookOpen, Gem, Moon, Sun, GitBranch } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/components/theme-provider";
@@ -8,12 +8,15 @@ import { Button } from "@/components/ui/button";
 import { BottomNavigation } from "@/components/bottom-navigation";
 import { FloatingCreateButton } from "@/components/floating-create-button";
 import { StoryCard } from "@/components/story-card";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import type { Story } from "@shared/schema";
 import { isAdmin, isMegaAdmin } from "@shared/userRoles";
 
 export default function Home() {
   const { user } = useAuth();
   const { theme, setTheme } = useTheme();
+  const { toast } = useToast();
   
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
@@ -29,6 +32,12 @@ export default function Home() {
     queryKey: ["/api/stories", activeFilter !== "all" ? `?category=${activeFilter}` : ""],
   });
 
+  // Fetch reading progress for authenticated users
+  const { data: readingProgress = [] } = useQuery({
+    queryKey: ["/api/reading-progress"],
+    enabled: !!user,
+  });
+
   const getSpiceEmoji = (level: number) => {
     return "🌶️".repeat(level);
   };
@@ -37,24 +46,32 @@ export default function Home() {
     setLocation(`/story/${storyId}`);
   };
 
-  const openStoryFromBeginning = async (storyId: string) => {
-    if (user) {
-      try {
-        // Clear reading progress by setting to the starting node
-        await fetch('/api/reading-progress', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            storyId,
-            currentNodeId: `${storyId.split('-')[0]}-start`, // Assume start node follows pattern
-            isBookmarked: false
-          })
-        });
-      } catch (error) {
-        console.error('Failed to reset progress:', error);
-      }
-    }
-    setLocation(`/story/${storyId}`);
+  // Start from beginning mutation
+  const startFromBeginningMutation = useMutation({
+    mutationFn: async (storyId: string) => {
+      const response = await apiRequest("POST", `/api/stories/${storyId}/start-from-beginning`);
+      return await response.json();
+    },
+    onSuccess: (data, storyId) => {
+      toast({
+        title: "Story Reset",
+        description: "Starting fresh from the beginning!",
+        duration: 1500,
+      });
+      // Navigate to the story
+      setLocation(`/story/${storyId}`);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to reset story. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const openStoryFromBeginning = (storyId: string) => {
+    startFromBeginningMutation.mutate(storyId);
   };
 
 
@@ -161,15 +178,39 @@ export default function Home() {
                     </span>
                   </div>
                 </div>
-                <button 
-                  className="w-full mt-4 gradient-rose-gold text-dark-primary font-semibold py-3 rounded-xl transition-all duration-200 active:scale-95"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    openStory(featuredStory.id);
-                  }}
-                >
-                  {user ? "Continue Reading" : "Start Reading"}
-                </button>
+                
+                {/* Button section */}
+                <div className="space-y-2 mt-4">
+                  <button 
+                    className="w-full gradient-rose-gold text-dark-primary font-semibold py-3 rounded-xl transition-all duration-200 active:scale-95"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openStory(featuredStory.id);
+                    }}
+                  >
+                    {(() => {
+                      const featuredProgress = readingProgress.find((p: any) => p.storyId === featuredStory.id);
+                      return featuredProgress ? "Continue Reading" : "Start Reading";
+                    })()}
+                  </button>
+                  
+                  {/* Start from Beginning button for featured story */}
+                  {(() => {
+                    const featuredProgress = readingProgress.find((p: any) => p.storyId === featuredStory.id);
+                    return featuredProgress ? (
+                      <button 
+                        className="w-full bg-black/50 text-white font-medium py-2 text-sm rounded-lg border border-white/20 hover:border-rose-gold/50 hover:text-rose-gold transition-all duration-200 active:scale-95"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openStoryFromBeginning(featuredStory.id);
+                        }}
+                        disabled={startFromBeginningMutation.isPending}
+                      >
+                        {startFromBeginningMutation.isPending ? "Resetting..." : "Start from Beginning"}
+                      </button>
+                    ) : null;
+                  })()}
+                </div>
               </div>
             </div>
           </section>
@@ -236,14 +277,23 @@ export default function Home() {
           <h3 className="text-lg font-semibold text-text-primary">Browse Stories</h3>
           
           <div className="space-y-4">
-            {stories.map((story) => (
-              <StoryCard
-                key={story.id}
-                story={story}
-                onRead={() => openStory(story.id)}
-                onReadFromBeginning={() => openStoryFromBeginning(story.id)}
-              />
-            ))}
+            {stories.map((story) => {
+              // Get reading progress for this story
+              const storyProgress = readingProgress.find((p: any) => p.storyId === story.id);
+              const hasProgress = !!storyProgress;
+              const progressPercent = hasProgress ? 50 : 0; // Simplified progress indicator
+              
+              return (
+                <StoryCard
+                  key={story.id}
+                  story={story}
+                  onRead={() => openStory(story.id)}
+                  onReadFromBeginning={hasProgress ? () => openStoryFromBeginning(story.id) : undefined}
+                  showProgress={hasProgress}
+                  progressPercent={progressPercent}
+                />
+              );
+            })}
           </div>
 
           {stories.length === 0 && (
