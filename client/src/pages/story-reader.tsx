@@ -444,12 +444,12 @@ export default function StoryReader() {
             console.log('Executing swipe left with choices - showing navigation');
             showNavigationTemporarily();
           } else {
-            // Continue reading if no choices and not at story ending
-            if (!isStoryEnding && choices.length === 0) {
-              console.log('Executing swipe left - continuing reading');
-              handleContinueReading();
+            // Show choices if they exist, otherwise show navigation
+            if (choices.length > 0) {
+              console.log('Executing swipe left - showing choices');
+              setShowChoices(true);
             } else {
-              console.log('At story ending or choices available - showing navigation');
+              console.log('No choices or at story ending - showing navigation');
               showNavigationTemporarily();
             }
           }
@@ -469,7 +469,7 @@ export default function StoryReader() {
       mainElement.removeEventListener('touchstart', handleTouchStart);
       mainElement.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [showChoices, pageHistory.length, handleGoBack, handleContinueReading, showNavigationTemporarily, isStoryEnding, choices.length]);
+  }, [showChoices, pageHistory.length, handleGoBack, showNavigationTemporarily, choices.length]);
 
   // Separate effect for navigation auto-hiding
   useEffect(() => {
