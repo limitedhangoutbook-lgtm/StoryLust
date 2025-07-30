@@ -206,8 +206,8 @@ export default function StoryReader() {
       // Save local progress when going back
       saveLocalProgress(previousNodeId);
       setShowChoices(false);
-      // Show navigation temporarily when going back
-      showNavigationTemporarily();
+      // Show navigation when going back
+      setShowNavigation(true);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
       // If no history, go back to homepage
@@ -382,20 +382,7 @@ export default function StoryReader() {
     }
   }, [choices.length, isStoryEnding, isAuthenticated, storyId, currentNodeId, isBookmarked, setLocation, toast]);
 
-  // Auto-hide navigation after inactivity
-  const showNavigationTemporarily = () => {
-    setShowNavigation(true);
-    
-    // Clear existing timeout
-    if (hideNavTimeout.current) {
-      clearTimeout(hideNavTimeout.current);
-    }
-    
-    // Hide navigation after 3 seconds of inactivity
-    hideNavTimeout.current = setTimeout(() => {
-      setShowNavigation(false);
-    }, 3000);
-  };
+
 
   // Simple swipe detection
   useEffect(() => {
@@ -409,7 +396,7 @@ export default function StoryReader() {
       const endX = e.changedTouches[0].clientX;
       const deltaX = endX - startX;
       
-      if (Math.abs(deltaX) > 100) {
+      if (Math.abs(deltaX) > 80) {
         if (deltaX > 0 && pageHistory.length > 0) {
           handleGoBack();
         } else if (deltaX < 0 && choices.length > 0 && !showChoices) {
@@ -427,19 +414,7 @@ export default function StoryReader() {
     };
   }, [choices.length, showChoices, pageHistory.length, handleGoBack]);
 
-  // Separate effect for navigation auto-hiding
-  useEffect(() => {
-    const handleScroll = () => showNavigationTemporarily();
-    const handleMouseMove = () => showNavigationTemporarily();
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    document.addEventListener('mousemove', handleMouseMove, { passive: true });
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      document.removeEventListener('mousemove', handleMouseMove);
-    };
-  }, []); // No dependencies - just event listeners
 
   const selectChoiceMutation = useMutation({
     mutationFn: async (choiceId: string) => {
@@ -920,7 +895,7 @@ export default function StoryReader() {
               if (choices.length > 0) {
                 setShowChoices(true);
               } else {
-                showNavigationTemporarily();
+                setShowNavigation(true);
               }
             }}
             showChoices={showChoices}
