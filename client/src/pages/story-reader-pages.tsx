@@ -39,17 +39,17 @@ export default function StoryReaderPages() {
     enabled: !!storyId,
   });
 
-  // Get choices for current page - use array index since pages might not have sequential order values
-  const currentNode = allPages[currentPage - 1]; // Convert 1-based page to 0-based index
+  // Get choices for current page (PAGE-BASED ONLY)
+  const currentPageData = allPages[currentPage - 1]; // Convert 1-based page to 0-based index
   const { data: choices = [] } = useQuery<Array<{ 
     id: string; 
     choiceText: string; 
     isPremium: boolean; 
     eggplantCost?: number;
-    toNodeId: string;
+    targetPage: number;
   }>>({
-    queryKey: [`/api/nodes/${currentNode?.id}/choices`],
-    enabled: !!currentNode?.id,
+    queryKey: [`/api/pages/${currentPage}/choices?storyId=${storyId}`],
+    enabled: !!storyId && currentPage > 0,
   });
 
   // Get progress (page-based only)
@@ -254,9 +254,9 @@ export default function StoryReaderPages() {
   });
 
   // Check if story is ending
-  const isEnding = currentNode?.content?.includes("**THE END**") || false;
+  const isEnding = currentPageData?.content?.includes("**THE END**") || false;
 
-  if (!story || !currentNode || allPages.length === 0) {
+  if (!story || !currentPageData || allPages.length === 0) {
     return (
       <div className="h-screen flex items-center justify-center bg-kindle">
         <div className="animate-spin w-8 h-8 border-4 border-rose-gold border-t-transparent rounded-full" />
@@ -304,8 +304,8 @@ export default function StoryReaderPages() {
         
         {/* Story Content */}
         <div className="kindle-text text-kindle space-y-4 sm:space-y-6 mb-8">
-          <h2 className="text-lg sm:text-xl font-bold text-kindle mb-3 sm:mb-4">{currentNode.title}</h2>
-          {currentNode.content.split('\n\n').map((paragraph, index) => (
+          <h2 className="text-lg sm:text-xl font-bold text-kindle mb-3 sm:mb-4">{currentPageData.title}</h2>
+          {currentPageData.content.split('\n\n').map((paragraph, index) => (
             <p key={index} className="kindle-paragraph leading-relaxed text-sm sm:text-base">
               {paragraph}
             </p>

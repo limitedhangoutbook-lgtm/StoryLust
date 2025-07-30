@@ -60,16 +60,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(story);
   });
 
-  // === NODE & CHOICE ROUTES ===
-  app.get('/api/nodes/:nodeId', async (req, res) => {
-    const node = await storage.getStoryNode(req.params.nodeId);
-    if (!node) return res.status(404).json({ message: "Node not found" });
-    res.json(node);
-  });
-
-  app.get('/api/nodes/:nodeId/choices', async (req, res) => {
-    const choices = await storage.getChoicesFromNode(req.params.nodeId);
-    res.json(choices);
+  // === PAGE-BASED CHOICES ROUTE (NO MORE NODES!) ===
+  app.get('/api/pages/:pageNumber/choices', async (req, res) => {
+    try {
+      const { pageNumber } = req.params;
+      const { storyId } = req.query;
+      
+      if (!storyId) {
+        return res.status(400).json({ message: "storyId is required" });
+      }
+      
+      // Get all pages for this story to find the page at the given position
+      const allPages = await db
+        .select()
+        .from(storyNodes)
+        .where(eq(storyNodes.storyId, storyId as string))
+        .orderBy(storyNodes.order);
+      
+      const pageIndex = parseInt(pageNumber as string) - 1; // Convert to 0-based index
+      if (pageIndex < 0 || pageIndex >= allPages.length) {
+        return res.json([]); // No choices for invalid page
+      }
+      
+      const currentPageNode = allPages[pageIndex];
+      
+      // Get choices for this page (node) but return page-based data
+      const pageChoices = await db
+        .select({
+          id: storyChoices.id,
+          choiceText: storyChoices.choiceText,
+          isPremium: storyChoices.isPremium,
+          eggplantCost: storyChoices.eggplantCost,
+          toNodeId: storyChoices.toNodeId,
+        })
+        .from(storyChoices)
+        .where(eq(storyChoices.fromNodeId, currentPageNode.id))
+        .orderBy(storyChoices.order);
+      
+      // Convert node-based choices to page-based choices
+      const pageBased = pageChoices.map((choice) => {
+        // Find target page by finding the toNodeId in our pages array
+        const targetNodeIndex = allPages.findIndex(page => page.id === choice.toNodeId);
+        return {
+          id: choice.id,
+          choiceText: choice.choiceText,
+          isPremium: choice.isPremium,
+          eggplantCost: choice.eggplantCost,
+          targetPage: targetNodeIndex >= 0 ? targetNodeIndex + 1 : pageIndex + 2 // Default to next page
+        };
+      });
+      
+      res.json(pageBased);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to get page choices" });
+    }
   });
 
   // Get all pages for a story in order
@@ -82,43 +126,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get next page in story progression
-  app.get('/api/stories/:storyId/next/:currentNodeId', async (req, res) => {
-    try {
-      const { storyId, currentNodeId } = req.params;
-      
-      // Get current node to check for next_node_id
-      const [currentNode] = await db
-        .select()
-        .from(storyNodes)
-        .where(and(
-          eq(storyNodes.storyId, storyId),
-          eq(storyNodes.id, currentNodeId)
-        ));
-      
-      if (!currentNode) {
-        return res.status(404).json({ message: "Current node not found" });
-      }
-      
-      // Check if current node has a direct next_node_id
-      if (currentNode.nextNodeId) {
-        const [nextNode] = await db
-          .select()
-          .from(storyNodes)
-          .where(eq(storyNodes.id, currentNode.nextNodeId));
-        
-        if (nextNode) {
-          return res.json(nextNode);
-        }
-      }
-      
-      // No next node found
-      return res.status(404).json({ message: "No next page found" });
-    } catch (error) {
-
-      res.status(500).json({ message: "Failed to get next page" });
-    }
-  });
+  // PAGE-BASED NAVIGATION: No more node endpoints needed!
 
   // === READING PROGRESS ROUTES ===
   app.get('/api/reading-progress/:storyId', isAuthenticated, async (req: any, res) => {
@@ -424,11 +432,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // If already purchased, user can access it for free forever
       }
       
-      // Get the target node
-      const targetNode = await storage.getStoryNode(choice.toNodeId);
-      if (!targetNode) {
-        return res.status(404).json({ message: "Target node not found" });
-      }
+      // For page-based navigation, we don't need to fetch target nodes
+      // The choice simply moves to the next page
       
       // Save user choice if authenticated
       if (req.isAuthenticated()) {
