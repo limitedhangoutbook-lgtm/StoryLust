@@ -590,7 +590,7 @@ export default function StoryReader() {
     },
   });
 
-  const handleChoiceSelect = (choiceId: string, isPremium?: boolean, diamondCost?: number) => {
+  const handleChoiceSelect = (choiceId: string, isPremium?: boolean, eggplantCost?: number) => {
     // Only require authentication for premium choices
     if (isPremium && !isAuthenticated) {
       toast({
@@ -609,10 +609,10 @@ export default function StoryReader() {
     if (isPremium && isAuthenticated) {
       const userEggplants = (user as any)?.eggplants || 0;
       
-      if ((diamondCost || 0) > userEggplants) {
+      if ((eggplantCost || 0) > userEggplants) {
         toast({
           title: "Not Enough Eggplants",
-          description: `You need ${diamondCost || 0} eggplants to unlock this choice. Visit the store to get more!`,
+          description: `You need ${eggplantCost || 0} eggplants to unlock this choice. Visit the store to get more!`,
           variant: "destructive",
         });
         return;
@@ -785,7 +785,7 @@ export default function StoryReader() {
                   <div key={choice.id} className="kindle-text relative">
                     <button
                       onClick={() => {
-                        handleChoiceSelect(choice.id, choice.isPremium || false, choice.diamondCost || undefined);
+                        handleChoiceSelect(choice.id, choice.isPremium || false, choice.eggplantCost || undefined);
                       }}
                       disabled={selectChoiceMutation.isPending}
                       className={`w-full text-left transition-all duration-300 group relative overflow-hidden rounded-lg ${

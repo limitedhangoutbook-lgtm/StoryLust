@@ -268,7 +268,7 @@ export default function StoryReaderSimple() {
                     {choice.isPremium && (
                       <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 bg-rose-gold/15 text-rose-gold border border-rose-gold/30 rounded-full text-sm font-semibold">
                         <span>🍆</span>
-                        <span>{choice.eggplantCost || 0} eggplants</span>
+                        <span>{choice.diamondCost || 0} eggplants</span>
                       </div>
                     )}
                   </div>

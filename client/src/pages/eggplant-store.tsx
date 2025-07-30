@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Sparkles, Gift, Crown, Star, PiggyBank } from "lucide-react";
+import { Sparkles, Gift, Crown, Star, PiggyBank, Diamond } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
