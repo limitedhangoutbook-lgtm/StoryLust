@@ -212,29 +212,29 @@ export default function StoryReaderPages() {
     <div className="min-h-screen bg-kindle text-kindle">
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 bg-kindle/95 backdrop-blur-sm border-b border-dark-tertiary/30 z-50">
-        <div className="flex items-center justify-between px-6 py-4">
+        <div className="flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setLocation("/")}
-            className="text-kindle-secondary hover:text-kindle"
+            className="text-kindle-secondary hover:text-kindle p-2 sm:px-3"
           >
-            <ChevronLeft className="w-5 h-5 mr-2" />
-            Home
+            <ChevronLeft className="w-5 h-5 sm:mr-2" />
+            <span className="hidden sm:inline">Home</span>
           </Button>
           
-          <h1 className="text-lg font-semibold text-kindle truncate max-w-xs">
+          <h1 className="text-base sm:text-lg font-semibold text-kindle truncate max-w-[120px] sm:max-w-xs">
             {story.title}
           </h1>
           
-          <div className="text-sm text-kindle-secondary">
+          <div className="text-xs sm:text-sm text-kindle-secondary">
             {currentPage}/{totalPages}
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="pt-20 px-6 max-w-3xl mx-auto pb-32">
+      <main className="pt-16 sm:pt-20 px-4 sm:px-6 max-w-3xl mx-auto pb-32">
         {/* Page Progress Bar */}
         <div className="mb-6">
           <div className="w-full bg-dark-tertiary rounded-full h-2">
@@ -249,10 +249,10 @@ export default function StoryReaderPages() {
         </div>
         
         {/* Story Content */}
-        <div className="kindle-text text-kindle space-y-6 mb-8">
-          <h2 className="text-xl font-bold text-kindle mb-4">{currentNode.title}</h2>
+        <div className="kindle-text text-kindle space-y-4 sm:space-y-6 mb-8">
+          <h2 className="text-lg sm:text-xl font-bold text-kindle mb-3 sm:mb-4">{currentNode.title}</h2>
           {currentNode.content.split('\n\n').map((paragraph, index) => (
-            <p key={index} className="kindle-paragraph leading-relaxed">
+            <p key={index} className="kindle-paragraph leading-relaxed text-sm sm:text-base">
               {paragraph}
             </p>
           ))}
@@ -260,29 +260,29 @@ export default function StoryReaderPages() {
 
         {/* Choices */}
         {choices.length > 0 && !isEnding && (
-          <div className="space-y-4 mb-8">
-            <h3 className="text-lg font-semibold text-kindle mb-4">What do you do?</h3>
+          <div className="space-y-3 sm:space-y-4 mb-8">
+            <h3 className="text-base sm:text-lg font-semibold text-kindle mb-3 sm:mb-4">What do you do?</h3>
             {choices.map((choice, index) => (
               <button
                 key={choice.id}
                 onClick={() => selectChoiceMutation.mutate(choice.id)}
                 disabled={selectChoiceMutation.isPending}
-                className={`w-full text-left p-4 rounded-lg border transition-all ${
+                className={`w-full text-left p-3 sm:p-4 rounded-lg border transition-all ${
                   choice.isPremium 
                     ? 'border-rose-gold/30 hover:border-rose-gold hover:bg-rose-gold/5' 
                     : 'border-dark-tertiary hover:border-kindle-secondary hover:bg-dark-secondary/30'
                 }`}
               >
-                <div className="flex items-start space-x-3">
-                  <span className={`font-bold text-lg ${choice.isPremium ? 'text-rose-gold' : 'text-kindle-secondary'}`}>
+                <div className="flex items-start space-x-2 sm:space-x-3">
+                  <span className={`font-bold text-base sm:text-lg ${choice.isPremium ? 'text-rose-gold' : 'text-kindle-secondary'}`}>
                     {String.fromCharCode(65 + index)}.
                   </span>
                   <div className="flex-1">
-                    <span className="text-base">
+                    <span className="text-sm sm:text-base">
                       {choice.choiceText}
                     </span>
                     {choice.isPremium && (
-                      <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 bg-rose-gold/15 text-rose-gold border border-rose-gold/30 rounded-full text-sm font-semibold">
+                      <div className="mt-2 inline-flex items-center gap-1.5 px-2 sm:px-3 py-1 bg-rose-gold/15 text-rose-gold border border-rose-gold/30 rounded-full text-xs sm:text-sm font-semibold">
                         <span>🍆</span>
                         <span>{choice.diamondCost || 0} eggplants</span>
                       </div>
