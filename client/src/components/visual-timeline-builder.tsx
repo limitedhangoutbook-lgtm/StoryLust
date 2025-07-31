@@ -9,22 +9,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 
-interface StoryPage {
-  id: string;
-  title: string;
-  content: string;
-  order: number;
-  pageType: "story" | "choice";
-  choices?: Choice[];
-}
+import type { TimelineStoryPage, TimelineChoice } from "@shared/types";
 
-interface Choice {
-  id: string;
-  text: string;
-  isPremium: boolean;
-  eggplantCost: number;
-  targetPageId: string;
-}
+// Use shared types for consistency across story creation and reading
+type StoryPage = TimelineStoryPage;
+type Choice = TimelineChoice;
 
 interface VisualTimelineBuilderProps {
   pages: StoryPage[];

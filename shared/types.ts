@@ -58,3 +58,35 @@ export interface Story {
   createdAt: string;
   updatedAt: string;
 }
+
+// Story creation interfaces - ensuring story-maker connects properly to schema and e-reader
+
+// Visual Timeline Builder interface - matches VisualTimelineBuilder component
+export interface TimelineStoryPage {
+  id: string;
+  title: string;
+  content: string;
+  order: number;
+  pageType: "story" | "choice";
+  choices?: TimelineChoice[];
+}
+
+export interface TimelineChoice {
+  id: string;
+  text: string;
+  isPremium: boolean;
+  eggplantCost: number;
+  targetPageId: string;
+}
+
+// Story creation payload for API
+export interface CreateStoryPayload {
+  title: string;
+  description: string;
+  imageUrl: string;
+  spiceLevel: number;
+  category: string;
+  isPublished?: boolean;
+  isFeatured?: boolean;
+  pages: TimelineStoryPage[];
+}

@@ -16,23 +16,10 @@ import { useAuth } from "@/hooks/useAuth";
 import { isAdmin } from "@shared/userRoles";
 import BottomNavigation from "@/components/bottom-navigation";
 import { VisualTimelineBuilder } from "@/components/visual-timeline-builder";
+import type { TimelineStoryPage, CreateStoryPayload } from "@shared/types";
 
-interface StoryPage {
-  id: string;
-  title: string;
-  content: string;
-  order: number;
-  pageType: "story" | "choice"; // Unified page type system
-  choices?: Choice[];
-}
-
-interface Choice {
-  id: string;
-  text: string;
-  isPremium: boolean;
-  eggplantCost: number;
-  targetPageId: string;
-}
+// Use shared types for consistency with e-reader and schema
+type StoryPage = TimelineStoryPage;
 
 export default function StoryBuilder() {
   const [, setLocation] = useLocation();
