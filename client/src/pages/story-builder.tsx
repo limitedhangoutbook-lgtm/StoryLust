@@ -22,6 +22,7 @@ interface StoryPage {
   title: string;
   content: string;
   order: number;
+  pageType: "story" | "choice"; // Unified page type system
   choices?: Choice[];
 }
 
@@ -59,7 +60,6 @@ export default function StoryBuilder() {
     );
   }
 
-  const [showMetadata, setShowMetadata] = useState(false);
   const [storyData, setStoryData] = useState({
     title: "",
     description: "",
@@ -71,20 +71,17 @@ export default function StoryBuilder() {
   });
 
   const [pages, setPages] = useState<StoryPage[]>([
-    { id: "start", title: "Opening", content: "", order: 1 },
-    { id: "page-2", title: "Page 2", content: "", order: 2 },
-    { id: "page-3", title: "Page 3", content: "", order: 3 },
-    { id: "page-4", title: "Page 4", content: "", order: 4 },
-    { id: "page-5", title: "Choice Point", content: "", order: 5, choices: [] },
+    { id: "start", title: "Opening", content: "", order: 1, pageType: "story" },
+    { id: "page-2", title: "Page 2", content: "", order: 2, pageType: "story" },
+    { id: "page-3", title: "Page 3", content: "", order: 3, pageType: "story" },
+    { id: "page-4", title: "Page 4", content: "", order: 4, pageType: "story" },
+    { id: "page-5", title: "First Choice", content: "", order: 5, pageType: "choice", choices: [] },
   ]);
-
-  const [editingPage, setEditingPage] = useState<string | null>(null);
-  const [editingChoice, setEditingChoice] = useState<{ pageId: string; choiceIndex: number } | null>(null);
 
   // Create complete story mutation
   const createStoryMutation = useMutation({
     mutationFn: async (storyData: any) => {
-      const response = await apiRequest("POST", "/api/stories/complete", storyData);
+      const response = await apiRequest("POST", "/api/stories/draft", storyData);
       return response.json();
     },
     onSuccess: () => {
@@ -92,7 +89,7 @@ export default function StoryBuilder() {
         title: "Story Created!",
         description: "Your branching story has been successfully created.",
       });
-      setLocation("/story-management");
+      setLocation("/");
       queryClient.invalidateQueries({ queryKey: ['/api/admin/stories'] });
     },
     onError: (error: any) => {
@@ -133,6 +130,7 @@ export default function StoryBuilder() {
         title: page.title,
         content: page.content,
         order: page.order,
+        pageType: page.pageType,
         choices: page.choices?.filter(choice => choice.text.trim()).map(choice => ({
           id: choice.id,
           text: choice.text,
@@ -145,62 +143,6 @@ export default function StoryBuilder() {
     };
 
     saveDraftMutation.mutate(draftData);
-  };
-
-  const addPage = () => {
-    const newPage: StoryPage = {
-      id: `page-${pages.length + 1}`,
-      title: `Page ${pages.length + 1}`,
-      content: "",
-      order: pages.length + 1,
-    };
-    setPages([...pages, newPage]);
-  };
-
-  const addChoice = (pageId: string) => {
-    setPages(pages.map(page => {
-      if (page.id === pageId) {
-        const choices = page.choices || [];
-        return {
-          ...page,
-          choices: [...choices, {
-            id: `choice-${Date.now()}`,
-            text: "",
-            isPremium: false,
-            eggplantCost: 0,
-            targetPageId: "",
-          }]
-        };
-      }
-      return page;
-    }));
-  };
-
-  const updatePage = (pageId: string, updates: Partial<StoryPage>) => {
-    setPages(pages.map(page => 
-      page.id === pageId ? { ...page, ...updates } : page
-    ));
-  };
-
-  const updateChoice = (pageId: string, choiceIndex: number, updates: Partial<Choice>) => {
-    setPages(pages.map(page => {
-      if (page.id === pageId && page.choices) {
-        const newChoices = [...page.choices];
-        newChoices[choiceIndex] = { ...newChoices[choiceIndex], ...updates };
-        return { ...page, choices: newChoices };
-      }
-      return page;
-    }));
-  };
-
-  const deleteChoice = (pageId: string, choiceIndex: number) => {
-    setPages(pages.map(page => {
-      if (page.id === pageId && page.choices) {
-        const newChoices = page.choices.filter((_, index) => index !== choiceIndex);
-        return { ...page, choices: newChoices };
-      }
-      return page;
-    }));
   };
 
   const saveStory = () => {
@@ -315,228 +257,48 @@ export default function StoryBuilder() {
       case 2:
         return (
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-text-primary">Story Pages</h2>
-              <Button
-                onClick={addPage}
-                className="bg-rose-gold text-dark-primary hover:bg-rose-gold/90"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Add Page
-              </Button>
+            <div>
+              <h2 className="text-xl font-bold text-text-primary mb-4">Story Structure</h2>
+              <p className="text-text-muted mb-6">
+                Create your story using two types of pages: <strong>Story Pages</strong> for narrative content 
+                and <strong>Choice Pages</strong> for branching decisions. Every choice page should lead to story pages or other choice pages.
+              </p>
             </div>
             
-            <div className="space-y-4">
-              {pages.map((page, index) => (
-                <Card key={page.id} className="bg-dark-secondary border-dark-tertiary">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-text-primary text-lg">
-                        {page.title} (Order: {page.order})
-                      </CardTitle>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setEditingPage(editingPage === page.id ? null : page.id)}
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    {editingPage === page.id ? (
-                      <div className="space-y-4">
-                        <div>
-                          <Label className="text-text-secondary">Page Title</Label>
-                          <Input
-                            value={page.title}
-                            onChange={(e) => updatePage(page.id, { title: e.target.value })}
-                            className="bg-dark-tertiary border-dark-tertiary text-text-primary"
-                          />
-                        </div>
-                        <div>
-                          <Label className="text-text-secondary">Content</Label>
-                          <Textarea
-                            value={page.content}
-                            onChange={(e) => updatePage(page.id, { content: e.target.value })}
-                            placeholder="Write your story content here..."
-                            className="bg-dark-tertiary border-dark-tertiary text-text-primary"
-                            rows={8}
-                          />
-                        </div>
-                        <div className="text-sm text-text-muted">
-                          Word count: {page.content.split(' ').filter(word => word.trim()).length}
-                        </div>
-                      </div>
-                    ) : (
-                      <div>
-                        <p className="text-text-muted text-sm mb-2">
-                          {page.content ? 
-                            `${page.content.substring(0, 150)}...` : 
-                            "No content yet - click edit to add content"
-                          }
-                        </p>
-                        <Badge variant="outline" className="text-text-muted">
-                          {page.content.split(' ').filter(word => word.trim()).length} words
-                        </Badge>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            <StoryFlowBuilder 
+              pages={pages} 
+              onPagesChange={setPages} 
+            />
           </div>
         );
 
       case 3:
         return (
           <div className="space-y-6">
-            <h2 className="text-xl font-bold text-text-primary">Add Choice Points</h2>
-            <p className="text-text-muted">Add choices to pages where readers can make decisions.</p>
+            <h2 className="text-xl font-bold text-text-primary">Review & Publish</h2>
+            <p className="text-text-muted">Review your story structure and publish when ready.</p>
             
             <div className="space-y-4">
-              {pages.map((page) => (
-                <Card key={page.id} className="bg-dark-secondary border-dark-tertiary">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-text-primary text-lg">{page.title}</CardTitle>
-                      <Button
-                        onClick={() => addChoice(page.id)}
-                        size="sm"
-                        className="bg-rose-gold text-dark-primary hover:bg-rose-gold/90"
-                      >
-                        <Plus className="w-4 h-4 mr-2" />
-                        Add Choice
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    {page.choices && page.choices.length > 0 ? (
-                      <div className="space-y-3">
-                        {page.choices.map((choice, choiceIndex) => (
-                          <div key={choice.id} className="border border-dark-tertiary rounded-lg p-3">
-                            <div className="space-y-3">
-                              <div>
-                                <Label className="text-text-secondary">Choice Text</Label>
-                                <Input
-                                  value={choice.text}
-                                  onChange={(e) => updateChoice(page.id, choiceIndex, { text: e.target.value })}
-                                  placeholder="What choice do readers see?"
-                                  className="bg-dark-tertiary border-dark-tertiary text-text-primary"
-                                />
-                              </div>
-                              
-                              <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                  <Label className="text-text-secondary">Target Page</Label>
-                                  <Select
-                                    value={choice.targetPageId}
-                                    onValueChange={(value) => updateChoice(page.id, choiceIndex, { targetPageId: value })}
-                                  >
-                                    <SelectTrigger className="bg-dark-tertiary border-dark-tertiary text-text-primary">
-                                      <SelectValue placeholder="Select target page" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      {pages.filter(p => p.id !== page.id).map(targetPage => (
-                                        <SelectItem key={targetPage.id} value={targetPage.id}>
-                                          {targetPage.title}
-                                        </SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-                                
-                                <div>
-                                  <Label className="text-text-secondary">Eggplant Cost</Label>
-                                  <div className="flex items-center space-x-2">
-                                    <Input
-                                      type="number"
-                                      value={choice.eggplantCost}
-                                      onChange={(e) => updateChoice(page.id, choiceIndex, { 
-                                        eggplantCost: parseInt(e.target.value) || 0,
-                                        isPremium: parseInt(e.target.value) > 0
-                                      })}
-                                      className="bg-dark-tertiary border-dark-tertiary text-text-primary"
-                                      min="0"
-                                    />
-                                    {choice.isPremium && <Gem className="w-4 h-4 text-rose-gold" />}
-                                  </div>
-                                </div>
-                              </div>
-                              
-                              <div className="flex justify-end">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => deleteChoice(page.id, choiceIndex)}
-                                  className="text-red-400 hover:text-red-300"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-text-muted text-sm">No choices added yet</p>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        );
-
-      case 4:
-        return (
-          <div className="space-y-6">
-            <h2 className="text-xl font-bold text-text-primary">Review & Publish</h2>
-            
-            <Card className="bg-dark-secondary border-dark-tertiary">
-              <CardHeader>
-                <CardTitle className="text-text-primary">Story Summary</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <strong className="text-text-primary">Title:</strong> {storyData.title}
+              <div className="bg-dark-secondary p-4 rounded-lg">
+                <h3 className="font-semibold text-text-primary mb-2">Story Summary</h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-text-secondary">Total Pages:</span>
+                    <span className="ml-2 text-text-primary">{pages.length}</span>
+                  </div>
+                  <div>
+                    <span className="text-text-secondary">Choice Pages:</span>
+                    <span className="ml-2 text-text-primary">{pages.filter(p => p.pageType === "choice").length}</span>
+                  </div>
+                  <div>
+                    <span className="text-text-secondary">Story Pages:</span>
+                    <span className="ml-2 text-text-primary">{pages.filter(p => p.pageType === "story").length}</span>
+                  </div>
+                  <div>
+                    <span className="text-text-secondary">Total Choices:</span>
+                    <span className="ml-2 text-text-primary">{pages.reduce((total, page) => total + (page.choices?.length || 0), 0)}</span>
+                  </div>
                 </div>
-                <div>
-                  <strong className="text-text-primary">Description:</strong> {storyData.description}
-                </div>
-                <div>
-                  <strong className="text-text-primary">Category:</strong> {storyData.category}
-                </div>
-                <div>
-                  <strong className="text-text-primary">Spice Level:</strong> {"🌶️".repeat(storyData.spiceLevel)}
-                </div>
-                <div>
-                  <strong className="text-text-primary">Pages:</strong> {pages.length}
-                </div>
-                <div>
-                  <strong className="text-text-primary">Total Choices:</strong> {pages.reduce((total, page) => total + (page.choices?.length || 0), 0)}
-                </div>
-                <div>
-                  <strong className="text-text-primary">Word Count:</strong> {pages.reduce((total, page) => total + page.content.split(' ').filter(word => word.trim()).length, 0)}
-                </div>
-              </CardContent>
-            </Card>
-
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <Switch
-                  checked={storyData.isPublished}
-                  onCheckedChange={(checked) => setStoryData({ ...storyData, isPublished: checked })}
-                />
-                <Label className="text-text-secondary">Publish immediately</Label>
-              </div>
-              
-              <div className="flex items-center space-x-2">
-                <Switch
-                  checked={storyData.isFeatured}
-                  onCheckedChange={(checked) => setStoryData({ ...storyData, isFeatured: checked })}
-                />
-                <Label className="text-text-secondary">Feature on homepage</Label>
               </div>
             </div>
           </div>
@@ -549,110 +311,91 @@ export default function StoryBuilder() {
 
   return (
     <div className="min-h-screen bg-dark-primary pb-20">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-dark-primary/95 backdrop-blur-sm border-b border-dark-tertiary">
-        <div className="flex items-center justify-between p-4">
-          <div className="flex items-center space-x-3">
-            <Button
-              variant="ghost"
+      <div className="p-4 space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <Button 
+              variant="ghost" 
               size="sm"
-              onClick={() => setLocation("/story-management")}
-              className="h-8 w-8 p-0 hover:bg-dark-tertiary"
+              onClick={() => setLocation("/")}
+              className="text-text-secondary hover:text-text-primary"
             >
-              <ArrowLeft size={16} className="text-text-muted" />
+              <ArrowLeft className="w-4 h-4" />
             </Button>
-            <div>
-              <h1 className="text-xl font-bold tracking-tight text-text-primary">Story Builder</h1>
-              <p className="text-sm text-text-muted">Step {currentStep} of 4</p>
-            </div>
+            <h1 className="text-2xl font-bold text-text-primary">Story Builder</h1>
           </div>
           
           <div className="flex items-center space-x-2">
+            <Badge variant="outline" className="text-text-muted">
+              Step {currentStep} of 3
+            </Badge>
+          </div>
+        </div>
+
+        {/* Progress Steps */}
+        <div className="flex items-center space-x-4 mb-6">
+          {[1, 2, 3].map((step) => (
             <Button
+              key={step}
+              variant={currentStep === step ? "default" : "outline"}
+              size="sm"
+              onClick={() => setCurrentStep(step)}
+              className={currentStep === step ? "bg-rose-gold text-dark-primary" : ""}
+            >
+              {step === 1 && "Story Info"}
+              {step === 2 && "Pages & Choices"}
+              {step === 3 && "Review"}
+            </Button>
+          ))}
+        </div>
+
+        {/* Step Content */}
+        {renderStepContent()}
+
+        {/* Navigation */}
+        <div className="flex justify-between pt-6">
+          <Button
+            variant="outline"
+            onClick={() => setCurrentStep(Math.max(1, currentStep - 1))}
+            disabled={currentStep === 1}
+            className="border-dark-tertiary text-text-secondary hover:bg-dark-tertiary"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Previous
+          </Button>
+
+          <div className="flex space-x-2">
+            <Button
+              variant="outline"
               onClick={saveDraft}
               disabled={saveDraftMutation.isPending}
-              variant="outline"
-              className="border-rose-gold/50 text-rose-gold hover:bg-rose-gold/10"
+              className="border-dark-tertiary text-text-secondary hover:bg-dark-tertiary"
             >
-              <Save className="w-4 h-4 mr-2" />
-              {saveDraftMutation.isPending ? "Saving..." : "Save Draft"}
+              Save Draft
             </Button>
-            
-            {currentStep < 4 && (
+
+            {currentStep < 3 ? (
               <Button
-                onClick={() => setCurrentStep(currentStep + 1)}
+                onClick={() => setCurrentStep(Math.min(3, currentStep + 1))}
                 className="bg-rose-gold text-dark-primary hover:bg-rose-gold/90"
               >
-                Next <ArrowRight className="w-4 h-4 ml-2" />
+                Next
+                <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
-            )}
-            
-            {currentStep === 4 && (
+            ) : (
               <Button
                 onClick={saveStory}
                 disabled={createStoryMutation.isPending}
                 className="bg-rose-gold text-dark-primary hover:bg-rose-gold/90"
               >
                 <Save className="w-4 h-4 mr-2" />
-                {createStoryMutation.isPending ? "Creating..." : "Create Story"}
+                Publish Story
               </Button>
             )}
           </div>
         </div>
-      </header>
-
-      {/* Progress Indicator */}
-      <div className="px-4 py-2">
-        <div className="flex items-center space-x-2">
-          {[1, 2, 3, 4].map((step) => (
-            <div key={step} className="flex items-center">
-              <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                  step <= currentStep
-                    ? 'bg-rose-gold text-dark-primary'
-                    : 'bg-dark-tertiary text-text-muted'
-                }`}
-              >
-                {step}
-              </div>
-              {step < 4 && (
-                <div
-                  className={`w-8 h-0.5 ${
-                    step < currentStep ? 'bg-rose-gold' : 'bg-dark-tertiary'
-                  }`}
-                />
-              )}
-            </div>
-          ))}
-        </div>
-        <div className="flex justify-between text-xs text-text-muted mt-2">
-          <span>Info</span>
-          <span>Pages</span>
-          <span>Choices</span>
-          <span>Review</span>
-        </div>
       </div>
-
-      {/* Step Navigation */}
-      <div className="px-4 py-2">
-        <div className="flex space-x-2">
-          {currentStep > 1 && (
-            <Button
-              variant="outline"
-              onClick={() => setCurrentStep(currentStep - 1)}
-              className="border-dark-tertiary text-text-muted"
-            >
-              Back
-            </Button>
-          )}
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="max-w-4xl mx-auto px-4 py-6">
-        {renderStepContent()}
-      </div>
-
+      
       <BottomNavigation />
     </div>
   );

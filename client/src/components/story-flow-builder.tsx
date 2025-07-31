@@ -8,12 +8,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
 
 interface StoryPage {
   id: string;
   title: string;
   content: string;
   order: number;
+  pageType: "story" | "choice"; // Unified page type system
   choices?: Choice[];
 }
 
@@ -34,14 +36,15 @@ export function StoryFlowBuilder({ pages, onPagesChange }: StoryFlowBuilderProps
   const [editingPage, setEditingPage] = useState<StoryPage | null>(null);
   const [editingChoice, setEditingChoice] = useState<{ pageId: string; choice: Choice } | null>(null);
 
-  // Add new page
-  const addPage = () => {
+  // Add new page (either story or choice page)
+  const addPage = (pageType: "story" | "choice" = "story") => {
     const newPage: StoryPage = {
       id: `page-${Date.now()}`,
-      title: `Page ${pages.length + 1}`,
+      title: pageType === "choice" ? `Choice Point ${pages.filter(p => p.pageType === "choice").length + 1}` : `Page ${pages.length + 1}`,
       content: "",
       order: pages.length + 1,
-      choices: []
+      pageType,
+      choices: pageType === "choice" ? [] : undefined
     };
     onPagesChange([...pages, newPage]);
   };
@@ -119,13 +122,24 @@ export function StoryFlowBuilder({ pages, onPagesChange }: StoryFlowBuilderProps
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold text-text-primary">Story Flow</h3>
-        <Button
-          onClick={addPage}
-          className="bg-rose-gold text-dark-primary hover:bg-rose-gold/90"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Add Page
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            onClick={() => addPage("story")}
+            className="bg-blue-600 text-white hover:bg-blue-700"
+            size="sm"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Story Page
+          </Button>
+          <Button
+            onClick={() => addPage("choice")}
+            className="bg-rose-gold text-dark-primary hover:bg-rose-gold/90"
+            size="sm"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Choice Page
+          </Button>
+        </div>
       </div>
 
       <div className="space-y-4">
@@ -133,9 +147,17 @@ export function StoryFlowBuilder({ pages, onPagesChange }: StoryFlowBuilderProps
           <Card key={page.id} className="bg-dark-secondary border-dark-tertiary">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium text-text-primary">
-                  {page.title}
-                </CardTitle>
+                <div className="flex items-center gap-2">
+                  <CardTitle className="text-sm font-medium text-text-primary">
+                    {page.title}
+                  </CardTitle>
+                  <Badge 
+                    variant={page.pageType === "choice" ? "default" : "secondary"}
+                    className={page.pageType === "choice" ? "bg-rose-gold text-dark-primary" : "bg-blue-600 text-white"}
+                  >
+                    {page.pageType === "choice" ? "Choice Page" : "Story Page"}
+                  </Badge>
+                </div>
                 <div className="flex items-center space-x-2">
                   <Dialog>
                     <DialogTrigger asChild>
@@ -161,14 +183,44 @@ export function StoryFlowBuilder({ pages, onPagesChange }: StoryFlowBuilderProps
                             className="bg-dark-tertiary border-dark-tertiary text-text-primary"
                           />
                         </div>
+                        
                         <div>
-                          <Label htmlFor="page-content" className="text-text-primary">Content (300-500 words)</Label>
+                          <Label htmlFor="page-type" className="text-text-primary">Page Type</Label>
+                          <Select 
+                            value={page.pageType} 
+                            onValueChange={(value: "story" | "choice") => updatePage(page.id, { 
+                              pageType: value,
+                              choices: value === "choice" ? (page.choices || []) : undefined
+                            })}
+                          >
+                            <SelectTrigger className="bg-dark-tertiary border-dark-tertiary text-text-primary">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="bg-dark-secondary border-dark-tertiary">
+                              <SelectItem value="story">Story Page</SelectItem>
+                              <SelectItem value="choice">Choice Page</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor="page-content" className="text-text-primary">
+                            Content (300-500 words)
+                            {page.pageType === "choice" && (
+                              <span className="text-text-muted text-xs ml-2">
+                                - This content appears before the choices
+                              </span>
+                            )}
+                          </Label>
                           <Textarea
                             id="page-content"
                             value={page.content}
                             onChange={(e) => updatePage(page.id, { content: e.target.value })}
                             className="bg-dark-tertiary border-dark-tertiary text-text-primary min-h-[200px]"
-                            placeholder="Write the story content for this page..."
+                            placeholder={page.pageType === "choice" 
+                              ? "Write the content that leads up to the choice decision..." 
+                              : "Write the story content for this page..."
+                            }
                           />
                           <div className="text-xs text-text-muted mt-1">
                             {page.content.split(' ').filter(w => w.length > 0).length} words
@@ -197,20 +249,21 @@ export function StoryFlowBuilder({ pages, onPagesChange }: StoryFlowBuilderProps
                 {page.content ? `${page.content.substring(0, 100)}...` : "No content yet"}
               </div>
               
-              {/* Choices */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-text-primary">Choices</span>
-                  <Button
-                    onClick={() => addChoice(page.id)}
-                    size="sm"
-                    variant="outline"
-                    className="border-dark-tertiary text-text-secondary hover:bg-dark-tertiary"
-                  >
-                    <Plus className="w-3 h-3 mr-1" />
-                    Add Choice
-                  </Button>
-                </div>
+              {/* Choices - Only show for choice pages */}
+              {page.pageType === "choice" && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-text-primary">Choices</span>
+                    <Button
+                      onClick={() => addChoice(page.id)}
+                      size="sm"
+                      variant="outline"
+                      className="border-dark-tertiary text-text-secondary hover:bg-dark-tertiary"
+                    >
+                      <Plus className="w-3 h-3 mr-1" />
+                      Add Choice
+                    </Button>
+                  </div>
                 
                 {page.choices?.map((choice) => (
                   <div
@@ -318,7 +371,8 @@ export function StoryFlowBuilder({ pages, onPagesChange }: StoryFlowBuilderProps
                     No choices - this page will auto-continue
                   </div>
                 )}
-              </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         ))}
