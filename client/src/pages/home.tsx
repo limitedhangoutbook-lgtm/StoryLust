@@ -264,7 +264,7 @@ export default function Home() {
                 <p className="text-xs text-text-muted mt-1">Visual story editor for creators</p>
               </div>
               <Button
-                onClick={() => setLocation("/story-management")}
+                onClick={() => setLocation("/story-builder")}
                 className="bg-rose-gold text-dark-primary hover:bg-rose-gold/90 text-sm px-4 py-2 h-8"
               >
                 ✍️ Manage Stories

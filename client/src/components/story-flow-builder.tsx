@@ -9,23 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-
-interface StoryPage {
-  id: string;
-  title: string;
-  content: string;
-  order: number;
-  pageType: "story" | "choice"; // Unified page type system
-  choices?: Choice[];
-}
-
-interface Choice {
-  id: string;
-  text: string;
-  isPremium: boolean;
-  eggplantCost: number;
-  targetPageId: string; // Will be converted to page number when saving
-}
+import type { StoryPage, Choice } from "@shared/types";
 
 interface StoryFlowBuilderProps {
   pages: StoryPage[];

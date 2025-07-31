@@ -1063,7 +1063,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           // Add eggplants to user account
           await storage.addEggplantsToUser(userId, parseInt(eggplants));
-          console.log(`Added ${eggplants} eggplants to user ${userId}`);
+          // Eggplants added successfully
         } catch (error) {
           console.error('Error adding eggplants to user:', error);
         }

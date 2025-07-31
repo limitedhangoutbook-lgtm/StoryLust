@@ -250,7 +250,7 @@ export default function Profile() {
                   <Button
                     variant="ghost"
                     className="w-full justify-start text-rose-gold hover:bg-dark-tertiary"
-                    onClick={() => setLocation("/story-management")}
+                    onClick={() => setLocation("/story-builder")}
                   >
                     <Edit className="w-4 h-4 mr-3" />
                     Manage My Stories

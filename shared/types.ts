@@ -1,12 +1,14 @@
 // Shared interface definitions to eliminate redundancy across components
 
+// UNIFIED PAGE-BASED SYSTEM - Single source of truth for all story creation
 export interface StoryPage {
   id: string;
   title: string;
   content: string;
   order: number;
+  pageType: "story" | "choice";
   choices?: Choice[];
-  timelineColumn?: number;
+  timelineColumn?: number; // For visual timeline builder
 }
 
 export interface Choice {
@@ -59,27 +61,7 @@ export interface Story {
   updatedAt: string;
 }
 
-// Story creation interfaces - ensuring story-maker connects properly to schema and e-reader
-
-// Visual Timeline Builder interface - matches VisualTimelineBuilder component
-export interface TimelineStoryPage {
-  id: string;
-  title: string;
-  content: string;
-  order: number;
-  pageType: "story" | "choice";
-  choices?: TimelineChoice[];
-}
-
-export interface TimelineChoice {
-  id: string;
-  text: string;
-  isPremium: boolean;
-  eggplantCost: number;
-  targetPageId: string;
-}
-
-// Story creation payload for API
+// Story creation payload for API - using unified types
 export interface CreateStoryPayload {
   title: string;
   description: string;
@@ -88,5 +70,5 @@ export interface CreateStoryPayload {
   category: string;
   isPublished?: boolean;
   isFeatured?: boolean;
-  pages: TimelineStoryPage[];
+  pages: StoryPage[];
 }

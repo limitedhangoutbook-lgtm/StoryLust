@@ -16,10 +16,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { isAdmin } from "@shared/userRoles";
 import BottomNavigation from "@/components/bottom-navigation";
 import { VisualTimelineBuilder } from "@/components/visual-timeline-builder";
-import type { TimelineStoryPage, CreateStoryPayload } from "@shared/types";
-
-// Use shared types for consistency with e-reader and schema
-type StoryPage = TimelineStoryPage;
+import type { StoryPage, CreateStoryPayload } from "@shared/types";
 
 export default function StoryBuilder() {
   const [, setLocation] = useLocation();
