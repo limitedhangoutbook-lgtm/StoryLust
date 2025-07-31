@@ -69,7 +69,7 @@ export const storyNodes = pgTable("story_nodes", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Story choices
+// Story choices (PAGE-BASED SYSTEM)
 export const storyChoices = pgTable("story_choices", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   fromNodeId: varchar("from_node_id").notNull().references(() => storyNodes.id, { onDelete: "cascade" }),
@@ -78,7 +78,8 @@ export const storyChoices = pgTable("story_choices", {
   isPremium: boolean("is_premium").default(false),
   eggplantCost: integer("eggplant_cost").default(0),
   order: integer("order").notNull(),
-  targetPage: integer("target_page"), // PAGE-BASED NAVIGATION
+  targetPage: integer("target_page"), // PAGE-BASED NAVIGATION - page number reference
+  targetPageId: varchar("target_page_id"), // PAGE-BASED NAVIGATION - page id reference for new stories
   createdAt: timestamp("created_at").defaultNow(),
 });
 

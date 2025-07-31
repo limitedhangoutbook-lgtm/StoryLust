@@ -145,6 +145,90 @@ export class Storage {
     await db.delete(stories).where(eq(stories.id, storyId));
   }
 
+  // NEW: Create complete story from visual timeline data
+  async createStoryFromTimeline(timelineData: {
+    story: {
+      title: string;
+      description: string;
+      imageUrl: string;
+      spiceLevel: number;
+      category: string;
+      isFeatured?: boolean;
+      isPublished?: boolean;
+    };
+    pages: Array<{
+      id: string;
+      title: string;
+      content: string;
+      order: number;
+      pageType: "story" | "choice";
+      choices?: Array<{
+        id: string;
+        text: string;
+        isPremium: boolean;
+        eggplantCost: number;
+        targetPageId: string;
+      }>;
+    }>;
+  }): Promise<Story> {
+    // Calculate word and path counts
+    const wordCount = timelineData.pages.reduce((total, page) => {
+      return total + page.content.split(' ').filter(w => w.length > 0).length;
+    }, 0);
+    
+    const pathCount = timelineData.pages.reduce((total, page) => {
+      return total + (page.choices?.length || 0);
+    }, 0);
+
+    // Create the story
+    const story = await this.createStory({
+      ...timelineData.story,
+      wordCount,
+      pathCount,
+    });
+
+    // Create all the pages as story nodes
+    const nodeMap = new Map<string, string>(); // pageId -> nodeId mapping
+    
+    for (const page of timelineData.pages) {
+      const node = await this.createStoryNode({
+        storyId: story.id,
+        title: page.title,
+        content: page.content,
+        order: page.order,
+        isStarting: page.order === 1,
+      });
+      nodeMap.set(page.id, node.id);
+    }
+
+    // Create all the choices with proper node references
+    for (const page of timelineData.pages) {
+      if (page.choices && page.choices.length > 0) {
+        const fromNodeId = nodeMap.get(page.id);
+        if (!fromNodeId) continue;
+
+        for (let i = 0; i < page.choices.length; i++) {
+          const choice = page.choices[i];
+          const toNodeId = nodeMap.get(choice.targetPageId);
+          
+          if (toNodeId) {
+            await this.createStoryChoice({
+              fromNodeId,
+              toNodeId,
+              choiceText: choice.text,
+              order: i,
+              isPremium: choice.isPremium,
+              eggplantCost: choice.eggplantCost,
+              targetPageId: choice.targetPageId, // Store original page reference for new system
+            });
+          }
+        }
+      }
+    }
+
+    return story;
+  }
+
   async createStoryNode(nodeData: {
     storyId: string;
     title: string;
@@ -183,6 +267,7 @@ export class Storage {
     isPremium?: boolean;
     eggplantCost?: number;
     targetPage?: number; // PAGE-BASED NAVIGATION SUPPORT
+    targetPageId?: string; // NEW VISUAL TIMELINE SUPPORT
   }): Promise<StoryChoice> {
     const [choice] = await db
       .insert(storyChoices)
@@ -194,6 +279,7 @@ export class Storage {
         isPremium: choiceData.isPremium || false,
         eggplantCost: choiceData.eggplantCost || 0,
         targetPage: choiceData.targetPage, // PAGE-BASED NAVIGATION
+        targetPageId: choiceData.targetPageId, // NEW VISUAL TIMELINE SUPPORT
       })
       .returning();
     return choice;

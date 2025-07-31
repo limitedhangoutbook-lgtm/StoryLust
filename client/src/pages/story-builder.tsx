@@ -78,16 +78,26 @@ export default function StoryBuilder() {
     { id: "page-5", title: "First Choice", content: "", order: 5, pageType: "choice", choices: [] },
   ]);
 
-  // Create complete story mutation
+  // Create complete story mutation (published)
   const createStoryMutation = useMutation({
-    mutationFn: async (storyData: any) => {
-      const response = await apiRequest("POST", "/api/stories/draft", storyData);
+    mutationFn: async () => {
+      const storyPayload = {
+        title: storyData.title,
+        description: storyData.description,
+        imageUrl: storyData.imageUrl,
+        spiceLevel: storyData.spiceLevel,
+        category: storyData.category,
+        isPublished: true,
+        isFeatured: storyData.isFeatured,
+        pages: pages
+      };
+      const response = await apiRequest("POST", "/api/stories", storyPayload);
       return response.json();
     },
     onSuccess: () => {
       toast({
-        title: "Story Created!",
-        description: "Your branching story has been successfully created.",
+        title: "Story Published!",
+        description: "Your branching story has been successfully published.",
       });
       setLocation("/");
       queryClient.invalidateQueries({ queryKey: ['/api/admin/stories'] });
@@ -103,8 +113,18 @@ export default function StoryBuilder() {
 
   // Save draft mutation
   const saveDraftMutation = useMutation({
-    mutationFn: async (draftData: any) => {
-      const response = await apiRequest("POST", "/api/stories/draft", draftData);
+    mutationFn: async () => {
+      const draftPayload = {
+        title: storyData.title,
+        description: storyData.description,
+        imageUrl: storyData.imageUrl,
+        spiceLevel: storyData.spiceLevel,
+        category: storyData.category,
+        isPublished: false,
+        isFeatured: false,
+        pages: pages
+      };
+      const response = await apiRequest("POST", "/api/stories/draft", draftPayload);
       return response.json();
     },
     onSuccess: () => {
@@ -123,26 +143,7 @@ export default function StoryBuilder() {
   });
 
   const saveDraft = () => {
-    const draftData = {
-      ...storyData,
-      pages: pages.map(page => ({
-        id: page.id,
-        title: page.title,
-        content: page.content,
-        order: page.order,
-        pageType: page.pageType,
-        choices: page.choices?.filter(choice => choice.text.trim()).map(choice => ({
-          id: choice.id,
-          text: choice.text,
-          isPremium: choice.isPremium,
-          eggplantCost: choice.eggplantCost,
-          targetPageId: choice.targetPageId
-        })) || []
-      })),
-      isDraft: true
-    };
-
-    saveDraftMutation.mutate(draftData);
+    saveDraftMutation.mutate();
   };
 
   const saveStory = () => {
@@ -165,14 +166,7 @@ export default function StoryBuilder() {
       return;
     }
 
-    const completeStoryData = {
-      ...storyData,
-      pages: pages,
-      wordCount: pages.reduce((total, page) => total + page.content.split(' ').length, 0),
-      pathCount: pages.reduce((total, page) => total + (page.choices?.length || 0), 0),
-    };
-
-    createStoryMutation.mutate(completeStoryData);
+    createStoryMutation.mutate();
   };
 
   const renderStepContent = () => {

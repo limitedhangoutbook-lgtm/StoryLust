@@ -689,6 +689,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Create new story (unified timeline-based route)
   app.post('/api/stories', isAuthenticated, async (req: any, res) => {
     try {
       const currentUser = await storage.getUser(req.user.claims.sub);
@@ -696,56 +697,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Admin access required" });
       }
 
-      const { title, description, imageUrl, spiceLevel, category, wordCount, pathCount } = req.body;
+      const { title, description, imageUrl, spiceLevel, category, pages, isPublished, isFeatured } = req.body;
       
-      if (!title || !description || !imageUrl || !spiceLevel || !category) {
-        return res.status(400).json({ message: "Missing required fields" });
+      // If pages are provided, use the new timeline creation method
+      if (pages && pages.length > 0) {
+        const story = await storage.createStoryFromTimeline({
+          story: {
+            title: title || "New Story",
+            description: description || "Story description",
+            imageUrl: imageUrl || "https://images.unsplash.com/photo-1506905925346-21bda4d32df4",
+            spiceLevel: spiceLevel || 1,
+            category: category || "straight",
+            isPublished: isPublished || false,
+            isFeatured: isFeatured || false,
+          },
+          pages
+        });
+        res.json(story);
+      } else {
+        // Fallback to simple story creation (legacy)
+        const story = await storage.createStory({
+          title: title || "New Story",
+          description: description || "Story description",
+          imageUrl: imageUrl || "https://images.unsplash.com/photo-1506905925346-21bda4d32df4",
+          spiceLevel: spiceLevel || 1,
+          category: category || "straight",
+        });
+        res.json(story);
       }
-
-      const story = await storage.createStory({
-        title,
-        description,
-        imageUrl,
-        spiceLevel,
-        category,
-        wordCount,
-        pathCount,
-      });
-
-      res.json(story);
     } catch (error) {
       console.error("Error creating story:", error);
       res.status(500).json({ message: "Failed to create story" });
     }
   });
 
-  // Save story draft (ADMIN ONLY)
-  app.post('/api/stories/draft', isAuthenticated, async (req: any, res) => {
-    try {
-      const currentUser = await storage.getUser(req.user.claims.sub);
-      if (currentUser?.role !== 'admin' && currentUser?.role !== 'mega-admin') {
-        return res.status(403).json({ message: "Admin access required" });
-      }
-
-      const draftData = req.body;
-      
-      // For drafts, we only require title - other fields can be empty
-      if (!draftData.title || draftData.title.trim() === '') {
-        return res.status(400).json({ message: "Story title is required" });
-      }
-
-      // Save draft to localStorage or database (depending on your preference)
-      // For now, we'll just return success - you can implement draft storage as needed
-      res.json({ 
-        success: true, 
-        message: "Draft saved successfully",
-        draft: draftData 
-      });
-    } catch (error) {
-      console.error("Error saving draft:", error);
-      res.status(500).json({ message: "Failed to save draft" });
-    }
-  });
+  // REMOVED: Duplicate route - functionality moved to main /api/stories/draft route above
 
   // Create complete story with pages and choices
   app.post('/api/stories/complete', isAuthenticated, async (req: any, res) => {
