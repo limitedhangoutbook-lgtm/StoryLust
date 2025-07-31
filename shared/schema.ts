@@ -65,6 +65,8 @@ export const storyNodes = pgTable("story_nodes", {
   content: text("content").notNull(),
   isStarting: boolean("is_starting").default(false),
   order: integer("order").notNull(),
+  pageType: varchar("page_type").default("story"), // "story", "choice", "chat"
+  chatMessages: jsonb("chat_messages"), // For chat dialogue pages
   nextNodeId: varchar("next_node_id"),
   createdAt: timestamp("created_at").defaultNow(),
 });

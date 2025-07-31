@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 
-import type { StoryPage, Choice } from "@shared/types";
+import type { StoryPage, Choice, ChatMessage } from "@shared/types";
 
 interface VisualTimelineBuilderProps {
   pages: StoryPage[];
@@ -20,14 +20,17 @@ export function VisualTimelineBuilder({ pages, onPagesChange }: VisualTimelineBu
   const [editingPage, setEditingPage] = useState<StoryPage | null>(null);
   const [editingChoice, setEditingChoice] = useState<{ pageId: string; choice: Choice } | null>(null);
 
-  const addPage = (pageType: "story" | "choice" = "story") => {
+  const addPage = (pageType: "story" | "choice" | "chat" = "story") => {
     const newPage: StoryPage = {
       id: `page-${Date.now()}`,
-      title: pageType === "choice" ? `Choice Point ${pages.filter(p => p.pageType === "choice").length + 1}` : `Page ${pages.length + 1}`,
-      content: "",
+      title: pageType === "choice" ? `Choice Point ${pages.filter(p => p.pageType === "choice").length + 1}` : 
+             pageType === "chat" ? `Chat ${pages.filter(p => p.pageType === "chat").length + 1}` :
+             `Page ${pages.length + 1}`,
+      content: pageType === "chat" ? "Chat conversation..." : "",
       order: pages.length + 1,
       pageType,
       choices: pageType === "choice" ? [] : undefined,
+      chatMessages: pageType === "chat" ? [] : undefined,
     };
     onPagesChange([...pages, newPage]);
   };
@@ -93,6 +96,50 @@ export function VisualTimelineBuilder({ pages, onPagesChange }: VisualTimelineBu
     return pages.filter(p => p.id !== currentPageId);
   };
 
+  // Chat message handling functions
+  const addChatMessage = (pageId: string) => {
+    const updatedPages = pages.map(page => {
+      if (page.id === pageId) {
+        const messages = page.chatMessages || [];
+        return {
+          ...page,
+          chatMessages: [...messages, {
+            id: `msg-${Date.now()}`,
+            sender: "",
+            message: "",
+            isUser: messages.length % 2 === 0, // Alternate between user and other
+          }]
+        };
+      }
+      return page;
+    });
+    onPagesChange(updatedPages);
+  };
+
+  const updateChatMessage = (pageId: string, messageId: string, updates: Partial<ChatMessage>) => {
+    const updatedPages = pages.map(page => {
+      if (page.id === pageId) {
+        return {
+          ...page,
+          chatMessages: page.chatMessages?.map(msg =>
+            msg.id === messageId ? { ...msg, ...updates } : msg
+          ) || []
+        };
+      }
+      return page;
+    });
+    onPagesChange(updatedPages);
+  };
+
+  const removeChatMessage = (pageId: string, messageId: string) => {
+    const updatedPages = pages.map(page =>
+      page.id === pageId
+        ? { ...page, chatMessages: page.chatMessages?.filter(m => m.id !== messageId) || [] }
+        : page
+    );
+    onPagesChange(updatedPages);
+  };
+
   return (
     <div className="space-y-6">
       {/* Visual Timeline Architecture - Matching the Sketch */}
@@ -119,6 +166,14 @@ export function VisualTimelineBuilder({ pages, onPagesChange }: VisualTimelineBu
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Choice Point
+              </Button>
+              <Button
+                onClick={() => addPage("chat")}
+                size="sm"
+                className="bg-green-600 text-white hover:bg-green-700"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Chat Dialogue
               </Button>
             </div>
           </div>
@@ -153,6 +208,8 @@ export function VisualTimelineBuilder({ pages, onPagesChange }: VisualTimelineBu
                     className={`w-40 h-52 border-2 rounded-lg cursor-pointer transition-all relative bg-white/5 ${
                       page.pageType === "choice"
                         ? "border-rose-gold hover:border-rose-gold/80 hover:bg-rose-gold/5"
+                        : page.pageType === "chat"
+                        ? "border-green-600 hover:border-green-600/80 hover:bg-green-600/5"
                         : "border-blue-600 hover:border-blue-600/80 hover:bg-blue-600/5"
                     } ${editingPage?.id === page.id ? "ring-2 ring-rose-gold" : ""}`}
                     onClick={() => setEditingPage(page)}
@@ -165,10 +222,13 @@ export function VisualTimelineBuilder({ pages, onPagesChange }: VisualTimelineBu
                           className={`text-[10px] ${
                             page.pageType === "choice" 
                               ? "bg-rose-gold text-dark-primary" 
+                              : page.pageType === "chat"
+                              ? "bg-green-600 text-white"
                               : "bg-blue-600 text-white"
                           }`}
                         >
-                          {page.pageType === "choice" ? "Choice" : "Story"}
+                          {page.pageType === "choice" ? "Choice" : 
+                           page.pageType === "chat" ? "Chat" : "Story"}
                         </Badge>
                       </div>
                       
@@ -180,7 +240,25 @@ export function VisualTimelineBuilder({ pages, onPagesChange }: VisualTimelineBu
                     {/* Page Content Preview */}
                     <div className="p-3 flex-1 h-36 overflow-hidden">
                       <div className="text-xs text-text-muted leading-relaxed">
-                        {page.content ? 
+                        {page.pageType === "chat" ? (
+                          // Chat preview with message bubbles
+                          <div className="space-y-1">
+                            {page.chatMessages && page.chatMessages.length > 0 ? 
+                              page.chatMessages.slice(0, 3).map((msg, idx) => (
+                                <div key={idx} className={`flex ${msg.isUser ? 'justify-end' : 'justify-start'}`}>
+                                  <div className={`px-2 py-1 rounded text-[10px] max-w-[70%] ${
+                                    msg.isUser 
+                                      ? 'bg-blue-500 text-white' 
+                                      : 'bg-gray-300 text-gray-800'
+                                  }`}>
+                                    {msg.message || 'Empty message'}
+                                  </div>
+                                </div>
+                              )) : 
+                              <span className="italic">Add chat messages...</span>
+                            }
+                          </div>
+                        ) : page.content ? 
                           page.content.substring(0, 150) + (page.content.length > 150 ? "..." : "") : 
                           <span className="italic">
                             {page.pageType === "choice" ? 
@@ -309,7 +387,8 @@ export function VisualTimelineBuilder({ pages, onPagesChange }: VisualTimelineBu
         <DialogContent className="bg-dark-secondary border-dark-tertiary max-w-2xl">
           <DialogHeader>
             <DialogTitle className="text-text-primary">
-              Edit {editingPage?.pageType === "choice" ? "Choice Page" : "Story Page"}: {editingPage?.title}
+              Edit {editingPage?.pageType === "choice" ? "Choice Page" : 
+                   editingPage?.pageType === "chat" ? "Chat Page" : "Story Page"}: {editingPage?.title}
             </DialogTitle>
           </DialogHeader>
           
@@ -332,10 +411,11 @@ export function VisualTimelineBuilder({ pages, onPagesChange }: VisualTimelineBu
                 <Label htmlFor="page-type" className="text-text-primary">Page Type</Label>
                 <Select 
                   value={editingPage.pageType} 
-                  onValueChange={(value: "story" | "choice") => {
+                  onValueChange={(value: "story" | "choice" | "chat") => {
                     const updates = {
                       pageType: value,
-                      choices: value === "choice" ? (editingPage.choices || []) : undefined
+                      choices: value === "choice" ? (editingPage.choices || []) : undefined,
+                      chatMessages: value === "chat" ? (editingPage.chatMessages || []) : undefined
                     };
                     updatePage(editingPage.id, updates);
                     setEditingPage({ ...editingPage, ...updates });
@@ -347,36 +427,101 @@ export function VisualTimelineBuilder({ pages, onPagesChange }: VisualTimelineBu
                   <SelectContent className="bg-dark-secondary border-dark-tertiary">
                     <SelectItem value="story">Story Page</SelectItem>
                     <SelectItem value="choice">Choice Page</SelectItem>
+                    <SelectItem value="chat">Chat Page</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               
-              <div>
-                <Label htmlFor="page-content" className="text-text-primary">
-                  Content (300-500 words)
-                  {editingPage.pageType === "choice" && (
-                    <span className="text-text-muted text-xs ml-2">
-                      - This content appears before the choices
-                    </span>
-                  )}
-                </Label>
-                <Textarea
-                  id="page-content"
-                  value={editingPage.content}
-                  onChange={(e) => {
-                    updatePage(editingPage.id, { content: e.target.value });
-                    setEditingPage({ ...editingPage, content: e.target.value });
-                  }}
-                  className="bg-dark-tertiary border-dark-tertiary text-text-primary min-h-[200px]"
-                  placeholder={editingPage.pageType === "choice" 
-                    ? "Write the content that leads up to the choice decision..." 
-                    : "Write the story content for this page..."
-                  }
-                />
-                <div className="text-xs text-text-muted mt-1">
-                  {editingPage.content.split(' ').filter(w => w.length > 0).length} words
+              {editingPage.pageType === "chat" ? (
+                // Chat message editor
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <Label className="text-text-primary">Chat Messages</Label>
+                    <Button
+                      onClick={() => addChatMessage(editingPage.id)}
+                      size="sm"
+                      className="bg-green-600 text-white hover:bg-green-700"
+                    >
+                      <Plus className="w-4 h-4 mr-1" />
+                      Add Message
+                    </Button>
+                  </div>
+                  
+                  <div className="space-y-3 max-h-60 overflow-y-auto">
+                    {editingPage.chatMessages && editingPage.chatMessages.length > 0 ? 
+                      editingPage.chatMessages.map((message, index) => (
+                        <div key={message.id} className="p-3 bg-dark-tertiary rounded-lg border border-dark-tertiary">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center space-x-2">
+                              <Switch
+                                checked={message.isUser}
+                                onCheckedChange={(checked) => updateChatMessage(editingPage.id, message.id, { isUser: checked })}
+                              />
+                              <Label className="text-xs text-text-muted">
+                                {message.isUser ? "User (Right)" : "Character (Left)"}
+                              </Label>
+                            </div>
+                            <Button
+                              onClick={() => removeChatMessage(editingPage.id, message.id)}
+                              size="sm"
+                              variant="destructive"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </Button>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Input
+                              placeholder="Sender name (e.g., Alex, Jake, etc.)"
+                              value={message.sender}
+                              onChange={(e) => updateChatMessage(editingPage.id, message.id, { sender: e.target.value })}
+                              className="bg-dark-secondary border-dark-secondary text-text-primary text-sm"
+                            />
+                            <Textarea
+                              placeholder="Message content..."
+                              value={message.message}
+                              onChange={(e) => updateChatMessage(editingPage.id, message.id, { message: e.target.value })}
+                              className="bg-dark-secondary border-dark-secondary text-text-primary text-sm min-h-[60px]"
+                            />
+                          </div>
+                        </div>
+                      )) : 
+                      <div className="text-center py-8 text-text-muted">
+                        <p className="mb-2">No messages yet</p>
+                        <p className="text-xs">Add messages to create a chat conversation</p>
+                      </div>
+                    }
+                  </div>
                 </div>
-              </div>
+              ) : (
+                // Regular content editor for story/choice pages
+                <div>
+                  <Label htmlFor="page-content" className="text-text-primary">
+                    Content (300-500 words)
+                    {editingPage.pageType === "choice" && (
+                      <span className="text-text-muted text-xs ml-2">
+                        - This content appears before the choices
+                      </span>
+                    )}
+                  </Label>
+                  <Textarea
+                    id="page-content"
+                    value={editingPage.content}
+                    onChange={(e) => {
+                      updatePage(editingPage.id, { content: e.target.value });
+                      setEditingPage({ ...editingPage, content: e.target.value });
+                    }}
+                    className="bg-dark-tertiary border-dark-tertiary text-text-primary min-h-[200px]"
+                    placeholder={editingPage.pageType === "choice" 
+                      ? "Write the content that leads up to the choice decision..." 
+                      : "Write the story content for this page..."
+                    }
+                  />
+                  <div className="text-xs text-text-muted mt-1">
+                    {editingPage.content.split(' ').filter(w => w.length > 0).length} words
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </DialogContent>

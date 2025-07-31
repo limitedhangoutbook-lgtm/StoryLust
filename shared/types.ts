@@ -6,9 +6,18 @@ export interface StoryPage {
   title: string;
   content: string;
   order: number;
-  pageType: "story" | "choice";
+  pageType: "story" | "choice" | "chat";
   choices?: Choice[];
   timelineColumn?: number; // For visual timeline builder
+  chatMessages?: ChatMessage[]; // For chat dialogue pages
+}
+
+export interface ChatMessage {
+  id: string;
+  sender: string;
+  message: string;
+  timestamp?: string;
+  isUser: boolean; // true for user messages (right side), false for other character (left side)
 }
 
 export interface Choice {

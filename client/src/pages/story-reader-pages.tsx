@@ -6,6 +6,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, Home } from "lucide-react";
+import { ChatMessageRenderer } from "@/components/chat-message-renderer";
+import type { StoryPage, Choice } from "@shared/types";
 
 export default function StoryReaderPages() {
   const [match, params] = useRoute("/story/:storyId");
@@ -362,11 +364,22 @@ export default function StoryReaderPages() {
         {/* Story Content */}
         <div className="kindle-text text-kindle space-y-4 sm:space-y-6 mb-8">
           <h2 className="text-lg sm:text-xl font-bold text-kindle mb-3 sm:mb-4">{currentPageData.title}</h2>
-          {currentPageData.content.split('\n\n').map((paragraph, index) => (
-            <p key={index} className="kindle-paragraph leading-relaxed text-sm sm:text-base">
-              {paragraph}
-            </p>
-          ))}
+          
+          {/* Check if this is a chat page */}
+          {(currentPageData as any).pageType === "chat" && (currentPageData as any).chatMessages ? (
+            // Render chat messages
+            <ChatMessageRenderer 
+              messages={(currentPageData as any).chatMessages}
+              className="bg-dark-secondary/20 rounded-lg p-4 border border-dark-tertiary/30"
+            />
+          ) : (
+            // Render regular text content
+            currentPageData.content.split('\n\n').map((paragraph, index) => (
+              <p key={index} className="kindle-paragraph leading-relaxed text-sm sm:text-base">
+                {paragraph}
+              </p>
+            ))
+          )}
         </div>
 
         {/* Choices */}
