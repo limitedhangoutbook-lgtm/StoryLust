@@ -134,6 +134,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get first choice page for story re-exploration
+  app.get("/api/stories/:storyId/first-choice-page", async (req, res) => {
+    try {
+      const { storyId } = req.params;
+      const firstChoicePage = await storage.getFirstChoicePageNumber(storyId);
+      
+      res.json({
+        storyId,
+        firstChoicePageNumber: firstChoicePage || 5, // Fallback to page 5
+        success: true
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to find first choice page" });
+    }
+  });
+
   // PAGE-BASED NAVIGATION: No more node endpoints needed!
 
   // === READING PROGRESS ROUTES ===

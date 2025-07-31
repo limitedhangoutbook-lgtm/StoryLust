@@ -103,6 +103,21 @@ export class Storage {
       .orderBy(storyNodes.order);
   }
 
+  async getFirstChoicePageNumber(storyId: string): Promise<number | null> {
+    // Find the first page that has choices by joining with story_choices
+    const result = await db
+      .select({ 
+        pageOrder: storyNodes.order 
+      })
+      .from(storyNodes)
+      .innerJoin(storyChoices, eq(storyNodes.id, storyChoices.fromNodeId))
+      .where(eq(storyNodes.storyId, storyId))
+      .orderBy(storyNodes.order)
+      .limit(1);
+    
+    return result.length > 0 ? result[0].pageOrder : null;
+  }
+
   async getAllStoriesForAdmin(): Promise<Story[]> {
     return await db
       .select()
@@ -590,9 +605,8 @@ export class Storage {
       isActive: false,
       endTime: new Date(),
     };
-    if (endPageNumber) {
-      updates.endPageNumber = endPageNumber;
-    }
+    // Note: endPageNumber is not part of ReadingSession schema, 
+    // page tracking is handled by readingProgress table
 
     const [session] = await db
       .update(readingSessions)

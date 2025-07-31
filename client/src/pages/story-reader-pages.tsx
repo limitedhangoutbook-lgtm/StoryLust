@@ -34,6 +34,7 @@ export default function StoryReaderPages() {
     content: string; 
     order: number;
     nextNodeId?: string;
+    isFirstChoice?: boolean;
   }>>({
     queryKey: [`/api/stories/${storyId}/pages`],
     enabled: !!storyId,
@@ -147,6 +148,51 @@ export default function StoryReaderPages() {
         pagesRead: pageNumber,
         isBookmarked: false,
       }).catch(() => {});
+    }
+  };
+
+  // Navigate to first choice page for re-exploration
+  const goToFirstChoice = async () => {
+    if (!storyId || !allPages.length) return;
+    
+    try {
+      // Get the first choice page from the server
+      const response = await apiRequest("GET", `/api/stories/${storyId}/first-choice-page`);
+      const data = await response.json();
+      
+      const firstChoicePageNumber = data.firstChoicePageNumber || 5; // Fallback to page 5
+      
+      // Navigate to the first choice page
+      setCurrentPage(firstChoicePageNumber);
+      saveProgress(firstChoicePageNumber);
+      
+      toast({
+        title: "Ready to Explore!",
+        description: "You're now at the first choice point. Choose your path!",
+        duration: 2000,
+      });
+      
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (error) {
+      // Fallback to hardcoded logic if API fails
+      let firstChoicePageNumber = 5; // Default fallback
+      
+      if (storyId === 'desert-seduction') {
+        firstChoicePageNumber = 2; // Desert Encounter has choices
+      } else if (storyId === 'campus-encounter') {
+        firstChoicePageNumber = 5; // The Moment has choices  
+      }
+      
+      setCurrentPage(firstChoicePageNumber);
+      saveProgress(firstChoicePageNumber);
+      
+      toast({
+        title: "Ready to Explore!",
+        description: "You're now at the first choice point. Choose your path!",
+        duration: 2000,
+      });
+      
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -384,12 +430,22 @@ export default function StoryReaderPages() {
               </Button>
               
               <Button
+                onClick={() => goToFirstChoice()}
+                className="w-full bg-gradient-to-r from-purple-600 to-purple-700 text-white font-bold py-4 text-lg hover:from-purple-700 hover:to-purple-800"
+              >
+                <div className="flex items-center justify-center">
+                  <span className="text-2xl mr-2">🔀</span>
+                  Try Different Path
+                </div>
+              </Button>
+              
+              <Button
                 onClick={() => resetMutation.mutate()}
                 disabled={resetMutation.isPending}
                 variant="outline"
                 className="w-full border-rose-gold/30 text-kindle hover:bg-rose-gold/10 py-3"
               >
-                {resetMutation.isPending ? "Resetting..." : "Read Again"}
+                {resetMutation.isPending ? "Resetting..." : "Read from Beginning"}
               </Button>
             </div>
           </div>
