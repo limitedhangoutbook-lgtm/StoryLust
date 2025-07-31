@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -24,6 +24,8 @@ export default function StoryBuilder() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [currentStep, setCurrentStep] = useState(1);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const initialDataRef = useRef<any>(null);
 
   // Redirect if not admin
   if (!user || !isAdmin(user)) {
@@ -33,7 +35,7 @@ export default function StoryBuilder() {
           <h1 className="text-2xl font-bold text-text-primary mb-4">Access Restricted</h1>
           <p className="text-text-muted mb-6">Story creation is limited to admin users.</p>
           <Button 
-            onClick={() => setLocation("/")}
+            onClick={() => navigateWithConfirmation("/")}
             className="bg-rose-gold text-dark-primary hover:bg-rose-gold/90"
           >
             Return Home
@@ -62,6 +64,63 @@ export default function StoryBuilder() {
     { id: "page-5", title: "First Choice", content: "", order: 5, pageType: "choice", choices: [] },
   ]);
 
+  // Track changes to detect unsaved work
+  useEffect(() => {
+    if (!initialDataRef.current) {
+      initialDataRef.current = { storyData, pages };
+      return;
+    }
+
+    const hasChanges = 
+      JSON.stringify(storyData) !== JSON.stringify(initialDataRef.current.storyData) ||
+      JSON.stringify(pages) !== JSON.stringify(initialDataRef.current.pages);
+    
+    setHasUnsavedChanges(hasChanges);
+  }, [storyData, pages]);
+
+  // Prevent navigation with unsaved changes
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = "You have unsaved changes. Are you sure you want to leave?";
+        return e.returnValue;
+      }
+    };
+
+    const handlePopState = (e: PopStateEvent) => {
+      if (hasUnsavedChanges) {
+        const confirmLeave = window.confirm(
+          "You have unsaved changes that will be lost. Are you sure you want to leave?"
+        );
+        if (!confirmLeave) {
+          // Push the current state back to prevent navigation
+          window.history.pushState(null, "", window.location.pathname);
+          e.preventDefault();
+        }
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [hasUnsavedChanges]);
+
+  // Safe navigation function with unsaved changes check
+  const navigateWithConfirmation = (path: string) => {
+    if (hasUnsavedChanges) {
+      const confirmLeave = window.confirm(
+        "You have unsaved changes that will be lost. Are you sure you want to leave?"
+      );
+      if (!confirmLeave) return;
+    }
+    setLocation(path);
+  };
+
   // Create complete story mutation (published)
   const createStoryMutation = useMutation({
     mutationFn: async () => {
@@ -79,6 +138,7 @@ export default function StoryBuilder() {
       return response.json();
     },
     onSuccess: () => {
+      setHasUnsavedChanges(false); // Clear unsaved changes flag
       toast({
         title: "Story Published!",
         description: "Your branching story has been successfully published.",
@@ -112,6 +172,7 @@ export default function StoryBuilder() {
       return response.json();
     },
     onSuccess: () => {
+      setHasUnsavedChanges(false); // Clear unsaved changes flag  
       toast({
         title: "Draft Saved!",
         description: "Your story draft has been saved successfully.",
@@ -295,7 +356,7 @@ export default function StoryBuilder() {
             <Button 
               variant="ghost" 
               size="sm"
-              onClick={() => setLocation("/")}
+              onClick={() => navigateWithConfirmation("/")}
               className="text-text-secondary hover:text-text-primary"
             >
               <ArrowLeft className="w-4 h-4" />
@@ -307,6 +368,11 @@ export default function StoryBuilder() {
             <Badge variant="outline" className="text-text-muted">
               Step {currentStep} of 3
             </Badge>
+            {hasUnsavedChanges && (
+              <Badge variant="destructive" className="text-xs">
+                Unsaved Changes
+              </Badge>
+            )}
           </div>
         </div>
 
