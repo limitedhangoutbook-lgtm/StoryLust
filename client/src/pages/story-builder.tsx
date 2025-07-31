@@ -15,7 +15,7 @@ import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { isAdmin } from "@shared/userRoles";
 import BottomNavigation from "@/components/bottom-navigation";
-import { StoryFlowBuilder } from "@/components/story-flow-builder";
+import { VisualTimelineBuilder } from "@/components/visual-timeline-builder";
 
 interface StoryPage {
   id: string;
@@ -265,7 +265,7 @@ export default function StoryBuilder() {
               </p>
             </div>
             
-            <StoryFlowBuilder 
+            <VisualTimelineBuilder 
               pages={pages} 
               onPagesChange={setPages} 
             />
