@@ -61,6 +61,12 @@ export default function StoryReaderPages() {
     enabled: !!storyId && isAuthenticated,
   });
 
+  // Get user's purchased premium paths for this story
+  const { data: purchasedPaths = [] } = useQuery<Array<{ choiceId: string }>>({
+    queryKey: [`/api/purchased-paths/${storyId}`],
+    enabled: !!storyId && isAuthenticated,
+  });
+
   // Set total pages when data loads and fix progress logic
   useEffect(() => {
     if (allPages.length > 0) {
@@ -244,11 +250,22 @@ export default function StoryReaderPages() {
         
         // Show feedback
         const choice = choices.find(c => c.id === choiceId);
-        toast({
-          title: choice?.isPremium ? "🍆✨ Premium Choice Made! ✨🍆" : "✨ Choice Made! ✨",
-          description: "Your story continues...",
-          duration: 1500,
-        });
+        // Check if this was a premium choice that was already owned
+        const choiceResult = data;
+        if (choice?.isPremium && choiceResult.alreadyOwned) {
+          toast({
+            title: "✨ Premium Path Accessed! ✨",
+            description: "You already own this path - no eggplants deducted!",
+            duration: 2000,
+          });
+        } else {
+          toast({
+            title: choice?.isPremium ? "🍆✨ Premium Choice Made! ✨🍆" : "✨ Choice Made! ✨",
+            description: choice?.isPremium && !choiceResult.alreadyOwned ? 
+              `Spent ${choice.eggplantCost || 0} eggplants` : "Your story continues...",
+            duration: 1500,
+          });
+        }
         
         // Refresh user data if this was a premium choice to update eggplant count
         if (choice?.isPremium) {
@@ -411,6 +428,13 @@ export default function StoryReaderPages() {
                           <span>🍆</span>
                           <span>{choice.eggplantCost || 0} eggplants</span>
                         </div>
+                        {/* Show ownership status for authenticated users */}
+                        {isAuthenticated && purchasedPaths.some(p => p.choiceId === choice.id) && (
+                          <div className="inline-flex items-center gap-1 px-2 py-1 bg-green-500/15 text-green-400 border border-green-500/30 rounded-full text-xs font-medium ml-2">
+                            <span>✓</span>
+                            <span>Owned</span>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>

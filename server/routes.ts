@@ -409,6 +409,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(user);
   });
 
+  // === PURCHASED PREMIUM PATHS ROUTES ===
+  app.get('/api/purchased-paths/:storyId', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { storyId } = req.params;
+      
+      const paths = await storage.getUserPurchasedPaths(userId, storyId);
+      res.json(paths);
+    } catch (error) {
+      console.error("Error fetching purchased paths:", error);
+      res.status(500).json({ message: "Failed to fetch purchased paths" });
+    }
+  });
+
   // === CHOICE SELECTION ROUTES ===
   app.post('/api/choices/:choiceId/select', async (req, res) => {
     try {
@@ -438,6 +452,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Check if user has already purchased this premium path
         const alreadyPurchased = await storage.hasPurchasedPremiumPath(userId, choiceId);
         
+        console.log(`Choice ${choiceId} - Already purchased by user ${userId}:`, alreadyPurchased);
+        
         if (!alreadyPurchased) {
           // User hasn't purchased this path yet, check if they have enough eggplants
           const user = await storage.getUser(userId);
@@ -453,6 +469,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
           
           // Deduct eggplants and record the purchase
+          console.log(`Deducting ${cost} eggplants from user ${userId} (had ${userEggplants})`);
           await storage.updateUserEggplants(userId, userEggplants - cost);
           await storage.purchasePremiumPath({
             userId,
@@ -460,6 +477,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             choiceId,
             eggplantCost: cost
           });
+          console.log(`Successfully purchased choice ${choiceId} for ${cost} eggplants`);
+        } else {
+          console.log(`User ${userId} already owns choice ${choiceId} - no eggplants deducted`);
         }
         // If already purchased, user can access it for free forever
       }
@@ -484,10 +504,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // For page-based stories, use the choice's target_page if available
       const targetPage = choice.targetPage || (currentPage + 1);
       
+      // Return additional info about whether this was already owned
+      const alreadyOwned = choice.isPremium && req.isAuthenticated() ? 
+        await storage.hasPurchasedPremiumPath((req as any).user.claims.sub, choiceId) : false;
+      
       res.json({
         targetPage: targetPage,
         choice,
-        success: true
+        success: true,
+        alreadyOwned: alreadyOwned
       });
     } catch (error) {
       res.status(500).json({ message: "Failed to process your choice" });
