@@ -240,6 +240,8 @@ export default function StoryReaderPages() {
       return response.json();
     },
     onSuccess: (data, choiceId) => {
+      console.log('Choice selection response:', data); // Debug log
+      
       if (data.targetPage) {
         // Direct page-based navigation
         const targetPageNumber = data.targetPage;
@@ -253,13 +255,15 @@ export default function StoryReaderPages() {
         
         if (choice?.isPremium) {
           // For premium choices, check if it was already owned
-          if (data.alreadyOwned) {
+          // Only show "already owned" if explicitly true, not just truthy
+          if (data.alreadyOwned === true) {
             toast({
               title: "✨ Premium Path Accessed! ✨",
               description: "You already own this path - no eggplants deducted!",
               duration: 2000,
             });
           } else {
+            // This covers both false and undefined cases (new purchases)
             toast({
               title: "🍆✨ Premium Choice Made! ✨🍆",
               description: `Spent ${choice.eggplantCost || 0} eggplants`,
