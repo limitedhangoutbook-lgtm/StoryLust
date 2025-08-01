@@ -510,6 +510,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Return info about whether this was already owned BEFORE the purchase
       const wasAlreadyOwned = choice.isPremium && req.isAuthenticated() ? alreadyPurchased : false;
       
+      console.log(`Debug - choiceId: ${choiceId}, isPremium: ${choice.isPremium}, isAuth: ${req.isAuthenticated()}, alreadyPurchased: ${alreadyPurchased}, wasAlreadyOwned: ${wasAlreadyOwned}`);
+      
       res.json({
         targetPage: targetPage,
         choice,
