@@ -504,15 +504,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // For page-based stories, use the choice's target_page if available
       const targetPage = choice.targetPage || (currentPage + 1);
       
-      // Return additional info about whether this was already owned
-      const alreadyOwned = choice.isPremium && req.isAuthenticated() ? 
-        await storage.hasPurchasedPremiumPath((req as any).user.claims.sub, choiceId) : false;
+      // Return info about whether this was already owned BEFORE the purchase
+      const wasAlreadyOwned = choice.isPremium && req.isAuthenticated() ? alreadyPurchased : false;
       
       res.json({
         targetPage: targetPage,
         choice,
         success: true,
-        alreadyOwned: alreadyOwned
+        alreadyOwned: wasAlreadyOwned
       });
     } catch (error) {
       res.status(500).json({ message: "Failed to process your choice" });
