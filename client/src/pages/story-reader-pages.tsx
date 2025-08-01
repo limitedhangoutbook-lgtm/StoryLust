@@ -252,17 +252,22 @@ export default function StoryReaderPages() {
         const choice = choices.find(c => c.id === choiceId);
         // Check if this was a premium choice that was already owned
         const choiceResult = data;
-        if (choice?.isPremium && choiceResult.alreadyOwned) {
+        if (choice?.isPremium && choiceResult.alreadyOwned === true) {
           toast({
             title: "✨ Premium Path Accessed! ✨",
             description: "You already own this path - no eggplants deducted!",
             duration: 2000,
           });
+        } else if (choice?.isPremium && choiceResult.alreadyOwned === false) {
+          toast({
+            title: "🍆✨ Premium Choice Made! ✨🍆",
+            description: `Spent ${choice.eggplantCost || 0} eggplants`,
+            duration: 1500,
+          });
         } else {
           toast({
-            title: choice?.isPremium ? "🍆✨ Premium Choice Made! ✨🍆" : "✨ Choice Made! ✨",
-            description: choice?.isPremium && !choiceResult.alreadyOwned ? 
-              `Spent ${choice.eggplantCost || 0} eggplants` : "Your story continues...",
+            title: "✨ Choice Made! ✨",
+            description: "Your story continues...",
             duration: 1500,
           });
         }
