@@ -435,6 +435,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Choice not found" });
       }
       
+      // Track if this was already owned for the response
+      let alreadyPurchased = false;
+      
       // Check if this is a premium choice and handle payment/access
       if (choice.isPremium && (choice.eggplantCost || 0) > 0) {
         // Check if user is authenticated for premium content
@@ -450,7 +453,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const userId = (req as any).user.claims.sub;
         
         // Check if user has already purchased this premium path
-        const alreadyPurchased = await storage.hasPurchasedPremiumPath(userId, choiceId);
+        alreadyPurchased = await storage.hasPurchasedPremiumPath(userId, choiceId);
         
         console.log(`Choice ${choiceId} - Already purchased by user ${userId}:`, alreadyPurchased);
         
