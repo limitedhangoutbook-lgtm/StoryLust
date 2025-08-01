@@ -250,21 +250,24 @@ export default function StoryReaderPages() {
         
         // Show feedback
         const choice = choices.find(c => c.id === choiceId);
-        // Check if this was a premium choice that was already owned
-        const choiceResult = data;
-        if (choice?.isPremium && choiceResult.alreadyOwned === true) {
-          toast({
-            title: "✨ Premium Path Accessed! ✨",
-            description: "You already own this path - no eggplants deducted!",
-            duration: 2000,
-          });
-        } else if (choice?.isPremium && choiceResult.alreadyOwned === false) {
-          toast({
-            title: "🍆✨ Premium Choice Made! ✨🍆",
-            description: `Spent ${choice.eggplantCost || 0} eggplants`,
-            duration: 1500,
-          });
+        
+        if (choice?.isPremium) {
+          // For premium choices, check if it was already owned
+          if (data.alreadyOwned) {
+            toast({
+              title: "✨ Premium Path Accessed! ✨",
+              description: "You already own this path - no eggplants deducted!",
+              duration: 2000,
+            });
+          } else {
+            toast({
+              title: "🍆✨ Premium Choice Made! ✨🍆",
+              description: `Spent ${choice.eggplantCost || 0} eggplants`,
+              duration: 1500,
+            });
+          }
         } else {
+          // For free choices
           toast({
             title: "✨ Choice Made! ✨",
             description: "Your story continues...",
