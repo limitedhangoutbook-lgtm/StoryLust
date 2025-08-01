@@ -3,7 +3,7 @@ import { eq, desc, and, sql } from "drizzle-orm";
 import {
   users,
   stories,
-  storyNodes,
+  storyPages,
   storyChoices,
   readingProgress,
   userChoices,
@@ -13,7 +13,7 @@ import {
   type User,
   type UpsertUser,
   type Story,
-  type StoryNode,
+  type StoryPage,
   type StoryChoice,
   type ReadingProgress,
   type InsertReadingProgress,
@@ -95,24 +95,24 @@ export class Storage {
       .orderBy(desc(stories.isFeatured), stories.createdAt);
   }
 
-  async getStoryPages(storyId: string): Promise<StoryNode[]> {
+  async getStoryPages(storyId: string): Promise<StoryPage[]> {
     return await db
       .select()
-      .from(storyNodes)
-      .where(eq(storyNodes.storyId, storyId))
-      .orderBy(storyNodes.order);
+      .from(storyPages)
+      .where(eq(storyPages.storyId, storyId))
+      .orderBy(storyPages.order);
   }
 
   async getFirstChoicePageNumber(storyId: string): Promise<number | null> {
     // Find the first page that has choices by joining with story_choices
     const result = await db
       .select({ 
-        pageOrder: storyNodes.order 
+        pageOrder: storyPages.order 
       })
-      .from(storyNodes)
-      .innerJoin(storyChoices, eq(storyNodes.id, storyChoices.fromNodeId))
-      .where(eq(storyNodes.storyId, storyId))
-      .orderBy(storyNodes.order)
+      .from(storyPages)
+      .innerJoin(storyChoices, eq(storyPages.id, storyChoices.fromPageId))
+      .where(eq(storyPages.storyId, storyId))
+      .orderBy(storyPages.order)
       .limit(1);
     
     return result.length > 0 ? result[0].pageOrder : null;
@@ -203,10 +203,10 @@ export class Storage {
     });
 
     // Create all the pages as story nodes
-    const nodeMap = new Map<string, string>(); // pageId -> nodeId mapping
+    const nodeMap = new Map<string, string>(); // pageId -> pageId mapping
     
     for (const page of timelineData.pages) {
-      const node = await this.createStoryNode({
+      const node = await this.createStoryPage({
         storyId: story.id,
         title: page.title,
         content: page.content,
@@ -219,17 +219,17 @@ export class Storage {
     // Create all the choices with proper node references
     for (const page of timelineData.pages) {
       if (page.choices && page.choices.length > 0) {
-        const fromNodeId = nodeMap.get(page.id);
-        if (!fromNodeId) continue;
+        const fromPageId = nodeMap.get(page.id);
+        if (!fromPageId) continue;
 
         for (let i = 0; i < page.choices.length; i++) {
           const choice = page.choices[i];
-          const toNodeId = nodeMap.get(choice.targetPageId);
+          const toPageId = nodeMap.get(choice.targetPageId);
           
-          if (toNodeId) {
+          if (toPageId) {
             await this.createStoryChoice({
-              fromNodeId,
-              toNodeId,
+              fromPageId,
+              toPageId,
               choiceText: choice.text,
               order: i,
               isPremium: choice.isPremium,
@@ -244,15 +244,15 @@ export class Storage {
     return story;
   }
 
-  async createStoryNode(nodeData: {
+  async createStoryPage(nodeData: {
     storyId: string;
     title: string;
     content: string;
     order: number;
     isStarting?: boolean;
-  }): Promise<StoryNode> {
+  }): Promise<StoryPage> {
     const [node] = await db
-      .insert(storyNodes)
+      .insert(storyPages)
       .values({
         ...nodeData,
         isStarting: nodeData.isStarting || false,
@@ -261,22 +261,22 @@ export class Storage {
     return node;
   }
 
-  async updateStoryNode(nodeId: string, updates: Partial<StoryNode>): Promise<StoryNode> {
+  async updateStoryPage(pageId: string, updates: Partial<StoryPage>): Promise<StoryPage> {
     const [node] = await db
-      .update(storyNodes)
+      .update(storyPages)
       .set(updates)
-      .where(eq(storyNodes.id, nodeId))
+      .where(eq(storyPages.id, pageId))
       .returning();
     return node;
   }
 
-  async deleteStoryNode(nodeId: string): Promise<void> {
-    await db.delete(storyNodes).where(eq(storyNodes.id, nodeId));
+  async deleteStoryPage(pageId: string): Promise<void> {
+    await db.delete(storyPages).where(eq(storyPages.id, pageId));
   }
 
   async createStoryChoice(choiceData: {
-    fromNodeId: string;
-    toNodeId: string;
+    fromPageId: string;
+    toPageId: string;
     choiceText: string;
     order?: number;
     isPremium?: boolean;
@@ -287,8 +287,8 @@ export class Storage {
     const [choice] = await db
       .insert(storyChoices)
       .values({
-        fromNodeId: choiceData.fromNodeId,
-        toNodeId: choiceData.toNodeId,
+        fromPageId: choiceData.fromPageId,
+        toPageId: choiceData.toPageId,
         choiceText: choiceData.choiceText,
         order: choiceData.order || 0,
         isPremium: choiceData.isPremium || false,
@@ -328,25 +328,25 @@ export class Storage {
   }
 
   // === STORY NODE OPERATIONS ===
-  async getStoryNode(nodeId: string): Promise<StoryNode | undefined> {
-    const [node] = await db.select().from(storyNodes).where(eq(storyNodes.id, nodeId));
+  async getStoryPage(pageId: string): Promise<StoryPage | undefined> {
+    const [node] = await db.select().from(storyPages).where(eq(storyPages.id, pageId));
     return node;
   }
 
-  async getStoryNodes(storyId: string): Promise<StoryNode[]> {
+  async getStoryPages(storyId: string): Promise<StoryPage[]> {
     return await db
       .select()
-      .from(storyNodes)
-      .where(eq(storyNodes.storyId, storyId))
-      .orderBy(storyNodes.order);
+      .from(storyPages)
+      .where(eq(storyPages.storyId, storyId))
+      .orderBy(storyPages.order);
   }
 
-  async getFirstStoryNode(storyId: string): Promise<StoryNode | undefined> {
+  async getFirstStoryPage(storyId: string): Promise<StoryPage | undefined> {
     const [node] = await db
       .select()
-      .from(storyNodes)
-      .where(eq(storyNodes.storyId, storyId))
-      .orderBy(storyNodes.order)
+      .from(storyPages)
+      .where(eq(storyPages.storyId, storyId))
+      .orderBy(storyPages.order)
       .limit(1);
     return node;
   }
@@ -354,7 +354,7 @@ export class Storage {
   // === STORY CHOICE OPERATIONS ===
   async getChoicesForPage(pageNumber: number, storyId: string): Promise<StoryChoice[]> {
     // Get the page at this position
-    const allPages = await this.getStoryNodes(storyId);
+    const allPages = await this.getStoryPages(storyId);
     const pageIndex = pageNumber - 1;
     if (pageIndex < 0 || pageIndex >= allPages.length) return [];
     
@@ -362,7 +362,7 @@ export class Storage {
     return await db
       .select()
       .from(storyChoices)
-      .where(eq(storyChoices.fromNodeId, currentPage.id))
+      .where(eq(storyChoices.fromPageId, currentPage.id))
       .orderBy(storyChoices.order);
   }
 
@@ -541,7 +541,7 @@ export class Storage {
         id: personalBookmarks.id,
         userId: personalBookmarks.userId,
         storyId: personalBookmarks.storyId,
-        nodeId: personalBookmarks.nodeId,
+        pageId: personalBookmarks.pageId,
         title: personalBookmarks.title,
         notes: personalBookmarks.notes,
         isPrivate: personalBookmarks.isPrivate,
@@ -549,11 +549,11 @@ export class Storage {
         updatedAt: personalBookmarks.updatedAt,
         // Include story and node details
         storyTitle: stories.title,
-        nodeTitle: storyNodes.title,
+        nodeTitle: storyPages.title,
       })
       .from(personalBookmarks)
       .leftJoin(stories, eq(personalBookmarks.storyId, stories.id))
-      .leftJoin(storyNodes, eq(personalBookmarks.nodeId, storyNodes.id))
+      .leftJoin(storyPages, eq(personalBookmarks.pageId, storyPages.id))
       .where(and(...conditions))
       .orderBy(desc(personalBookmarks.createdAt));
   }
@@ -755,13 +755,13 @@ export class Storage {
     ));
   }
 
-  async getStoryStartingNode(storyId: string): Promise<StoryNode | undefined> {
+  async getStoryStartingNode(storyId: string): Promise<StoryPage | undefined> {
     const [node] = await db
       .select()
-      .from(storyNodes)
+      .from(storyPages)
       .where(and(
-        eq(storyNodes.storyId, storyId),
-        eq(storyNodes.isStarting, true)
+        eq(storyPages.storyId, storyId),
+        eq(storyPages.isStarting, true)
       ))
       .limit(1);
     return node;

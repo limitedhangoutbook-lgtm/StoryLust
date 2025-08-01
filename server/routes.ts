@@ -5,7 +5,7 @@ import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./auth";
 import { db } from "./db";
 import { and, eq, gt, sql } from "drizzle-orm";
-import { storyNodes, storyChoices, users } from "@shared/schema";
+import { storyPages, storyChoices, users } from "@shared/schema";
 
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
@@ -38,7 +38,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Get starting node for a story (more specific routes first)
   app.get('/api/stories/:storyId/start', async (req, res) => {
-    const startingNode = await storage.getFirstStoryNode(req.params.storyId);
+    const startingNode = await storage.getFirstStoryPage(req.params.storyId);
     if (!startingNode) {
       return res.status(404).json({ message: "Starting node not found" });
     }
@@ -46,7 +46,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get('/api/stories/:storyId/nodes/start', async (req, res) => {
-    const startingNode = await storage.getFirstStoryNode(req.params.storyId);
+    const startingNode = await storage.getFirstStoryPage(req.params.storyId);
     if (!startingNode) {
       return res.status(404).json({ message: "Starting node not found" });
     }
@@ -73,9 +73,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get all pages for this story to find the page at the given position
       const allPages = await db
         .select()
-        .from(storyNodes)
-        .where(eq(storyNodes.storyId, storyId as string))
-        .orderBy(storyNodes.order);
+        .from(storyPages)
+        .where(eq(storyPages.storyId, storyId as string))
+        .orderBy(storyPages.order);
       
       const pageIndex = parseInt(pageNumber as string) - 1; // Convert to 0-based index
       if (pageIndex < 0 || pageIndex >= allPages.length) {
@@ -94,7 +94,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           targetPage: storyChoices.targetPage,
         })
         .from(storyChoices)
-        .where(eq(storyChoices.fromNodeId, currentPageNode.id))
+        .where(eq(storyChoices.fromPageId, currentPageNode.id))
         .orderBy(storyChoices.order);
       
       // Check which premium choices are already owned (if user is authenticated)
@@ -187,7 +187,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/user-choices', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const { storyId, choiceId, fromNodeId, toNodeId } = req.body;
+      const { storyId, choiceId, fromPageId, toPageId } = req.body;
       
       // Validate required fields manually  
       if (!storyId || !choiceId) {
@@ -265,7 +265,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const bookmark = await storage.createPersonalBookmark({
         userId,
         storyId,
-        nodeId: currentNode.id,
+        pageId: currentNode.id,
         title,
         notes,
       });
@@ -582,7 +582,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.status(404).json({ message: "Story not found" });
         }
         
-        const startingNode = await storage.getFirstStoryNode(storyId);
+        const startingNode = await storage.getFirstStoryPage(storyId);
         if (!startingNode) {
           return res.status(404).json({ message: "Starting node not found" });
         }
@@ -642,7 +642,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const { storyId } = req.params;
-      const nodes = await storage.getStoryNodes(storyId);
+      const nodes = await storage.getStoryPages(storyId);
       res.json(nodes);
     } catch (error) {
       console.error("Error fetching story nodes:", error);
@@ -681,7 +681,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // First pass: create all nodes
         for (const page of pages) {
-          const node = await storage.createStoryNode({
+          const node = await storage.createStoryPage({
             storyId: story.id,
             title: page.title || `Page ${page.order}`,
             content: page.content || "",
@@ -702,8 +702,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 const targetPageNumber = targetPage ? targetPage.order : (page.order + 1);
                 
                 await storage.createStoryChoice({
-                  fromNodeId: nodeMap[page.id],
-                  toNodeId: nodeMap[choice.targetPageId] || nodeMap[page.id], // Fallback to same node
+                  fromPageId: nodeMap[page.id],
+                  toPageId: nodeMap[choice.targetPageId] || nodeMap[page.id], // Fallback to same node
                   choiceText: choice.text,
                   order: i,
                   isPremium: choice.isPremium || false,
@@ -803,7 +803,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const nodeMap: { [key: string]: string } = {}; // Map old IDs to new IDs
       
       for (const page of pages) {
-        const node = await storage.createStoryNode({
+        const node = await storage.createStoryPage({
           storyId: story.id,
           title: page.title,
           content: page.content,
@@ -820,8 +820,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const choice = page.choices[i];
             if (choice.text && choice.targetPageId && nodeMap[choice.targetPageId]) {
               await storage.createStoryChoice({
-                fromNodeId: nodeMap[page.id],
-                toNodeId: nodeMap[choice.targetPageId],
+                fromPageId: nodeMap[page.id],
+                toPageId: nodeMap[choice.targetPageId],
                 choiceText: choice.text,
                 order: i,
                 isPremium: choice.isPremium || false,
@@ -898,7 +898,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Missing required fields" });
       }
 
-      const node = await storage.createStoryNode({
+      const node = await storage.createStoryPage({
         storyId,
         title,
         content,
@@ -913,17 +913,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put('/api/nodes/:nodeId', isAuthenticated, async (req: any, res) => {
+  app.put('/api/nodes/:pageId', isAuthenticated, async (req: any, res) => {
     try {
       const currentUser = await storage.getUser(req.user.claims.sub);
       if (currentUser?.role !== 'admin' && currentUser?.role !== 'mega-admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
 
-      const { nodeId } = req.params;
+      const { pageId } = req.params;
       const updates = req.body;
       
-      const node = await storage.updateStoryNode(nodeId, updates);
+      const node = await storage.updateStoryPage(pageId, updates);
       res.json(node);
     } catch (error) {
       console.error("Error updating story node:", error);
@@ -931,15 +931,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/nodes/:nodeId', isAuthenticated, async (req: any, res) => {
+  app.delete('/api/nodes/:pageId', isAuthenticated, async (req: any, res) => {
     try {
       const currentUser = await storage.getUser(req.user.claims.sub);
       if (currentUser?.role !== 'mega-admin') {
         return res.status(403).json({ message: "Mega-admin access required" });
       }
 
-      const { nodeId } = req.params;
-      await storage.deleteStoryNode(nodeId);
+      const { pageId } = req.params;
+      await storage.deleteStoryPage(pageId);
       res.json({ message: "Story node deleted successfully" });
     } catch (error) {
       console.error("Error deleting story node:", error);
@@ -947,23 +947,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/nodes/:fromNodeId/choices', isAuthenticated, async (req: any, res) => {
+  app.post('/api/nodes/:fromPageId/choices', isAuthenticated, async (req: any, res) => {
     try {
       const currentUser = await storage.getUser(req.user.claims.sub);
       if (currentUser?.role !== 'admin' && currentUser?.role !== 'mega-admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
 
-      const { fromNodeId } = req.params;
-      const { toNodeId, choiceText, isPremium, eggplantCost } = req.body;
+      const { fromPageId } = req.params;
+      const { toPageId, choiceText, isPremium, eggplantCost } = req.body;
       
-      if (!toNodeId || !choiceText) {
+      if (!toPageId || !choiceText) {
         return res.status(400).json({ message: "Missing required fields" });
       }
 
       const choice = await storage.createStoryChoice({
-        fromNodeId,
-        toNodeId,
+        fromPageId,
+        toPageId,
         choiceText,
         isPremium,
         eggplantCost,

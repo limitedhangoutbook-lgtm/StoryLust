@@ -57,8 +57,8 @@ export const stories = pgTable("stories", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// Story chapters/nodes
-export const storyNodes = pgTable("story_nodes", {
+// Story pages 
+export const storyPages = pgTable("story_pages", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   storyId: varchar("story_id").notNull().references(() => stories.id, { onDelete: "cascade" }),
   title: text("title").notNull(),
@@ -67,15 +67,15 @@ export const storyNodes = pgTable("story_nodes", {
   order: integer("order").notNull(),
   pageType: varchar("page_type").default("story"), // "story", "choice", "chat"
   chatMessages: jsonb("chat_messages"), // For chat dialogue pages
-  nextNodeId: varchar("next_node_id"),
+  nextPageId: varchar("next_page_id"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
 // Story choices (PAGE-BASED SYSTEM)
 export const storyChoices = pgTable("story_choices", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  fromNodeId: varchar("from_node_id").notNull().references(() => storyNodes.id, { onDelete: "cascade" }),
-  toNodeId: varchar("to_node_id").notNull().references(() => storyNodes.id, { onDelete: "cascade" }),
+  fromPageId: varchar("from_page_id").notNull().references(() => storyPages.id, { onDelete: "cascade" }),
+  toPageId: varchar("to_page_id").notNull().references(() => storyPages.id, { onDelete: "cascade" }),
   choiceText: text("choice_text").notNull(),
   isPremium: boolean("is_premium").default(false),
   eggplantCost: integer("eggplant_cost").default(0),
@@ -108,7 +108,7 @@ export const personalBookmarks = pgTable("personal_bookmarks", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   storyId: varchar("story_id").notNull().references(() => stories.id, { onDelete: "cascade" }),
-  nodeId: varchar("node_id").notNull().references(() => storyNodes.id, { onDelete: "cascade" }),
+  pageId: varchar("page_id").notNull().references(() => storyPages.id, { onDelete: "cascade" }),
   title: text("title").notNull(), // User's custom bookmark title
   notes: text("notes"), // Optional personal notes
   isPrivate: boolean("is_private").default(true),
@@ -121,8 +121,8 @@ export const readingSessions = pgTable("reading_sessions", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   storyId: varchar("story_id").notNull().references(() => stories.id, { onDelete: "cascade" }),
-  startNodeId: varchar("start_node_id").notNull().references(() => storyNodes.id),
-  endNodeId: varchar("end_node_id").references(() => storyNodes.id),
+  startPageId: varchar("start_page_id").notNull().references(() => storyPages.id),
+  endPageId: varchar("end_page_id").references(() => storyPages.id),
   startTime: timestamp("start_time").defaultNow(),
   endTime: timestamp("end_time"),
   pagesRead: integer("pages_read").default(0),
@@ -167,29 +167,29 @@ export const authorMessages = pgTable("author_messages", {
 
 // Relations
 export const storiesRelations = relations(stories, ({ many }) => ({
-  nodes: many(storyNodes),
+  pages: many(storyPages),
   readingProgress: many(readingProgress),
 }));
 
-export const storyNodesRelations = relations(storyNodes, ({ one, many }) => ({
+export const storyPagesRelations = relations(storyPages, ({ one, many }) => ({
   story: one(stories, {
-    fields: [storyNodes.storyId],
+    fields: [storyPages.storyId],
     references: [stories.id],
   }),
-  fromChoices: many(storyChoices, { relationName: "fromNode" }),
-  toChoices: many(storyChoices, { relationName: "toNode" }),
+  fromChoices: many(storyChoices, { relationName: "fromPage" }),
+  toChoices: many(storyChoices, { relationName: "toPage" }),
 }));
 
 export const storyChoicesRelations = relations(storyChoices, ({ one }) => ({
-  fromNode: one(storyNodes, {
-    fields: [storyChoices.fromNodeId],
-    references: [storyNodes.id],
-    relationName: "fromNode",
+  fromPage: one(storyPages, {
+    fields: [storyChoices.fromPageId],
+    references: [storyPages.id],
+    relationName: "fromPage",
   }),
-  toNode: one(storyNodes, {
-    fields: [storyChoices.toNodeId],
-    references: [storyNodes.id],
-    relationName: "toNode",
+  toPage: one(storyPages, {
+    fields: [storyChoices.toPageId],
+    references: [storyPages.id],
+    relationName: "toPage",
   }),
 }));
 
@@ -210,9 +210,9 @@ export const personalBookmarksRelations = relations(personalBookmarks, ({ one })
     fields: [personalBookmarks.storyId],
     references: [stories.id],
   }),
-  node: one(storyNodes, {
-    fields: [personalBookmarks.nodeId],
-    references: [storyNodes.id],
+  page: one(storyPages, {
+    fields: [personalBookmarks.pageId],
+    references: [storyPages.id],
   }),
 }));
 
@@ -225,9 +225,9 @@ export const readingSessionsRelations = relations(readingSessions, ({ one }) => 
     fields: [readingSessions.storyId],
     references: [stories.id],
   }),
-  startNode: one(storyNodes, {
-    fields: [readingSessions.startNodeId],
-    references: [storyNodes.id],
+  startPage: one(storyPages, {
+    fields: [readingSessions.startPageId],
+    references: [storyPages.id],
   }),
 }));
 
@@ -256,7 +256,7 @@ export const insertStorySchema = createInsertSchema(stories).omit({
   updatedAt: true,
 });
 
-export const insertStoryNodeSchema = createInsertSchema(storyNodes).omit({
+export const insertStoryPageSchema = createInsertSchema(storyPages).omit({
   id: true,
   createdAt: true,
 });
@@ -326,7 +326,7 @@ export const insertReadingSessionSchema = createInsertSchema(readingSessions).om
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
 export type Story = typeof stories.$inferSelect;
-export type StoryNode = typeof storyNodes.$inferSelect;
+export type StoryPage = typeof storyPages.$inferSelect;
 export type StoryChoice = typeof storyChoices.$inferSelect;
 export type ReadingProgress = typeof readingProgress.$inferSelect;
 export type InsertReadingProgress = typeof readingProgress.$inferInsert;
@@ -340,5 +340,5 @@ export type AuthorMessage = typeof authorMessages.$inferSelect;
 export type InsertAuthorMessage = typeof authorMessages.$inferInsert;
 
 export type InsertStory = z.infer<typeof insertStorySchema>;
-export type InsertStoryNode = z.infer<typeof insertStoryNodeSchema>;
+export type InsertStoryPage = z.infer<typeof insertStoryPageSchema>;
 export type InsertStoryChoice = z.infer<typeof insertStoryChoiceSchema>;
