@@ -8,7 +8,7 @@ TurnPage is a Progressive Web App for choose-your-own-adventure erotica stories 
 - Four-tier user system (guest, registered, admin, mega-admin)
 - Premium content unlocked with eggplant currency
 - Kindle-like reading experience with professional typography
-- Page-based story navigation (exactly 5 pages before first choice)
+- Flexible page-based story navigation (choice points can be at any page)
 - Persistent progress tracking and premium path ownership
 
 ## Technical Architecture
@@ -61,10 +61,10 @@ TurnPage is a Progressive Web App for choose-your-own-adventure erotica stories 
 ## For AI Assistant Context
 When working with this project:
 1. User strongly dislikes "node" terminology - use "page" everywhere
-2. Premium content uses eggplant currency (🍆)
-3. Stories target str8-to-gay audience initially
+2. Premium content uses flexible eggplant currency (🍆) - any cost amount supported
+3. Stories target str8-to-gay audience initially, expanding to all genres
 4. Mobile-first design with PWA capabilities
-5. Page-based navigation: exactly 5 pages before first choice point
+5. Flexible page-based navigation: choice points can be positioned at any page
 
 ## Test Data
 - User ID: 45675951

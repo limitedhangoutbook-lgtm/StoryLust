@@ -17,6 +17,7 @@ User feedback: Very appreciative of thorough help and comprehensive solutions.
 - **Build Tool**: Vite
 - **Theme**: Dark-mode-first design with custom rose-gold and gold accents.
 - **Mobile-First Design**: PWA with service worker and manifest, responsive UI, bottom navigation, and full-screen swipe gestures for story navigation. Professional typography with multiple serif font options.
+- **Flexible Story Structure**: Choice points can be positioned at any page (not fixed to page 5), eggplant costs are configurable per choice.
 
 ### Backend Architecture
 - **Runtime**: Node.js with Express.js
@@ -32,7 +33,7 @@ User feedback: Very appreciative of thorough help and comprehensive solutions.
 ### Key Components
 - **Database Schema**: Includes Users, Stories, Story Nodes, Story Choices, Reading Progress, User Choices, and Sessions.
 - **Authentication System**: Replit OIDC, PostgreSQL-backed sessions (7-day TTL), automatic user creation/updates, HTTPS-only cookies.
-- **Content Management**: Hierarchical node-based storytelling, content filtering by audience (categories) and spice levels (1-3 chili peppers), diamond-gated premium content.
+- **Content Management**: Flexible page-based storytelling, content filtering by audience (categories) and spice levels (1-3 chili peppers), eggplant-gated premium content with configurable costs.
 - **Payment Integration**: Stripe for payment processing, virtual diamond system, multiple diamond purchase tiers.
 - **Story Creation System**: Visual story creator with choice nodes (circles) and ending nodes (squares), supporting endless branching.
 - **User System**: Four-tier system (guest, registered, admin, mega-admin) with role-based access control.

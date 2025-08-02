@@ -5,9 +5,9 @@ A mobile-first Progressive Web App for interactive erotica stories with premium 
 
 ## Key Context for AI Assistants
 - **NEVER use "node" terminology** - User strongly dislikes this. Always use "page" instead.
-- **Page-based navigation**: Stories have exactly 5 pages before first choice point
-- **Premium system**: Users spend 2-5 eggplants to unlock premium story branches
-- **Target audience**: Initially str8-to-gay content, expanding to omegaverse
+- **Page-based navigation**: Flexible system - stories can have choice points at any page (current examples use page 5 for testing)
+- **Premium system**: Flexible eggplant costs - can be any amount (current examples use 2-5 eggplants)
+- **Target audience**: Initially str8-to-gay content, expanding to all genres (not just omegaverse)
 - **Mobile-optimized**: Kindle-like reading experience with swipe navigation
 
 ## Current Status (Fully Working)
@@ -35,10 +35,10 @@ A mobile-first Progressive Web App for interactive erotica stories with premium 
 - All APIs return page numbers, not node IDs
 - Premium paths stored with proper user ownership tracking
 
-## Sample Data
+## Sample Data (Current Test Examples)
 - User has 83 eggplants (spent 17 on premium choices)
 - Alpha Academy Chronicles: 16 pages with omegaverse content
 - Desert Seduction: 10 pages with diverse choice branches
-- Premium choices cost 2-5 eggplants each
+- Current test stories have first choice on page 5 and premium costs of 2-5 eggplants (system supports any values)
 
 Use this context when helping with TurnPage development or feature discussions.
