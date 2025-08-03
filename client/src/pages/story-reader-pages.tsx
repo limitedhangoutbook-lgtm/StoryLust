@@ -116,9 +116,9 @@ export default function StoryReaderPages() {
     if (allPages.length > 0) {
       setTotalPages(allPages.length);
       
-      // Skip progress restoration if user just reset the story
-      if (isResetting) {
-        return; // Don't overwrite the reset
+      // Skip progress restoration if user just reset the story or is navigating
+      if (isResetting || isNavigating) {
+        return; // Don't overwrite manual navigation
       }
       
       // ALWAYS start at page 1 unless we have valid progress
@@ -138,12 +138,12 @@ export default function StoryReaderPages() {
         }
       }
       
-      // Only set current page if it's different to avoid unnecessary renders
+      // Only set current page if it's different and we're not currently navigating
       if (currentPage !== targetPage) {
         setCurrentPage(targetPage);
       }
     }
-  }, [allPages, progress, storyId, isAuthenticated, isResetting, currentPage]);
+  }, [allPages, progress, storyId, isAuthenticated, isResetting]);
 
   // Fresh swipe navigation system
   
