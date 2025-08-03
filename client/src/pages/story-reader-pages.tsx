@@ -583,7 +583,7 @@ export default function StoryReaderPages() {
                 <ChevronLeft className="w-5 h-5 ml-1 rotate-180" />
               </Button>
             ) : (
-              <div className="w-16" /> // Spacer when choices are present
+              <div className="w-16"></div>
             )}
           </div>
         </div>

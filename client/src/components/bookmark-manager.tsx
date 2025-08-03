@@ -25,14 +25,18 @@ export function BookmarkManager({ storyId, nodeId, nodeTitle }: BookmarkManagerP
   const queryClient = useQueryClient();
 
   // Get user's bookmarks
-  const { data: bookmarks = [] } = useQuery({
+  const { data: bookmarks = [] } = useQuery<any[]>({
     queryKey: ["/api/bookmarks", { storyId }],
-    queryFn: () => apiRequest("GET", `/api/bookmarks?storyId=${storyId}`),
+    queryFn: async () => {
+      const response = await apiRequest("GET", `/api/bookmarks?storyId=${storyId}`);
+      return response.json();
+    },
   });
 
   const createBookmarkMutation = useMutation({
     mutationFn: async (bookmarkData: any) => {
-      return apiRequest("POST", "/api/bookmarks", bookmarkData);
+      const response = await apiRequest("POST", "/api/bookmarks", bookmarkData);
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/bookmarks"] });
@@ -55,7 +59,8 @@ export function BookmarkManager({ storyId, nodeId, nodeTitle }: BookmarkManagerP
 
   const updateBookmarkMutation = useMutation({
     mutationFn: async ({ id, ...updates }: any) => {
-      return apiRequest("PUT", `/api/bookmarks/${id}`, updates);
+      const response = await apiRequest("PUT", `/api/bookmarks/${id}`, updates);
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/bookmarks"] });
@@ -78,7 +83,8 @@ export function BookmarkManager({ storyId, nodeId, nodeTitle }: BookmarkManagerP
 
   const deleteBookmarkMutation = useMutation({
     mutationFn: async (bookmarkId: string) => {
-      return apiRequest("DELETE", `/api/bookmarks/${bookmarkId}`);
+      const response = await apiRequest("DELETE", `/api/bookmarks/${bookmarkId}`);
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/bookmarks"] });

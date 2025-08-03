@@ -14,9 +14,21 @@ import {
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
+interface ReadingStats {
+  totalReadingTimeMinutes: number;
+  totalStoriesRead: number;
+  totalChoicesMade: number;
+  favoriteGenres?: string[];
+  recentActivity?: any[];
+}
+
 export function ReadingAnalytics() {
-  const { data: stats, isLoading } = useQuery({
+  const { data: stats, isLoading } = useQuery<ReadingStats>({
     queryKey: ["/api/analytics/reading-stats"],
+    queryFn: async () => {
+      const response = await apiRequest("GET", "/api/analytics/reading-stats");
+      return response.json();
+    },
   });
 
   if (isLoading) {
