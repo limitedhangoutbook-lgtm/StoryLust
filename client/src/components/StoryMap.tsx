@@ -101,8 +101,8 @@ export function StoryMap({ storyId, currentPage, isOpen, onClose, onNavigateToPa
               <div className="relative overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 bg-gradient-to-br from-slate-50 via-gray-50 to-blue-50 dark:from-slate-900 dark:via-gray-900 dark:to-blue-950">
                 <svg
                   width="100%"
-                  height="600"
-                  viewBox="0 0 1000 600"
+                  height="500"
+                  viewBox="0 0 800 500"
                   className="filter drop-shadow-sm"
                 >
                 {/* Gradient background pattern */}
@@ -136,27 +136,26 @@ export function StoryMap({ storyId, currentPage, isOpen, onClose, onNavigateToPa
                   
                   if (!fromNode || !toNode) return null;
 
-                  const x1 = (fromNode.x * 120) + 80;
-                  const y1 = (fromNode.y * 100) + 60;
-                  const x2 = (toNode.x * 120) + 80;
-                  const y2 = (toNode.y * 100) + 60;
+                  const x1 = (fromNode.x * 100) + 80;
+                  const y1 = (fromNode.y * 80) + 60;
+                  const x2 = (toNode.x * 100) + 80;
+                  const y2 = (toNode.y * 80) + 60;
 
-                  // Enhanced curved paths with better visual flow
+                  // Sketch-style paths: straight for vertical main flow, curved for horizontal branches
                   const deltaX = x2 - x1;
                   const deltaY = y2 - y1;
-                  const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-                  const curvature = Math.min(distance * 0.3, 60);
+                  const isHorizontalBranch = Math.abs(deltaX) > Math.abs(deltaY);
                   
-                  const midX = x1 + deltaX * 0.5;
-                  const midY = y1 + deltaY * 0.5;
-                  
-                  // Control points for smooth curves
-                  const cp1X = x1 + (deltaX > 0 ? curvature : -curvature);
-                  const cp1Y = y1 + curvature * 0.5;
-                  const cp2X = x2 - (deltaX > 0 ? curvature : -curvature);
-                  const cp2Y = y2 - curvature * 0.5;
-                  
-                  const pathData = `M ${x1} ${y1} C ${cp1X} ${cp1Y}, ${cp2X} ${cp2Y}, ${x2} ${y2}`;
+                  let pathData;
+                  if (isHorizontalBranch) {
+                    // Curved path for premium branches (like in sketch)
+                    const midX = x1 + deltaX * 0.7;
+                    const midY = y1 + deltaY * 0.3;
+                    pathData = `M ${x1} ${y1} Q ${midX} ${midY} ${x2} ${y2}`;
+                  } else {
+                    // Straight line for main story flow
+                    pathData = `M ${x1} ${y1} L ${x2} ${y2}`;
+                  }
 
                   return (
                     <g key={choice.id}>
@@ -168,17 +167,16 @@ export function StoryMap({ storyId, currentPage, isOpen, onClose, onNavigateToPa
                         fill="none"
                         transform="translate(2,2)"
                       />
-                      {/* Main connection */}
+                      {/* Main connection - matching sketch style */}
                       <path
                         d={pathData}
-                        stroke={choice.isPremium ? "url(#premiumGradient)" : "url(#connectionGradient)"}
-                        strokeWidth="4"
+                        stroke={choice.isPremium ? "#dc2626" : "#374151"}
+                        strokeWidth={choice.isPremium ? "3" : "2"}
                         fill="none"
-                        strokeDasharray={choice.isPremium && !choice.isOwned ? "12,6" : "none"}
-                        opacity={choice.isPremium && !choice.isOwned ? 0.6 : 1}
-                        filter={choice.isPremium ? "url(#glow)" : "none"}
+                        strokeDasharray={choice.isPremium ? "8,4" : "none"}
+                        opacity={choice.isPremium && !choice.isOwned ? 0.7 : 1}
                         markerEnd="url(#arrowhead)"
-                        className="transition-all duration-300 hover:opacity-80"
+                        className="transition-all duration-200"
                       />
                     </g>
                   );
@@ -205,8 +203,8 @@ export function StoryMap({ storyId, currentPage, isOpen, onClose, onNavigateToPa
 
                 {/* Professional nodes with enhanced styling */}
                 {mapData?.nodes.map((node) => {
-                  const x = (node.x * 120) + 40;
-                  const y = (node.y * 100) + 40;
+                  const x = (node.x * 100) + 40;
+                  const y = (node.y * 80) + 40;
                   const isCurrentPage = node.pageNumber === currentPage;
                   
                   return (
@@ -232,120 +230,64 @@ export function StoryMap({ storyId, currentPage, isOpen, onClose, onNavigateToPa
                           />
                         )}
                         
-                        {/* Main node */}
+                        {/* Main node - simplified like sketch */}
                         {node.type === 'ending' ? (
                           <rect
                             x={x}
                             y={y}
-                            width="80"
-                            height="40"
-                            rx="16"
-                            fill={isCurrentPage ? "url(#premiumGradient)" : "linear-gradient(135deg, #374151 0%, #1f2937 100%)"}
-                            stroke={isCurrentPage ? "#f59e0b" : "#6b7280"}
+                            width="60"
+                            height="30"
+                            rx="8"
+                            fill={isCurrentPage ? "#fbbf24" : "#4b5563"}
+                            stroke={isCurrentPage ? "#f59e0b" : "#374151"}
                             strokeWidth="2"
-                            filter={isCurrentPage ? "url(#glow)" : "none"}
                           />
                         ) : (
                           <circle
-                            cx={x + 40}
-                            cy={y + 20}
-                            r="25"
-                            fill={
-                              isCurrentPage 
-                                ? "url(#premiumGradient)"
-                                : node.type === 'choice'
-                                  ? "linear-gradient(135deg, #10b981 0%, #059669 100%)"
-                                  : "linear-gradient(135deg, #6b7280 0%, #4b5563 100%)"
-                            }
-                            stroke={
-                              isCurrentPage 
-                                ? "#f59e0b" 
-                                : node.type === 'choice'
-                                  ? "#047857" 
-                                  : "#374151"
-                            }
+                            cx={x + 30}
+                            cy={y + 15}
+                            r="20"
+                            fill={isCurrentPage ? "#fbbf24" : "#6b7280"}
+                            stroke={isCurrentPage ? "#f59e0b" : "#374151"}
                             strokeWidth="2"
-                            filter={isCurrentPage ? "url(#glow)" : "none"}
                           />
                         )}
                         
-                        {/* Node icon */}
-                        {node.type === 'ending' ? (
-                          <text
-                            x={x + 40}
-                            y={y + 26}
-                            textAnchor="middle"
-                            className="fill-white text-base font-bold pointer-events-none"
-                            style={{ fontSize: '16px' }}
-                          >
-                            ★
-                          </text>
-                        ) : node.type === 'choice' ? (
-                          <text
-                            x={x + 40}
-                            y={y + 26}
-                            textAnchor="middle"
-                            className="fill-white text-base font-bold pointer-events-none"
-                            style={{ fontSize: '16px' }}
-                          >
-                            ⊕
-                          </text>
-                        ) : (
-                          <text
-                            x={x + 40}
-                            y={y + 26}
-                            textAnchor="middle"
-                            className="fill-white text-sm font-bold pointer-events-none"
-                            style={{ fontSize: '14px' }}
-                          >
-                            {node.pageNumber}
-                          </text>
-                        )}
+                        {/* Node content - simplified */}
+                        <text
+                          x={node.type === 'ending' ? x + 30 : x + 30}
+                          y={node.type === 'ending' ? y + 20 : y + 20}
+                          textAnchor="middle"
+                          className="fill-white text-sm font-bold pointer-events-none"
+                          style={{ fontSize: '12px' }}
+                        >
+                          {node.pageNumber}
+                        </text>
                       </g>
                       
-                      {/* Current position indicator */}
+                      {/* Current position indicator - simpler */}
                       {isCurrentPage && (
                         <circle
-                          cx={node.type === 'ending' ? x + 40 : x + 40}
-                          cy={node.type === 'ending' ? y + 20 : y + 20}
-                          r="35"
+                          cx={node.type === 'ending' ? x + 30 : x + 30}
+                          cy={node.type === 'ending' ? y + 15 : y + 15}
+                          r="28"
                           fill="none"
                           stroke="#f59e0b"
-                          strokeWidth="3"
-                          strokeDasharray="8,4"
-                          className="animate-spin"
-                          style={{ animationDuration: '4s' }}
+                          strokeWidth="2"
+                          strokeDasharray="4,2"
+                          className="animate-pulse"
                         />
                       )}
                       
-                      {/* Enhanced title with better positioning */}
+                      {/* Simple title below */}
                       <text
-                        x={x + 40}
-                        y={y + 70}
+                        x={x + 30}
+                        y={y + 50}
                         textAnchor="middle"
-                        className="fill-slate-700 dark:fill-slate-300 text-sm font-medium pointer-events-none"
-                        style={{ fontSize: '12px', fontWeight: '600' }}
-                      >
-                        {node.title.slice(0, 12)}{node.title.length > 12 ? '...' : ''}
-                      </text>
-                      
-                      {/* Page number badge */}
-                      <circle
-                        cx={x + 65}
-                        cy={y - 5}
-                        r="12"
-                        fill="rgba(59, 130, 246, 0.9)"
-                        stroke="white"
-                        strokeWidth="2"
-                      />
-                      <text
-                        x={x + 65}
-                        y={y - 1}
-                        textAnchor="middle"
-                        className="fill-white text-xs font-bold pointer-events-none"
+                        className="fill-slate-700 dark:fill-slate-300 text-xs pointer-events-none"
                         style={{ fontSize: '10px' }}
                       >
-                        {node.pageNumber}
+                        {node.title.slice(0, 8)}{node.title.length > 8 ? '...' : ''}
                       </text>
                     </g>
                   );

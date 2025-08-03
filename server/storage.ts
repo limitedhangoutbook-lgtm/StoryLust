@@ -848,46 +848,46 @@ export class Storage {
     };
   }
 
-  // Calculate hierarchical layout for story map
+  // Calculate sketch-based layout matching user's design
   private calculateStoryLayout(pages: any[], choices: any[]) {
     const layoutNodes: Array<{ page: any; x: number; y: number }> = [];
-    const usedPositions = new Set<string>();
     
-    // Sort pages by order for top-down flow
+    // Sort pages by order for main story flow
     const sortedPages = [...pages].sort((a, b) => a.order - b.order);
     
-    // Track branches for side positioning
-    let currentBranchOffset = 0;
-    const pageToPosition = new Map<string, { x: number; y: number }>();
+    // Track main story path vs premium branches
+    const mainStoryX = 2; // Center column for main story
+    const premiumBranchX = 5; // Right side for premium endings
+    let mainStoryY = 0;
+    let premiumEndingY = 2; // Start premium endings lower
     
     sortedPages.forEach((page, index) => {
       const pageChoices = choices.filter(c => c.fromPageId === page.id);
+      const isEndingPage = pageChoices.length === 0 && page.order > 1;
       
       if (index === 0) {
-        // Starting page at the top center
-        const pos = { x: 3, y: 0 };
-        pageToPosition.set(page.id, pos);
-        layoutNodes.push({ page, ...pos });
-      } else if (pageChoices.length === 0) {
-        // Ending pages - spread them out horizontally at the bottom
-        const endingIndex = sortedPages.filter(p => 
-          choices.filter(c => c.fromPageId === p.id).length === 0
-        ).indexOf(page);
-        const pos = { x: 1 + endingIndex * 2, y: Math.max(5, Math.floor(index / 2) + 3) };
-        pageToPosition.set(page.id, pos);
-        layoutNodes.push({ page, ...pos });
-      } else if (pageChoices.length > 1) {
-        // Choice pages - main vertical flow
-        const pos = { x: 3, y: Math.floor(index / 2) + 1 };
-        pageToPosition.set(page.id, pos);
-        layoutNodes.push({ page, ...pos });
+        // Starting page - top center of main path
+        layoutNodes.push({ page, x: mainStoryX, y: mainStoryY });
+        mainStoryY += 2;
+      } else if (isEndingPage) {
+        // Check if this ending is reached via premium choice
+        const isPremiumEnding = choices.some(choice => 
+          choice.toPageId === page.id && choice.eggplantCost > 0
+        );
+        
+        if (isPremiumEnding) {
+          // Premium endings go to the right
+          layoutNodes.push({ page, x: premiumBranchX, y: premiumEndingY });
+          premiumEndingY += 1.5;
+        } else {
+          // Free ending continues main path
+          layoutNodes.push({ page, x: mainStoryX, y: mainStoryY });
+          mainStoryY += 2;
+        }
       } else {
-        // Single choice pages - slight offset for visual variety
-        const offset = currentBranchOffset % 2 === 0 ? -1 : 1;
-        const pos = { x: 3 + offset, y: Math.floor(index / 2) + 1 };
-        pageToPosition.set(page.id, pos);
-        layoutNodes.push({ page, ...pos });
-        currentBranchOffset++;
+        // Choice pages continue main vertical flow
+        layoutNodes.push({ page, x: mainStoryX, y: mainStoryY });
+        mainStoryY += 2;
       }
     });
     
