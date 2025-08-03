@@ -5,10 +5,8 @@ import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, Home, TrendingUp } from "lucide-react";
+import { ChevronLeft, Home } from "lucide-react";
 import { ChatMessageRenderer } from "@/components/chat-message-renderer";
-import { TensionIndicator, TensionWave } from "@/components/ui/tension-indicator";
-import { CompactBreadcrumb, ProgressIndicator } from "@/components/ui/breadcrumb-navigation";
 import type { StoryPage, Choice } from "@shared/types";
 
 export default function StoryReaderPages() {
@@ -21,17 +19,6 @@ export default function StoryReaderPages() {
   // Page-based state
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
-  
-  // Phase 2: Enhanced UX state
-  const [tensionHistory, setTensionHistory] = useState<number[]>([20]);
-  const [currentTension, setCurrentTension] = useState(20);
-  const [breadcrumbs, setBreadcrumbs] = useState<Array<{
-    pageNumber: number;
-    title: string;
-    visualState: 'visited' | 'current' | 'premium' | 'significant';
-    clickable: boolean;
-  }>>([]);
-  const [significantMoments, setSignificantMoments] = useState<number[]>([]);
   
   const storyId = params?.storyId;
 
@@ -103,9 +90,6 @@ export default function StoryReaderPages() {
       }
       
       setCurrentPage(targetPage);
-      
-      // Initialize enhanced UX features for this page
-      updatePageContext(targetPage);
     }
   }, [allPages, progress, storyId, isAuthenticated]);
 
@@ -141,73 +125,11 @@ export default function StoryReaderPages() {
     };
   }, [currentPage, totalPages, choices.length]);
 
-  // Enhanced UX: Update tension and breadcrumbs when page changes
-  const updatePageContext = (pageNumber: number, choiceMade?: string, isPremium?: boolean) => {
-    // Calculate tension based on page content and choices
-    let newTension = currentTension;
-    
-    // Simple tension calculation - you can enhance this with actual content analysis
-    if (choices.length > 0) {
-      newTension += 10; // Choices increase tension
-    }
-    if (choices.some(c => c.isPremium)) {
-      newTension += 15; // Premium choices add more tension
-    }
-    if (pageNumber % 5 === 0) {
-      newTension += 20; // Every 5th page is a climax point
-    }
-    
-    // Natural decay
-    newTension = Math.max(5, newTension * 0.95);
-    newTension = Math.min(100, newTension);
-    
-    setCurrentTension(newTension);
-    setTensionHistory(prev => [...prev.slice(-20), newTension]); // Keep last 20 entries
-    
-    // Track significant moments
-    if (newTension > 70) {
-      setSignificantMoments(prev => [...new Set([...prev, pageNumber])]);
-    }
-    
-    // Update breadcrumbs
-    const currentPageData = allPages[pageNumber - 1];
-    if (currentPageData) {
-      const crumb = {
-        pageNumber,
-        title: currentPageData.title || `Page ${pageNumber}`,
-        visualState: (
-          isPremium ? 'premium' :
-          newTension > 70 ? 'significant' :
-          pageNumber === currentPage ? 'current' : 'visited'
-        ) as 'visited' | 'current' | 'premium' | 'significant',
-        clickable: true
-      };
-      
-      setBreadcrumbs(prev => {
-        const existing = prev.findIndex(b => b.pageNumber === pageNumber);
-        if (existing >= 0) {
-          const updated = [...prev];
-          updated[existing] = { ...crumb, visualState: 'current' };
-          // Mark previous pages as visited
-          for (let i = 0; i < updated.length; i++) {
-            if (updated[i].pageNumber !== pageNumber) {
-              updated[i] = { ...updated[i], visualState: 'visited' };
-            }
-          }
-          return updated;
-        } else {
-          return [...prev, crumb];
-        }
-      });
-    }
-  };
-
   // Navigation functions
   const goToPreviousPage = () => {
     if (currentPage > 1) {
       const newPage = currentPage - 1;
       setCurrentPage(newPage);
-      updatePageContext(newPage);
       saveProgress(newPage);
     }
   };
@@ -216,7 +138,6 @@ export default function StoryReaderPages() {
     if (currentPage < totalPages) {
       const newPage = currentPage + 1;
       setCurrentPage(newPage);
-      updatePageContext(newPage);
       saveProgress(newPage);
     }
   };
@@ -325,9 +246,7 @@ export default function StoryReaderPages() {
         // Direct page-based navigation
         const targetPageNumber = data.targetPage;
         if (targetPageNumber >= 1 && targetPageNumber <= totalPages) {
-          const choice = choices.find(c => c.id === choiceId);
           setCurrentPage(targetPageNumber);
-          updatePageContext(targetPageNumber, choice?.choiceText, choice?.isPremium);
           saveProgress(targetPageNumber);
         }
         
@@ -406,14 +325,8 @@ export default function StoryReaderPages() {
       }
     },
     onSuccess: () => {
-      // Reset to page 1 and clear enhanced UX state
+      // Reset to page 1
       setCurrentPage(1);
-      setTensionHistory([20]);
-      setCurrentTension(20);
-      setBreadcrumbs([]);
-      setSignificantMoments([]);
-      updatePageContext(1);
-      
       // Refresh reading progress
       queryClient.invalidateQueries({ queryKey: [`/api/reading-progress/${storyId}`] });
     },
@@ -432,7 +345,7 @@ export default function StoryReaderPages() {
 
   return (
     <div className="min-h-screen bg-kindle text-kindle">
-      {/* Enhanced Header with Tension and Navigation */}
+      {/* Header */}
       <header className="fixed top-0 left-0 right-0 bg-kindle/95 backdrop-blur-sm border-b border-dark-tertiary/30 z-50">
         <div className="flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4">
           <Button
@@ -449,16 +362,7 @@ export default function StoryReaderPages() {
             {story.title}
           </h1>
           
-          <div className="flex items-center space-x-3">
-            {/* Phase 2: Tension Indicator */}
-            <TensionIndicator 
-              level={currentTension}
-              category={currentTension > 80 ? 'climax' : currentTension > 60 ? 'high' : currentTension > 30 ? 'building' : 'low'}
-              visualCue=""
-              className="hidden sm:flex"
-              showLabel={false}
-            />
-            
+          <div className="flex items-center space-x-2">
             {/* Floating Eggplant Counter */}
             {isAuthenticated && user && (
               <div className="flex items-center space-x-1 bg-dark-tertiary/30 px-2 py-1 rounded-full text-xs">
@@ -474,37 +378,16 @@ export default function StoryReaderPages() {
 
       {/* Main Content */}
       <main className="pt-16 sm:pt-20 px-4 sm:px-6 max-w-3xl mx-auto pb-32">
-        {/* Phase 2: Enhanced Progress with Breadcrumbs and Tension Wave */}
-        <div className="mb-6 space-y-4">
-          {/* Compact Breadcrumb Navigation */}
-          {breadcrumbs.length > 0 && (
-            <CompactBreadcrumb 
-              crumbs={breadcrumbs}
-              onNavigate={(pageNumber) => {
-                setCurrentPage(pageNumber);
-                updatePageContext(pageNumber);
-                saveProgress(pageNumber);
-              }}
-              className="mb-3"
+        {/* Page Progress Bar */}
+        <div className="mb-6">
+          <div className="w-full bg-dark-tertiary rounded-full h-2">
+            <div 
+              className="bg-gradient-to-r from-rose-gold to-gold-accent h-2 rounded-full transition-all duration-300"
+              style={{ width: `${(currentPage / totalPages) * 100}%` }}
             />
-          )}
-          
-          {/* Enhanced Progress Indicator */}
-          <ProgressIndicator 
-            currentPage={currentPage}
-            totalPages={totalPages}
-            significantMoments={significantMoments}
-            className="mb-3"
-          />
-          
-          {/* Tension Wave (show if we have history) */}
-          {tensionHistory.length > 1 && (
-            <TensionWave 
-              tensionHistory={tensionHistory}
-              currentPage={currentPage}
-              className="mb-3"
-            />
-          )}
+          </div>
+          <div className="text-center mt-2 text-sm text-kindle-secondary">
+          </div>
         </div>
         
         {/* Story Content */}
