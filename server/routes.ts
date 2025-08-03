@@ -3,7 +3,9 @@ import { createServer, type Server } from "http";
 import Stripe from "stripe";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./auth";
-import { registerV2StoryRoutes } from "./routes/v2-story";
+import { storyEngineService } from "./engines/StoryEngineService";
+import { analytics } from "./analytics/EventTracker";
+
 import { db } from "./db";
 import { and, eq, gt, sql } from "drizzle-orm";
 import { storyPages, storyChoices, users } from "@shared/schema";
@@ -19,8 +21,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth setup
   await setupAuth(app);
 
-  // === V2 MODULAR STORY ROUTES ===
-  registerV2StoryRoutes(app);
+
 
   // === USER ROUTES ===
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
@@ -387,6 +388,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Enhanced analytics with modular engine
+  app.get('/api/analytics/conversion/:storyId?', async (req, res) => {
+    try {
+      const { storyId } = req.params;
+      const metrics = analytics.getConversionMetrics(storyId);
+      const choicePopularity = analytics.getChoicePopularity(storyId);
+      
+      res.json({
+        metrics,
+        choicePopularity,
+        storyId: storyId || 'all-stories'
+      });
+    } catch (error) {
+      console.error("Error fetching conversion analytics:", error);
+      res.status(500).json({ message: "Failed to fetch analytics" });
+    }
+  });
+
   // === USER MANAGEMENT ROUTES (MEGA-ADMIN ONLY) ===
   app.get('/api/admin/users', isAuthenticated, async (req: any, res) => {
     const currentUser = await storage.getUser(req.user.claims.sub);
@@ -475,6 +494,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
             });
           }
           
+          // Track purchase attempt with modular analytics
+          analytics.track({
+            type: 'purchase_attempt',
+            userId,
+            storyId,
+            pageId: choice.fromPageId,
+            choiceId,
+            timestamp: new Date(),
+            metadata: {
+              eggplantCost: cost,
+              userEggplantsBefore: userEggplants
+            }
+          });
+          
           // Deduct eggplants and record the purchase
           console.log(`Deducting ${cost} eggplants from user ${userId} (had ${userEggplants})`);
           await storage.updateUserEggplants(userId, userEggplants - cost);
@@ -497,6 +530,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Save user choice if authenticated
       if (req.isAuthenticated()) {
         const userId = (req as any).user.claims.sub;
+        
+        // Track choice made with modular analytics
+        analytics.track({
+          type: 'choice_made',
+          userId,
+          storyId,
+          pageId: choice.fromPageId,
+          choiceId,
+          timestamp: new Date(),
+          metadata: {
+            isPremium: choice.isPremium,
+            alreadyOwned: alreadyPurchased,
+            targetPage: choice.targetPage || (currentPage + 1)
+          }
+        });
+        
         await storage.saveUserChoice({
           userId,
           storyId,
