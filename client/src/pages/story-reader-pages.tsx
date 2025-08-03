@@ -177,12 +177,16 @@ export default function StoryReaderPages() {
       if (Math.abs(deltaX) > 80) {
         if (deltaX > 0 && currentPage > 1) {
           // Swipe right - go back
-          console.log('Swipe right detected - going back');
-          goToPreviousPage();
+          console.log('Swipe right detected - going back from page', currentPage);
+          const newPage = currentPage - 1;
+          setCurrentPage(newPage);
+          saveProgress(newPage);
         } else if (deltaX < 0 && choices.length === 0 && currentPage < totalPages) {
           // Swipe left - go forward (only if no choices)
-          console.log('Swipe left detected - going forward');
-          goToNextPage();
+          console.log('Swipe left detected - going forward from page', currentPage, 'to', currentPage + 1);
+          const newPage = currentPage + 1;
+          setCurrentPage(newPage);
+          saveProgress(newPage);
         } else {
           console.log('Swipe detected but conditions not met:', { 
             deltaX, 
@@ -211,7 +215,7 @@ export default function StoryReaderPages() {
       targetElement.removeEventListener('touchmove', handleTouchMove);
       targetElement.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [currentPage, totalPages, choices.length, goToPreviousPage, goToNextPage]);
+  }, [currentPage, totalPages, choices.length, saveProgress]);
 
   // Navigate to first choice page for re-exploration
   const goToFirstChoice = async () => {
