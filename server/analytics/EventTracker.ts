@@ -125,15 +125,7 @@ export class EventTracker {
 
   private logEvent(event: AnalyticsEvent): void {
     // Log significant events for debugging
-    if (event.type === 'purchase_attempt' || event.type === 'story_completed') {
-      console.log(`[Analytics] ${event.type}:`, {
-        user: event.userId,
-        story: event.storyId,
-        page: event.pageId,
-        choice: event.choiceId,
-        timestamp: event.timestamp
-      });
-    }
+    // Analytics events tracked in memory for development
   }
 
   private async flush(): Promise<void> {

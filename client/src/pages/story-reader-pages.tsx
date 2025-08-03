@@ -262,7 +262,6 @@ export default function StoryReaderPages() {
       return response.json();
     },
     onSuccess: (data, choiceId) => {
-      console.log('Choice selection response:', data); // Debug log
       
       if (data.targetPage) {
         // Direct page-based navigation

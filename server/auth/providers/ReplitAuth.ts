@@ -168,7 +168,7 @@ export class ReplitAuth extends AuthProvider {
       this.updateUserSession(user, tokens);
       
       // Store user in database (handled by storage layer)
-      // await this.upsertUser(tokens.claims());
+
       
       verified(null, user);
     };

@@ -123,7 +123,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json(pageBased);
     } catch (error: any) {
-      console.error("Page choices error:", error);
       res.status(500).json({ message: "Failed to get page choices", error: error.message });
     }
   });
@@ -170,7 +169,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const mapData = await storage.getStoryMapData(storyId, ownedChoiceIds);
       res.json(mapData);
     } catch (error) {
-      console.error("Error fetching story map:", error);
       res.status(500).json({ message: "Failed to fetch story map" });
     }
   });
@@ -203,7 +201,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       res.json(progress);
     } catch (error) {
-      console.error("Error saving reading progress:", error);
       res.status(500).json({ message: "Failed to save reading progress" });
     }
   });
@@ -226,7 +223,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       res.json(choice);
     } catch (error) {
-      console.error("Error saving user choice:", error);
       res.status(500).json({ message: "Failed to save user choice" });
     }
   });
@@ -240,7 +236,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const progress = await storage.markStoryCompleted(userId, storyId);
       res.json({ success: true, progress });
     } catch (error) {
-      console.error("Error marking story completed:", error);
       res.status(500).json({ message: "Failed to mark story completed" });
     }
   });
@@ -252,7 +247,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const stats = await storage.getUserStats(userId);
       res.json(stats);
     } catch (error) {
-      console.error("Error fetching user stats:", error);
       res.status(500).json({ message: "Failed to fetch user stats" });
     }
   });
@@ -264,7 +258,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const progressWithStories = await storage.getUserReadingProgressWithStories(userId);
       res.json(progressWithStories);
     } catch (error) {
-      console.error("Error fetching reading progress:", error);
       res.status(500).json({ message: "Failed to fetch reading progress" });
     }
   });
@@ -332,7 +325,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.deletePersonalBookmark(bookmarkId);
       res.json({ success: true });
     } catch (error) {
-      console.error("Error deleting bookmark:", error);
       res.status(500).json({ message: "Failed to delete bookmark" });
     }
   });
@@ -354,7 +346,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       res.json(session);
     } catch (error) {
-      console.error("Error starting reading session:", error);
       res.status(500).json({ message: "Failed to start reading session" });
     }
   });
@@ -367,7 +358,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const session = await storage.updateReadingSession(sessionId, { pagesRead, choicesMade });
       res.json(session);
     } catch (error) {
-      console.error("Error updating reading session:", error);
       res.status(500).json({ message: "Failed to update reading session" });
     }
   });
@@ -380,7 +370,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const session = await storage.endReadingSession(sessionId, endPageNumber);
       res.json(session);
     } catch (error) {
-      console.error("Error ending reading session:", error);
       res.status(500).json({ message: "Failed to end reading session" });
     }
   });
@@ -391,7 +380,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const sessions = await storage.getUserReadingSessions(userId);
       res.json(sessions);
     } catch (error) {
-      console.error("Error fetching reading sessions:", error);
       res.status(500).json({ message: "Failed to fetch reading sessions" });
     }
   });
@@ -498,7 +486,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Check if user has already purchased this premium path
         alreadyPurchased = await storage.hasPurchasedPremiumPath(userId, choiceId);
         
-        console.log(`Choice ${choiceId} - Already purchased by user ${userId}:`, alreadyPurchased);
+
         
         if (!alreadyPurchased) {
           // User hasn't purchased this path yet, check if they have enough eggplants
@@ -529,7 +517,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
           
           // Deduct eggplants and record the purchase
-          console.log(`Deducting ${cost} eggplants from user ${userId} (had ${userEggplants})`);
           await storage.updateUserEggplants(userId, userEggplants - cost);
           await storage.purchasePremiumPath({
             userId,
@@ -537,9 +524,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
             choiceId,
             eggplantCost: cost
           });
-          console.log(`Successfully purchased choice ${choiceId} for ${cost} eggplants`);
-        } else {
-          console.log(`User ${userId} already owns choice ${choiceId} - no eggplants deducted`);
         }
         // If already purchased, user can access it for free forever
       }
@@ -589,7 +573,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             targetPage = targetPageData.order;
           }
         } catch (error) {
-          console.error("Error getting target page data:", error);
+          // Silently fallback to next page if target page data unavailable
         }
       }
       
@@ -1170,7 +1154,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || 'whsec_test';
       event = stripe.webhooks.constructEvent(req.body, sig as string, webhookSecret);
     } catch (err: any) {
-      console.error('Webhook signature verification failed:', err.message);
       return res.status(400).send(`Webhook Error: ${err.message}`);
     }
 
@@ -1185,7 +1168,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           await storage.addEggplantsToUser(userId, parseInt(eggplants));
           // Eggplants added successfully
         } catch (error) {
-          console.error('Error adding eggplants to user:', error);
+          // Log error in production monitoring system
         }
       }
     }

@@ -35,7 +35,6 @@ export class DatabaseStoryProvider implements StoryDataProvider {
         lastReadAt: progress.lastReadAt || new Date()
       };
     } catch (error) {
-      console.error('Error getting user progress:', error);
       return null;
     }
   }
@@ -59,7 +58,6 @@ export class DatabaseStoryProvider implements StoryDataProvider {
         isCompleted: false // Will be determined by story engine
       });
     } catch (error) {
-      console.error('Error saving user progress:', error);
       throw error;
     }
   }
@@ -69,7 +67,6 @@ export class DatabaseStoryProvider implements StoryDataProvider {
       const user = await storage.getUser(userId);
       return user?.eggplants || 0;
     } catch (error) {
-      console.error('Error getting user eggplants:', error);
       return 0;
     }
   }
@@ -78,7 +75,6 @@ export class DatabaseStoryProvider implements StoryDataProvider {
     try {
       await storage.addEggplantsToUser(userId, -amount);
     } catch (error) {
-      console.error('Error deducting eggplants:', error);
       throw error;
     }
   }
@@ -99,14 +95,13 @@ export class DatabaseStoryProvider implements StoryDataProvider {
         isEnding: !page.nextPageId && page.pageType !== 'choice' // No next page = ending
       };
     } catch (error) {
-      console.error('Error getting page:', error);
       throw error;
     }
   }
 
   async getChoice(choiceId: string): Promise<StoryChoice | null> {
     try {
-      const choice = await storage.getStoryChoice(choiceId);
+      const choice = await storage.getChoice(choiceId);
       if (!choice) return null;
 
       // Convert database format to engine format
@@ -120,7 +115,6 @@ export class DatabaseStoryProvider implements StoryDataProvider {
         description: choice.choiceText // Use choiceText as description
       };
     } catch (error) {
-      console.error('Error getting choice:', error);
       return null;
     }
   }
@@ -144,7 +138,6 @@ export class DatabaseStoryProvider implements StoryDataProvider {
         description: choice.choiceText // Use choiceText as description
       }));
     } catch (error) {
-      console.error('Error getting choices for page:', error);
       return [];
     }
   }
@@ -166,7 +159,6 @@ export class DatabaseStoryProvider implements StoryDataProvider {
 
       return firstPage.id;
     } catch (error) {
-      console.error('Error getting first page:', error);
       throw error;
     }
   }
@@ -192,7 +184,6 @@ export class DatabaseStoryProvider implements StoryDataProvider {
         coverImage: story.imageUrl
       };
     } catch (error) {
-      console.error('Error getting story metadata:', error);
       throw error;
     }
   }
