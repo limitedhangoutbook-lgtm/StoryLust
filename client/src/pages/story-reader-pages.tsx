@@ -71,6 +71,7 @@ export default function StoryReaderPages() {
 
   // Track reset state to prevent progress restoration conflicts
   const [isResetting, setIsResetting] = useState(false);
+  const [isManualNavigation, setIsManualNavigation] = useState(false);
 
   const saveProgress = useCallback((pageNumber: number) => {
     if (!storyId) return;
@@ -92,17 +93,21 @@ export default function StoryReaderPages() {
   // Navigation functions
   const goToPreviousPage = useCallback(() => {
     if (currentPage > 1) {
+      setIsManualNavigation(true);
       const newPage = currentPage - 1;
       setCurrentPage(newPage);
       saveProgress(newPage);
+      setTimeout(() => setIsManualNavigation(false), 100);
     }
   }, [currentPage, saveProgress]);
 
   const goToNextPage = useCallback(() => {
     if (currentPage < totalPages) {
+      setIsManualNavigation(true);
       const newPage = currentPage + 1;
       setCurrentPage(newPage);
       saveProgress(newPage);
+      setTimeout(() => setIsManualNavigation(false), 100);
     }
   }, [currentPage, totalPages, saveProgress]);
 
@@ -111,9 +116,9 @@ export default function StoryReaderPages() {
     if (allPages.length > 0) {
       setTotalPages(allPages.length);
       
-      // Skip progress restoration if user just reset the story
-      if (isResetting) {
-        return; // Don't overwrite the reset
+      // Skip progress restoration if user just reset the story or is manually navigating
+      if (isResetting || isManualNavigation) {
+        return; // Don't overwrite manual navigation
       }
       
       // ALWAYS start at page 1 unless we have valid progress
@@ -138,7 +143,7 @@ export default function StoryReaderPages() {
         setCurrentPage(targetPage);
       }
     }
-  }, [allPages, progress, storyId, isAuthenticated, isResetting, currentPage]);
+  }, [allPages, progress, storyId, isAuthenticated, isResetting, isManualNavigation, currentPage]);
 
   // Enhanced swipe handling for page navigation with better touch detection
   useEffect(() => {
@@ -146,17 +151,19 @@ export default function StoryReaderPages() {
     let startY = 0;
     let isSwipeDetected = false;
 
-    const handleTouchStart = (e: TouchEvent) => {
-      startX = e.touches[0].clientX;
-      startY = e.touches[0].clientY;
+    const handleTouchStart = (e: Event) => {
+      const touchEvent = e as TouchEvent;
+      startX = touchEvent.touches[0].clientX;
+      startY = touchEvent.touches[0].clientY;
       isSwipeDetected = false;
     };
 
-    const handleTouchMove = (e: TouchEvent) => {
+    const handleTouchMove = (e: Event) => {
+      const touchEvent = e as TouchEvent;
       if (!startX || !startY) return;
       
-      const currentX = e.touches[0].clientX;
-      const currentY = e.touches[0].clientY;
+      const currentX = touchEvent.touches[0].clientX;
+      const currentY = touchEvent.touches[0].clientY;
       
       const deltaX = Math.abs(currentX - startX);
       const deltaY = Math.abs(currentY - startY);
@@ -168,32 +175,28 @@ export default function StoryReaderPages() {
       }
     };
 
-    const handleTouchEnd = (e: TouchEvent) => {
+    const handleTouchEnd = (e: Event) => {
+      const touchEvent = e as TouchEvent;
       if (!isSwipeDetected) return;
       
-      const endX = e.changedTouches[0].clientX;
+      const endX = touchEvent.changedTouches[0].clientX;
       const deltaX = endX - startX;
       
       if (Math.abs(deltaX) > 80) {
         if (deltaX > 0 && currentPage > 1) {
           // Swipe right - go back
-          console.log('Swipe right detected - going back from page', currentPage);
+          setIsManualNavigation(true);
           const newPage = currentPage - 1;
           setCurrentPage(newPage);
           saveProgress(newPage);
+          setTimeout(() => setIsManualNavigation(false), 100);
         } else if (deltaX < 0 && choices.length === 0 && currentPage < totalPages) {
           // Swipe left - go forward (only if no choices)
-          console.log('Swipe left detected - going forward from page', currentPage, 'to', currentPage + 1);
+          setIsManualNavigation(true);
           const newPage = currentPage + 1;
           setCurrentPage(newPage);
           saveProgress(newPage);
-        } else {
-          console.log('Swipe detected but conditions not met:', { 
-            deltaX, 
-            currentPage, 
-            totalPages, 
-            hasChoices: choices.length > 0 
-          });
+          setTimeout(() => setIsManualNavigation(false), 100);
         }
       }
       
