@@ -182,7 +182,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       res.json(progress);
     } catch (error) {
-
+      console.error("Error saving reading progress:", error);
       res.status(500).json({ message: "Failed to save reading progress" });
     }
   });
@@ -205,7 +205,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       res.json(choice);
     } catch (error) {
-
+      console.error("Error saving user choice:", error);
       res.status(500).json({ message: "Failed to save user choice" });
     }
   });
@@ -219,7 +219,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const progress = await storage.markStoryCompleted(userId, storyId);
       res.json({ success: true, progress });
     } catch (error) {
-
+      console.error("Error marking story completed:", error);
       res.status(500).json({ message: "Failed to mark story completed" });
     }
   });
@@ -231,7 +231,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const stats = await storage.getUserStats(userId);
       res.json(stats);
     } catch (error) {
-
+      console.error("Error fetching user stats:", error);
       res.status(500).json({ message: "Failed to fetch user stats" });
     }
   });
@@ -243,7 +243,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const progressWithStories = await storage.getUserReadingProgressWithStories(userId);
       res.json(progressWithStories);
     } catch (error) {
-
+      console.error("Error fetching reading progress:", error);
       res.status(500).json({ message: "Failed to fetch reading progress" });
     }
   });
