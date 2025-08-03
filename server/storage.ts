@@ -333,14 +333,6 @@ export class Storage {
     return node;
   }
 
-  async getStoryPages(storyId: string): Promise<StoryPage[]> {
-    return await db
-      .select()
-      .from(storyPages)
-      .where(eq(storyPages.storyId, storyId))
-      .orderBy(storyPages.order);
-  }
-
   async getFirstStoryPage(storyId: string): Promise<StoryPage | undefined> {
     const [node] = await db
       .select()

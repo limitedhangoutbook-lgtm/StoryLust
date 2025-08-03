@@ -3,7 +3,6 @@ import { createServer, type Server } from "http";
 import Stripe from "stripe";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./auth";
-import { storyEngineService } from "./engines/StoryEngineService";
 import { analytics } from "./analytics/EventTracker";
 
 import { db } from "./db";
@@ -330,7 +329,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const session = await storage.startReadingSession({
         userId,
         storyId,
-        startNodeId,
+        startPageId: startNodeId, // Fix schema mismatch
       });
       res.json(session);
     } catch (error) {
