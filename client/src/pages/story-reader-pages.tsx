@@ -145,16 +145,18 @@ export default function StoryReaderPages() {
     }
   }, [allPages, progress, storyId, isAuthenticated, isResetting]);
 
-  // Simplified and reliable swipe navigation system
+  // Fast and responsive swipe navigation system
   useEffect(() => {
     const storyElement = document.getElementById('story-content');
     if (!storyElement) return;
 
     let startX = 0;
+    let startY = 0;
     let startTime = 0;
 
     const handleTouchStart = (e: TouchEvent) => {
       startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
       startTime = Date.now();
     };
 
@@ -162,12 +164,18 @@ export default function StoryReaderPages() {
       if (isNavigating) return;
       
       const endX = e.changedTouches[0].clientX;
+      const endY = e.changedTouches[0].clientY;
       const endTime = Date.now();
+      
       const deltaX = endX - startX;
+      const deltaY = endY - startY;
       const deltaTime = endTime - startTime;
       
-      // Valid swipe: significant distance (>100px), reasonable time (<600ms)
-      if (Math.abs(deltaX) > 100 && deltaTime < 600) {
+      // Must be horizontal swipe (more horizontal than vertical)
+      const isHorizontalSwipe = Math.abs(deltaX) > Math.abs(deltaY);
+      
+      // More sensitive thresholds: 60px minimum distance, 1 second max time
+      if (isHorizontalSwipe && Math.abs(deltaX) > 60 && deltaTime < 1000) {
         if (deltaX > 0 && currentPage > 1) {
           // Right swipe - go back
           goToPreviousPage();
@@ -179,6 +187,7 @@ export default function StoryReaderPages() {
       
       // Reset
       startX = 0;
+      startY = 0;
       startTime = 0;
     };
 
