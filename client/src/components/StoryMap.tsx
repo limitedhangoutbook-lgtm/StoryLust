@@ -97,12 +97,12 @@ export function StoryMap({ storyId, currentPage, isOpen, onClose, onNavigateToPa
             </div>
           ) : (
             <div className="relative">
-              {/* Simple Grid Layout for Now */}
+              {/* Top-Down Story Flow Layout */}
               <svg
                 width="100%"
-                height="400"
-                viewBox="0 0 600 400"
-                className="border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800"
+                height="500"
+                viewBox="0 0 800 500"
+                className="border border-gray-200 dark:border-gray-700 rounded-lg bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900"
               >
                 {/* Draw connections first (behind nodes) */}
                 {mapData?.choices.map((choice) => {
@@ -111,103 +111,125 @@ export function StoryMap({ storyId, currentPage, isOpen, onClose, onNavigateToPa
                   
                   if (!fromNode || !toNode) return null;
 
-                  const x1 = (fromNode.x * 150) + 75;
-                  const y1 = (fromNode.y * 100) + 50;
-                  const x2 = (toNode.x * 150) + 75;
-                  const y2 = (toNode.y * 100) + 50;
+                  const x1 = (fromNode.x * 100) + 50;
+                  const y1 = (fromNode.y * 80) + 40;
+                  const x2 = (toNode.x * 100) + 50;
+                  const y2 = (toNode.y * 80) + 40;
+
+                  // Create curved paths for better visual flow
+                  const midY = (y1 + y2) / 2;
+                  const curve = Math.abs(x2 - x1) > 50 ? 30 : 0;
+                  const pathData = `M ${x1} ${y1} Q ${x1 + (x2 - x1) / 2 + curve} ${midY} ${x2} ${y2}`;
 
                   return (
-                    <line
+                    <path
                       key={choice.id}
-                      x1={x1}
-                      y1={y1}
-                      x2={x2}
-                      y2={y2}
+                      d={pathData}
                       stroke={choice.isPremium ? "#e11d48" : "#6b7280"}
-                      strokeWidth="2"
-                      strokeDasharray={choice.isPremium && !choice.isOwned ? "5,5" : "none"}
-                      opacity={choice.isPremium && !choice.isOwned ? 0.4 : 0.8}
+                      strokeWidth="3"
+                      fill="none"
+                      strokeDasharray={choice.isPremium && !choice.isOwned ? "8,4" : "none"}
+                      opacity={choice.isPremium && !choice.isOwned ? 0.5 : 0.8}
+                      markerEnd="url(#arrowhead)"
                     />
                   );
                 })}
 
+                {/* Arrow marker definition */}
+                <defs>
+                  <marker
+                    id="arrowhead"
+                    markerWidth="10"
+                    markerHeight="7"
+                    refX="9"
+                    refY="3.5"
+                    orient="auto"
+                  >
+                    <polygon
+                      points="0 0, 10 3.5, 0 7"
+                      fill="#6b7280"
+                    />
+                  </marker>
+                </defs>
+
                 {/* Draw nodes */}
                 {mapData?.nodes.map((node) => {
-                  const x = (node.x * 150) + 25;
-                  const y = (node.y * 100) + 25;
+                  const x = (node.x * 100) + 20;
+                  const y = (node.y * 80) + 20;
                   const isCurrentPage = node.pageNumber === currentPage;
                   
                   return (
                     <g key={node.id}>
-                      {/* Node circle/square */}
+                      {/* Node circle/square with enhanced styling */}
                       {node.type === 'ending' ? (
                         <rect
                           x={x}
                           y={y}
-                          width="50"
-                          height="50"
-                          rx="8"
-                          fill={isCurrentPage ? "#fbbf24" : "#6b7280"}
-                          stroke={isCurrentPage ? "#f59e0b" : "#4b5563"}
-                          strokeWidth="2"
-                          className="cursor-pointer hover:opacity-80 transition-opacity"
+                          width="60"
+                          height="40"
+                          rx="12"
+                          fill={isCurrentPage ? "#fbbf24" : "#374151"}
+                          stroke={isCurrentPage ? "#f59e0b" : "#6b7280"}
+                          strokeWidth="3"
+                          className="cursor-pointer hover:opacity-80 transition-all duration-200 drop-shadow-md"
                           onClick={() => handleNodeClick(node)}
                         />
                       ) : (
                         <circle
-                          cx={x + 25}
-                          cy={y + 25}
-                          r="25"
+                          cx={x + 30}
+                          cy={y + 20}
+                          r="20"
                           fill={
                             isCurrentPage 
                               ? "#fbbf24" 
-                              : node.isPremium 
-                                ? "#e11d48" 
+                              : node.type === 'choice'
+                                ? "#10b981" 
                                 : "#6b7280"
                           }
                           stroke={
                             isCurrentPage 
                               ? "#f59e0b" 
-                              : node.isPremium 
-                                ? "#be185d" 
+                              : node.type === 'choice'
+                                ? "#059669" 
                                 : "#4b5563"
                           }
-                          strokeWidth="2"
-                          className="cursor-pointer hover:opacity-80 transition-opacity"
+                          strokeWidth="3"
+                          className="cursor-pointer hover:opacity-80 transition-all duration-200 drop-shadow-md"
                           onClick={() => handleNodeClick(node)}
                         />
                       )}
                       
                       {/* Current position indicator */}
                       {isCurrentPage && (
-                        <MapPin
-                          x={x + 37}
-                          y={y + 15}
-                          width="12"
-                          height="12"
-                          className="fill-white"
+                        <circle
+                          cx={x + 30}
+                          cy={y + 20}
+                          r="8"
+                          fill="white"
+                          className="animate-pulse"
                         />
                       )}
                       
                       {/* Page number */}
                       <text
-                        x={x + 25}
-                        y={y + (isCurrentPage ? 35 : 30)}
+                        x={node.type === 'ending' ? x + 30 : x + 30}
+                        y={node.type === 'ending' ? y + 25 : y + 25}
                         textAnchor="middle"
                         className="fill-white text-sm font-bold pointer-events-none"
+                        style={{ fontSize: '12px' }}
                       >
                         {node.pageNumber}
                       </text>
                       
                       {/* Title below node */}
                       <text
-                        x={x + 25}
-                        y={y + 70}
+                        x={x + 30}
+                        y={y + 55}
                         textAnchor="middle"
                         className="fill-gray-700 dark:fill-gray-300 text-xs pointer-events-none"
-                        style={{ fontSize: '10px' }}
+                        style={{ fontSize: '11px', fontWeight: '500' }}
                       >
-                        {node.title.slice(0, 12)}...
+                        {node.title.slice(0, 10)}{node.title.length > 10 ? '...' : ''}
                       </text>
                     </g>
                   );
@@ -215,26 +237,35 @@ export function StoryMap({ storyId, currentPage, isOpen, onClose, onNavigateToPa
               </svg>
 
               {/* Legend */}
-              <div className="mt-4 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
-                <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
-                  Legend
+              <div className="mt-6 p-4 bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 rounded-lg border">
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                  <Navigation className="w-4 h-4" />
+                  Story Flow Legend
                 </h3>
-                <div className="flex flex-wrap gap-4 text-xs text-gray-600 dark:text-gray-400">
+                <div className="grid grid-cols-2 gap-3 text-xs text-gray-600 dark:text-gray-400">
                   <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded-full bg-gray-500" />
+                    <div className="w-5 h-5 rounded-full bg-gray-500 border-2 border-gray-600" />
                     <span>Story Page</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded bg-gray-500" />
-                    <span>Ending</span>
+                    <div className="w-5 h-5 rounded-full bg-emerald-500 border-2 border-emerald-600" />
+                    <span>Choice Point</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded-full bg-rose-600" />
-                    <span>Premium Choice</span>
+                    <div className="w-6 h-4 rounded bg-gray-600 border-2 border-gray-700" />
+                    <span>Story Ending</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded-full bg-amber-500" />
-                    <span>Current Position</span>
+                    <div className="w-5 h-5 rounded-full bg-amber-500 border-2 border-amber-600 relative">
+                      <div className="absolute inset-1 rounded-full bg-white animate-pulse" />
+                    </div>
+                    <span>Your Position</span>
+                  </div>
+                  <div className="flex items-center gap-2 col-span-2">
+                    <svg width="20" height="8">
+                      <path d="M 2 4 Q 10 1 18 4" stroke="#e11d48" strokeWidth="2" fill="none" strokeDasharray="4,2" />
+                    </svg>
+                    <span>Premium Path (requires 🍆)</span>
                   </div>
                 </div>
               </div>

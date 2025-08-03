@@ -807,26 +807,30 @@ export class Storage {
       }
     });
 
-    // Build nodes for accessible pages
-    pages
-      .filter(page => accessiblePageIds.has(page.id))
-      .forEach((page, index) => {
-        const pageChoices = accessibleChoices.filter(c => c.fromPageId === page.id);
-        const isChoicePage = pageChoices.length > 0;
-        const isEndingPage = pageChoices.length === 0 && page.order > 1;
+    // Build nodes with top-down layout
+    const accessiblePages = pages.filter(page => accessiblePageIds.has(page.id));
+    
+    // Create a hierarchical layout
+    const layoutNodes = this.calculateStoryLayout(accessiblePages, accessibleChoices);
+    
+    layoutNodes.forEach(layoutNode => {
+      const page = layoutNode.page;
+      const pageChoices = accessibleChoices.filter(c => c.fromPageId === page.id);
+      const isChoicePage = pageChoices.length > 0;
+      const isEndingPage = pageChoices.length === 0 && page.order > 1;
 
-        mapNodes.push({
-          id: page.id,
-          type: isEndingPage ? 'ending' : isChoicePage ? 'choice' : 'page',
-          pageNumber: page.order,
-          title: page.title,
-          isPremium: false, // Pages themselves aren't premium, choices are
-          isOwned: true, // If we can see the page, we can access it
-          x: index % 3, // Simple grid layout for now
-          y: Math.floor(index / 3),
-          connections: pageChoices.map(c => c.id),
-        });
+      mapNodes.push({
+        id: page.id,
+        type: isEndingPage ? 'ending' : isChoicePage ? 'choice' : 'page',
+        pageNumber: page.order,
+        title: page.title,
+        isPremium: false,
+        isOwned: true,
+        x: layoutNode.x,
+        y: layoutNode.y,
+        connections: pageChoices.map(c => c.id),
       });
+    });
 
     return {
       storyId,
@@ -842,6 +846,52 @@ export class Storage {
         targetPage: choice.targetPage,
       })),
     };
+  }
+
+  // Calculate hierarchical layout for story map
+  private calculateStoryLayout(pages: any[], choices: any[]) {
+    const layoutNodes: Array<{ page: any; x: number; y: number }> = [];
+    const usedPositions = new Set<string>();
+    
+    // Sort pages by order for top-down flow
+    const sortedPages = [...pages].sort((a, b) => a.order - b.order);
+    
+    // Track branches for side positioning
+    let currentBranchOffset = 0;
+    const pageToPosition = new Map<string, { x: number; y: number }>();
+    
+    sortedPages.forEach((page, index) => {
+      const pageChoices = choices.filter(c => c.fromPageId === page.id);
+      
+      if (index === 0) {
+        // Starting page at the top center
+        const pos = { x: 3, y: 0 };
+        pageToPosition.set(page.id, pos);
+        layoutNodes.push({ page, ...pos });
+      } else if (pageChoices.length === 0) {
+        // Ending pages - spread them out horizontally at the bottom
+        const endingIndex = sortedPages.filter(p => 
+          choices.filter(c => c.fromPageId === p.id).length === 0
+        ).indexOf(page);
+        const pos = { x: 1 + endingIndex * 2, y: Math.max(5, Math.floor(index / 2) + 3) };
+        pageToPosition.set(page.id, pos);
+        layoutNodes.push({ page, ...pos });
+      } else if (pageChoices.length > 1) {
+        // Choice pages - main vertical flow
+        const pos = { x: 3, y: Math.floor(index / 2) + 1 };
+        pageToPosition.set(page.id, pos);
+        layoutNodes.push({ page, ...pos });
+      } else {
+        // Single choice pages - slight offset for visual variety
+        const offset = currentBranchOffset % 2 === 0 ? -1 : 1;
+        const pos = { x: 3 + offset, y: Math.floor(index / 2) + 1 };
+        pageToPosition.set(page.id, pos);
+        layoutNodes.push({ page, ...pos });
+        currentBranchOffset++;
+      }
+    });
+    
+    return layoutNodes;
   }
 
   async getStoryStartingNode(storyId: string): Promise<StoryPage | undefined> {
