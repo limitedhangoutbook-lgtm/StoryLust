@@ -71,6 +71,7 @@ export default function StoryReaderPages() {
 
   // Track reset state to prevent progress restoration conflicts
   const [isResetting, setIsResetting] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
 
   const saveProgress = useCallback((pageNumber: number) => {
     if (!storyId) return;
@@ -145,7 +146,6 @@ export default function StoryReaderPages() {
   }, [allPages, progress, storyId, isAuthenticated, isResetting, currentPage]);
 
   // Fresh swipe navigation system
-  const [isNavigating, setIsNavigating] = useState(false);
   
   useEffect(() => {
     const storyElement = document.getElementById('story-content');
