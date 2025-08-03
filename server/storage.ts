@@ -363,6 +363,11 @@ export class Storage {
     return choice;
   }
 
+  async getStoryPage(pageId: string): Promise<StoryPage | undefined> {
+    const [page] = await db.select().from(storyPages).where(eq(storyPages.id, pageId));
+    return page;
+  }
+
   async getStoryChoice(choiceId: string): Promise<StoryChoice | undefined> {
     const [choice] = await db.select().from(storyChoices).where(eq(storyChoices.id, choiceId));
     return choice;

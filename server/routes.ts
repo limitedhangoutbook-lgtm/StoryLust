@@ -578,7 +578,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // For page-based stories, use the choice's target_page if available
-      const targetPage = choice.targetPage || (currentPage + 1);
+      // If no targetPage, try to get it from the to_page_id's order, or fallback to current+1
+      let targetPage = choice.targetPage;
+      
+      if (!targetPage && choice.toPageId) {
+        // Try to get the target page order from the database
+        try {
+          const targetPageData = await storage.getStoryPage(choice.toPageId);
+          if (targetPageData) {
+            targetPage = targetPageData.order;
+          }
+        } catch (error) {
+          console.error("Error getting target page data:", error);
+        }
+      }
+      
+      // Final fallback
+      if (!targetPage) {
+        targetPage = currentPage + 1;
+      }
       
       // Return info about whether this was already owned BEFORE the purchase
       const wasAlreadyOwned = choice.isPremium && req.isAuthenticated() ? alreadyPurchased : false;
