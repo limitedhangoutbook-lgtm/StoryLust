@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRoute, useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -72,6 +72,40 @@ export default function StoryReaderPages() {
   // Track reset state to prevent progress restoration conflicts
   const [isResetting, setIsResetting] = useState(false);
 
+  const saveProgress = useCallback((pageNumber: number) => {
+    if (!storyId) return;
+
+    // Save locally (page-based only)
+    localStorage.setItem(`story-${storyId}-page`, pageNumber.toString());
+    
+    // Save to server if authenticated (page-based only)
+    if (isAuthenticated) {
+      apiRequest("POST", "/api/reading-progress", {
+        storyId,
+        currentPage: pageNumber, // Pure page-based progress
+        pagesRead: pageNumber,
+        isBookmarked: false,
+      }).catch(() => {});
+    }
+  }, [storyId, isAuthenticated]);
+
+  // Navigation functions
+  const goToPreviousPage = useCallback(() => {
+    if (currentPage > 1) {
+      const newPage = currentPage - 1;
+      setCurrentPage(newPage);
+      saveProgress(newPage);
+    }
+  }, [currentPage, saveProgress]);
+
+  const goToNextPage = useCallback(() => {
+    if (currentPage < totalPages) {
+      const newPage = currentPage + 1;
+      setCurrentPage(newPage);
+      saveProgress(newPage);
+    }
+  }, [currentPage, totalPages, saveProgress]);
+
   // Set total pages when data loads and fix progress logic
   useEffect(() => {
     if (allPages.length > 0) {
@@ -136,41 +170,7 @@ export default function StoryReaderPages() {
       document.removeEventListener('touchstart', handleTouchStart);
       document.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [currentPage, totalPages, choices.length]);
-
-  // Navigation functions
-  const goToPreviousPage = () => {
-    if (currentPage > 1) {
-      const newPage = currentPage - 1;
-      setCurrentPage(newPage);
-      saveProgress(newPage);
-    }
-  };
-
-  const goToNextPage = () => {
-    if (currentPage < totalPages) {
-      const newPage = currentPage + 1;
-      setCurrentPage(newPage);
-      saveProgress(newPage);
-    }
-  };
-
-  const saveProgress = (pageNumber: number) => {
-    if (!storyId) return;
-
-    // Save locally (page-based only)
-    localStorage.setItem(`story-${storyId}-page`, pageNumber.toString());
-    
-    // Save to server if authenticated (page-based only)
-    if (isAuthenticated) {
-      apiRequest("POST", "/api/reading-progress", {
-        storyId,
-        currentPage: pageNumber, // Pure page-based progress
-        pagesRead: pageNumber,
-        isBookmarked: false,
-      }).catch(() => {});
-    }
-  };
+  }, [currentPage, totalPages, choices.length, goToPreviousPage, goToNextPage]);
 
   // Navigate to first choice page for re-exploration
   const goToFirstChoice = async () => {
