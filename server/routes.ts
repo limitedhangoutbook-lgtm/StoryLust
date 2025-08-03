@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import Stripe from "stripe";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./auth";
+import { registerV2StoryRoutes } from "./routes/v2-story";
 import { db } from "./db";
 import { and, eq, gt, sql } from "drizzle-orm";
 import { storyPages, storyChoices, users } from "@shared/schema";
@@ -17,6 +18,9 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth setup
   await setupAuth(app);
+
+  // === V2 MODULAR STORY ROUTES ===
+  registerV2StoryRoutes(app);
 
   // === USER ROUTES ===
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {

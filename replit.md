@@ -9,9 +9,10 @@ User feedback: Very appreciative of thorough help and comprehensive solutions.
 
 ## System Architecture
 
-### Current State (V1.1)
+### Current State (V1.1 → V2.0)
 - Production-ready core functionality with solid technical foundation
-- Functional but tightly coupled architecture suitable for current scale
+- **In Progress**: Implementing modular architecture with story engine abstraction
+- **Phase 1 Started**: Created isolated story engine, choice evaluator, and auth provider interfaces
 - External validation: ChatGPT assessment confirms modern tech stack and clean structure
 
 ### Frontend Architecture
