@@ -89,22 +89,26 @@ export default function StoryReaderPages() {
     }
   }, [storyId, isAuthenticated]);
 
-  // Navigation functions
+  // Navigation functions with navigation lock
   const goToPreviousPage = useCallback(() => {
-    if (currentPage > 1) {
+    if (currentPage > 1 && !isNavigating) {
+      setIsNavigating(true);
       const newPage = currentPage - 1;
       setCurrentPage(newPage);
       saveProgress(newPage);
+      setTimeout(() => setIsNavigating(false), 300);
     }
-  }, [currentPage, saveProgress]);
+  }, [currentPage, saveProgress, isNavigating]);
 
   const goToNextPage = useCallback(() => {
-    if (currentPage < totalPages) {
+    if (currentPage < totalPages && !isNavigating) {
+      setIsNavigating(true);
       const newPage = currentPage + 1;
       setCurrentPage(newPage);
       saveProgress(newPage);
+      setTimeout(() => setIsNavigating(false), 300);
     }
-  }, [currentPage, totalPages, saveProgress]);
+  }, [currentPage, totalPages, saveProgress, isNavigating]);
 
   // Set total pages when data loads and fix progress logic
   useEffect(() => {
@@ -140,45 +144,84 @@ export default function StoryReaderPages() {
     }
   }, [allPages, progress, storyId, isAuthenticated, isResetting, currentPage]);
 
-  // Simple and reliable swipe handling using refs
+  // Fresh swipe navigation system
+  const [isNavigating, setIsNavigating] = useState(false);
+  
   useEffect(() => {
-    const storyContent = document.getElementById('story-content');
-    if (!storyContent) return;
+    const storyElement = document.getElementById('story-content');
+    if (!storyElement) return;
 
-    let startX = 0;
-    let startTime = 0;
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchStartTime = 0;
+    let isSwiping = false;
 
     const handleTouchStart = (e: TouchEvent) => {
-      startX = e.touches[0].clientX;
-      startTime = Date.now();
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      touchStartTime = Date.now();
+      isSwiping = false;
     };
 
-    const handleTouchEnd = (e: TouchEvent) => {
-      const endX = e.changedTouches[0].clientX;
-      const endTime = Date.now();
-      const deltaX = endX - startX;
-      const deltaTime = endTime - startTime;
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!touchStartX) return;
       
-      // Only process quick swipes (under 500ms) with significant distance
-      if (Math.abs(deltaX) > 100 && deltaTime < 500) {
-        if (deltaX > 0 && currentPage > 1) {
-          // Swipe right - go back
-          goToPreviousPage();
-        } else if (deltaX < 0 && choices.length === 0 && currentPage < totalPages) {
-          // Swipe left - go forward (only if no choices)
-          goToNextPage();
-        }
+      const touchX = e.touches[0].clientX;
+      const touchY = e.touches[0].clientY;
+      const deltaX = Math.abs(touchX - touchStartX);
+      const deltaY = Math.abs(touchY - touchStartY);
+      
+      // Determine if this is a horizontal swipe
+      if (deltaX > 20 && deltaX > deltaY) {
+        isSwiping = true;
+        e.preventDefault(); // Prevent scrolling during horizontal swipe
       }
     };
 
-    storyContent.addEventListener('touchstart', handleTouchStart, { passive: true });
-    storyContent.addEventListener('touchend', handleTouchEnd, { passive: true });
+    const handleTouchEnd = (e: TouchEvent) => {
+      if (!isSwiping || !touchStartX || isNavigating) return;
+      
+      const touchEndX = e.changedTouches[0].clientX;
+      const touchEndTime = Date.now();
+      const swipeDistance = touchEndX - touchStartX;
+      const swipeTime = touchEndTime - touchStartTime;
+      
+      // Valid swipe: significant distance, reasonable time, not already navigating
+      if (Math.abs(swipeDistance) > 80 && swipeTime < 800) {
+        setIsNavigating(true);
+        
+        if (swipeDistance > 0 && currentPage > 1) {
+          // Right swipe - go back
+          const newPage = currentPage - 1;
+          setCurrentPage(newPage);
+          saveProgress(newPage);
+        } else if (swipeDistance < 0 && choices.length === 0 && currentPage < totalPages) {
+          // Left swipe - go forward (only if no choices)
+          const newPage = currentPage + 1;
+          setCurrentPage(newPage);
+          saveProgress(newPage);
+        }
+        
+        // Reset navigation lock after a short delay
+        setTimeout(() => setIsNavigating(false), 300);
+      }
+      
+      // Reset touch state
+      touchStartX = 0;
+      touchStartY = 0;
+      isSwiping = false;
+    };
+
+    storyElement.addEventListener('touchstart', handleTouchStart, { passive: false });
+    storyElement.addEventListener('touchmove', handleTouchMove, { passive: false });
+    storyElement.addEventListener('touchend', handleTouchEnd, { passive: false });
 
     return () => {
-      storyContent.removeEventListener('touchstart', handleTouchStart);
-      storyContent.removeEventListener('touchend', handleTouchEnd);
+      storyElement.removeEventListener('touchstart', handleTouchStart);
+      storyElement.removeEventListener('touchmove', handleTouchMove);
+      storyElement.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [currentPage, totalPages, choices.length, goToPreviousPage, goToNextPage]);
+  }, [currentPage, totalPages, choices.length, saveProgress, isNavigating]);
 
   // Navigate to first choice page for re-exploration
   const goToFirstChoice = async () => {
