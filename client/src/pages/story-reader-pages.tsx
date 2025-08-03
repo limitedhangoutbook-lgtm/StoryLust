@@ -115,35 +115,37 @@ export default function StoryReaderPages() {
   useEffect(() => {
     if (allPages.length > 0) {
       setTotalPages(allPages.length);
-      
-      // Skip progress restoration if user just reset the story or is navigating
-      if (isResetting || isNavigating) {
-        return; // Don't overwrite manual navigation
-      }
-      
-      // ALWAYS start at page 1 unless we have valid progress
-      let targetPage = 1;
-      
-      // Check authenticated user progress first
-      if (progress?.currentPage && progress.currentPage >= 1 && progress.currentPage <= allPages.length) {
-        targetPage = progress.currentPage;
-      } else if (!isAuthenticated) {
-        // Check localStorage for guests only if not authenticated
-        const savedPage = localStorage.getItem(`story-${storyId}-page`);
-        if (savedPage) {
-          const savedPageNum = parseInt(savedPage);
-          if (savedPageNum >= 1 && savedPageNum <= allPages.length) {
-            targetPage = savedPageNum;
-          }
+    }
+  }, [allPages]);
+
+  // Separate effect for progress restoration to prevent loops
+  useEffect(() => {
+    if (allPages.length === 0 || isResetting || isNavigating) {
+      return; // Don't restore during reset or navigation
+    }
+    
+    // Only restore progress once when the story loads
+    let targetPage = 1;
+    
+    // Check authenticated user progress first
+    if (progress?.currentPage && progress.currentPage >= 1 && progress.currentPage <= allPages.length) {
+      targetPage = progress.currentPage;
+    } else if (!isAuthenticated) {
+      // Check localStorage for guests only if not authenticated
+      const savedPage = localStorage.getItem(`story-${storyId}-page`);
+      if (savedPage) {
+        const savedPageNum = parseInt(savedPage);
+        if (savedPageNum >= 1 && savedPageNum <= allPages.length) {
+          targetPage = savedPageNum;
         }
       }
-      
-      // Only set current page if it's different and we're not currently navigating
-      if (currentPage !== targetPage) {
-        setCurrentPage(targetPage);
-      }
     }
-  }, [allPages, progress, storyId, isAuthenticated, isResetting]);
+    
+    // Only set current page if it's different to avoid loops
+    if (currentPage !== targetPage) {
+      setCurrentPage(targetPage);
+    }
+  }, [progress, storyId, isAuthenticated, allPages.length]); // Removed currentPage dependency
 
   // Fast and responsive swipe navigation system
   useEffect(() => {
@@ -365,6 +367,7 @@ export default function StoryReaderPages() {
   // Reset story
   const resetMutation = useMutation({
     mutationFn: async () => {
+      console.log("Reset mutation called for story:", storyId);
       setIsResetting(true);
       
       // Clear local storage FIRST to prevent it from overriding reset
@@ -379,6 +382,7 @@ export default function StoryReaderPages() {
       return { success: true };
     },
     onSuccess: () => {
+      console.log("Reset mutation success - setting page to 1");
       // Reset to page 1 and save it immediately to prevent overwrites
       setCurrentPage(1);
       saveProgress(1); // Save page 1 immediately
@@ -396,8 +400,13 @@ export default function StoryReaderPages() {
       // Reset the reset state after a short delay
       setTimeout(() => {
         setIsResetting(false);
+        console.log("Reset state cleared");
       }, 3000);
     },
+    onError: (error) => {
+      console.error("Reset mutation failed:", error);
+      setIsResetting(false);
+    }
   });
 
   // Check if story is ending
