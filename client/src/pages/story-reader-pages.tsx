@@ -140,35 +140,76 @@ export default function StoryReaderPages() {
     }
   }, [allPages, progress, storyId, isAuthenticated, isResetting, currentPage]);
 
-  // Simple swipe handling for page navigation
+  // Enhanced swipe handling for page navigation with better touch detection
   useEffect(() => {
     let startX = 0;
+    let startY = 0;
+    let isSwipeDetected = false;
 
     const handleTouchStart = (e: TouchEvent) => {
       startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      isSwipeDetected = false;
     };
 
-    const handleTouchEnd = (e: TouchEvent) => {
-      const endX = e.changedTouches[0].clientX;
-      const deltaX = endX - startX;
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!startX || !startY) return;
       
-      if (Math.abs(deltaX) > 100) {
-        if (deltaX > 0 && currentPage > 1) {
-          // Swipe right - go back
-          goToPreviousPage();
-        } else if (deltaX < 0 && choices.length === 0 && currentPage < totalPages) {
-          // Swipe left - go forward (only if no choices)
-          goToNextPage();
-        }
+      const currentX = e.touches[0].clientX;
+      const currentY = e.touches[0].clientY;
+      
+      const deltaX = Math.abs(currentX - startX);
+      const deltaY = Math.abs(currentY - startY);
+      
+      // Detect horizontal swipe (deltaX > deltaY means more horizontal than vertical)
+      if (deltaX > 30 && deltaX > deltaY * 1.5) {
+        isSwipeDetected = true;
+        e.preventDefault(); // Prevent scrolling during swipe
       }
     };
 
-    document.addEventListener('touchstart', handleTouchStart);
-    document.addEventListener('touchend', handleTouchEnd);
+    const handleTouchEnd = (e: TouchEvent) => {
+      if (!isSwipeDetected) return;
+      
+      const endX = e.changedTouches[0].clientX;
+      const deltaX = endX - startX;
+      
+      if (Math.abs(deltaX) > 80) {
+        if (deltaX > 0 && currentPage > 1) {
+          // Swipe right - go back
+          console.log('Swipe right detected - going back');
+          goToPreviousPage();
+        } else if (deltaX < 0 && choices.length === 0 && currentPage < totalPages) {
+          // Swipe left - go forward (only if no choices)
+          console.log('Swipe left detected - going forward');
+          goToNextPage();
+        } else {
+          console.log('Swipe detected but conditions not met:', { 
+            deltaX, 
+            currentPage, 
+            totalPages, 
+            hasChoices: choices.length > 0 
+          });
+        }
+      }
+      
+      startX = 0;
+      startY = 0;
+      isSwipeDetected = false;
+    };
+
+    // Attach to the main content area instead of document
+    const mainElement = document.querySelector('#story-content');
+    const targetElement = mainElement || document;
+
+    targetElement.addEventListener('touchstart', handleTouchStart, { passive: false });
+    targetElement.addEventListener('touchmove', handleTouchMove, { passive: false });
+    targetElement.addEventListener('touchend', handleTouchEnd, { passive: false });
 
     return () => {
-      document.removeEventListener('touchstart', handleTouchStart);
-      document.removeEventListener('touchend', handleTouchEnd);
+      targetElement.removeEventListener('touchstart', handleTouchStart);
+      targetElement.removeEventListener('touchmove', handleTouchMove);
+      targetElement.removeEventListener('touchend', handleTouchEnd);
     };
   }, [currentPage, totalPages, choices.length, goToPreviousPage, goToNextPage]);
 
@@ -428,7 +469,7 @@ export default function StoryReaderPages() {
       </header>
 
       {/* Main Content */}
-      <main className="pt-16 sm:pt-20 px-4 sm:px-6 max-w-3xl mx-auto pb-32">
+      <main id="story-content" className="pt-16 sm:pt-20 px-4 sm:px-6 max-w-3xl mx-auto pb-32">
         {/* Page Progress Bar */}
         <div className="mb-6">
           <div className="w-full bg-dark-tertiary rounded-full h-2">
