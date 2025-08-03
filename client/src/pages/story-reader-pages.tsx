@@ -74,6 +74,11 @@ export default function StoryReaderPages() {
     if (allPages.length > 0) {
       setTotalPages(allPages.length);
       
+      // Skip progress restoration if user just reset the story
+      if (resetMutation.isSuccess) {
+        return; // Don't overwrite the reset
+      }
+      
       // ALWAYS start at page 1 unless we have valid progress
       let targetPage = 1;
       
@@ -91,9 +96,12 @@ export default function StoryReaderPages() {
         }
       }
       
-      setCurrentPage(targetPage);
+      // Only set current page if it's different to avoid unnecessary renders
+      if (currentPage !== targetPage) {
+        setCurrentPage(targetPage);
+      }
     }
-  }, [allPages, progress, storyId, isAuthenticated]);
+  }, [allPages, progress, storyId, isAuthenticated, resetMutation.isSuccess, currentPage]);
 
   // Simple swipe handling for page navigation
   useEffect(() => {
@@ -327,19 +335,36 @@ export default function StoryReaderPages() {
   // Reset story
   const resetMutation = useMutation({
     mutationFn: async () => {
-      // Clear local storage
+      // Clear local storage FIRST to prevent it from overriding reset
       localStorage.removeItem(`story-${storyId}-page`);
       
       // Clear server progress if authenticated
       if (isAuthenticated) {
         await apiRequest("POST", `/api/stories/${storyId}/start-from-beginning`);
       }
+      
+      // Return success to ensure proper sequencing
+      return { success: true };
     },
     onSuccess: () => {
-      // Reset to page 1
+      // Reset to page 1 and save it immediately to prevent overwrites
       setCurrentPage(1);
-      // Refresh reading progress
+      saveProgress(1); // Save page 1 immediately
+      
+      // Refresh all related queries to sync state
       queryClient.invalidateQueries({ queryKey: [`/api/reading-progress/${storyId}`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/reading-progress`] });
+      
+      toast({
+        title: "Story Reset",
+        description: "You're back at the beginning of the story!",
+        duration: 2000,
+      });
+      
+      // Reset the mutation state after a short delay to allow progress restoration to work normally again
+      setTimeout(() => {
+        resetMutation.reset();
+      }, 3000);
     },
   });
 
