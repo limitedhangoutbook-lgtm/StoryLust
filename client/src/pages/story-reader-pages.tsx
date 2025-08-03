@@ -69,13 +69,16 @@ export default function StoryReaderPages() {
     enabled: !!storyId && isAuthenticated,
   });
 
+  // Track reset state to prevent progress restoration conflicts
+  const [isResetting, setIsResetting] = useState(false);
+
   // Set total pages when data loads and fix progress logic
   useEffect(() => {
     if (allPages.length > 0) {
       setTotalPages(allPages.length);
       
       // Skip progress restoration if user just reset the story
-      if (resetMutation.isSuccess) {
+      if (isResetting) {
         return; // Don't overwrite the reset
       }
       
@@ -101,7 +104,7 @@ export default function StoryReaderPages() {
         setCurrentPage(targetPage);
       }
     }
-  }, [allPages, progress, storyId, isAuthenticated, resetMutation.isSuccess, currentPage]);
+  }, [allPages, progress, storyId, isAuthenticated, isResetting, currentPage]);
 
   // Simple swipe handling for page navigation
   useEffect(() => {
@@ -335,6 +338,8 @@ export default function StoryReaderPages() {
   // Reset story
   const resetMutation = useMutation({
     mutationFn: async () => {
+      setIsResetting(true);
+      
       // Clear local storage FIRST to prevent it from overriding reset
       localStorage.removeItem(`story-${storyId}-page`);
       
@@ -361,9 +366,9 @@ export default function StoryReaderPages() {
         duration: 2000,
       });
       
-      // Reset the mutation state after a short delay to allow progress restoration to work normally again
+      // Reset the reset state after a short delay
       setTimeout(() => {
-        resetMutation.reset();
+        setIsResetting(false);
       }, 3000);
     },
   });
