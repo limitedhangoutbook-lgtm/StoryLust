@@ -5,8 +5,9 @@ import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, Home } from "lucide-react";
+import { ChevronLeft, Home, Map } from "lucide-react";
 import { ChatMessageRenderer } from "@/components/chat-message-renderer";
+import { StoryMap } from "@/components/StoryMap";
 import type { StoryPage, Choice } from "@shared/types";
 
 export default function StoryReaderPages() {
@@ -19,6 +20,7 @@ export default function StoryReaderPages() {
   // Page-based state
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
+  const [showStoryMap, setShowStoryMap] = useState(false);
   
   const storyId = params?.storyId;
 
@@ -204,6 +206,15 @@ export default function StoryReaderPages() {
     }
   };
 
+  // Handle navigation from story map
+  const handleMapNavigation = (pageNumber: number) => {
+    if (pageNumber >= 1 && pageNumber <= totalPages) {
+      setCurrentPage(pageNumber);
+      saveProgress(pageNumber);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   // Handle choice click with authentication check
   const handleChoiceClick = (choice: any) => {
     // Check if this is a premium choice and user is not authenticated
@@ -363,6 +374,17 @@ export default function StoryReaderPages() {
           </h1>
           
           <div className="flex items-center space-x-2">
+            {/* Story Map Button */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowStoryMap(true)}
+              className="text-kindle-secondary hover:text-kindle p-2"
+              title="Story Map"
+            >
+              <Map className="w-5 h-5" />
+            </Button>
+            
             {/* Floating Eggplant Counter */}
             {isAuthenticated && user && (
               <div className="flex items-center space-x-1 bg-dark-tertiary/30 px-2 py-1 rounded-full text-xs">
@@ -537,6 +559,15 @@ export default function StoryReaderPages() {
           </div>
         </div>
       )}
+
+      {/* Story Map */}
+      <StoryMap
+        storyId={storyId || ""}
+        currentPage={currentPage}
+        isOpen={showStoryMap}
+        onClose={() => setShowStoryMap(false)}
+        onNavigateToPage={handleMapNavigation}
+      />
     </div>
   );
 }

@@ -747,6 +747,103 @@ export class Storage {
     ));
   }
 
+  // === STORY MAP GENERATION ===
+  async getStoryMapData(storyId: string, ownedChoiceIds: Set<string>) {
+    // Get all pages and choices for the story
+    const pages = await db
+      .select()
+      .from(storyPages)
+      .where(eq(storyPages.storyId, storyId))
+      .orderBy(storyPages.order);
+
+    const allChoices = await db
+      .select({
+        id: storyChoices.id,
+        fromPageId: storyChoices.fromPageId,
+        toPageId: storyChoices.toPageId,
+        choiceText: storyChoices.choiceText,
+        isPremium: storyChoices.isPremium,
+        eggplantCost: storyChoices.eggplantCost,
+        targetPage: storyChoices.targetPage,
+        order: storyChoices.order,
+      })
+      .from(storyChoices)
+      .innerJoin(storyPages, eq(storyChoices.fromPageId, storyPages.id))
+      .where(eq(storyPages.storyId, storyId))
+      .orderBy(storyPages.order, storyChoices.order);
+
+    // Build accessible choice tree (only free or owned choices)
+    const accessibleChoices = allChoices.filter(choice => 
+      !choice.isPremium || ownedChoiceIds.has(choice.id)
+    );
+
+    // Create map nodes with positioning
+    const mapNodes: Array<{
+      id: string;
+      type: 'page' | 'choice' | 'ending';
+      pageNumber: number;
+      title: string;
+      isPremium: boolean;
+      isOwned: boolean;
+      x: number;
+      y: number;
+      connections: string[];
+    }> = [];
+
+    // Add accessible pages as nodes
+    const accessiblePageIds = new Set<string>();
+    
+    // Always include starting page (page 1)
+    const startingPage = pages.find(p => p.order === 1);
+    if (startingPage) {
+      accessiblePageIds.add(startingPage.id);
+    }
+
+    // Add pages that are reachable through accessible choices
+    accessibleChoices.forEach(choice => {
+      accessiblePageIds.add(choice.fromPageId);
+      if (choice.toPageId) {
+        accessiblePageIds.add(choice.toPageId);
+      }
+    });
+
+    // Build nodes for accessible pages
+    pages
+      .filter(page => accessiblePageIds.has(page.id))
+      .forEach((page, index) => {
+        const pageChoices = accessibleChoices.filter(c => c.fromPageId === page.id);
+        const isChoicePage = pageChoices.length > 0;
+        const isEndingPage = pageChoices.length === 0 && page.order > 1;
+
+        mapNodes.push({
+          id: page.id,
+          type: isEndingPage ? 'ending' : isChoicePage ? 'choice' : 'page',
+          pageNumber: page.order,
+          title: page.title,
+          isPremium: false, // Pages themselves aren't premium, choices are
+          isOwned: true, // If we can see the page, we can access it
+          x: index % 3, // Simple grid layout for now
+          y: Math.floor(index / 3),
+          connections: pageChoices.map(c => c.id),
+        });
+      });
+
+    return {
+      storyId,
+      nodes: mapNodes,
+      choices: accessibleChoices.map(choice => ({
+        id: choice.id,
+        fromPageId: choice.fromPageId,
+        toPageId: choice.toPageId,
+        text: choice.choiceText,
+        isPremium: choice.isPremium,
+        isOwned: ownedChoiceIds.has(choice.id),
+        eggplantCost: choice.eggplantCost || 0,
+        targetPage: choice.targetPage,
+      })),
+    };
+  }
+
   async getStoryStartingNode(storyId: string): Promise<StoryPage | undefined> {
     const [node] = await db
       .select()

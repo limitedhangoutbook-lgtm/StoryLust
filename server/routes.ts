@@ -154,6 +154,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // === STORY MAP ROUTE ===
+  app.get('/api/stories/:storyId/map', async (req: any, res) => {
+    try {
+      const { storyId } = req.params;
+      
+      // Get user's purchased paths if authenticated
+      let ownedChoiceIds = new Set<string>();
+      if (req.isAuthenticated()) {
+        const userId = req.user.claims.sub;
+        const purchasedPaths = await storage.getUserPurchasedPaths(userId, storyId);
+        ownedChoiceIds = new Set(purchasedPaths.map(p => p.choiceId));
+      }
+      
+      const mapData = await storage.getStoryMapData(storyId, ownedChoiceIds);
+      res.json(mapData);
+    } catch (error) {
+      console.error("Error fetching story map:", error);
+      res.status(500).json({ message: "Failed to fetch story map" });
+    }
+  });
+
   // PAGE-BASED NAVIGATION: No more node endpoints needed!
 
   // === READING PROGRESS ROUTES ===
