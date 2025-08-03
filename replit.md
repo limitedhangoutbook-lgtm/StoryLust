@@ -9,6 +9,11 @@ User feedback: Very appreciative of thorough help and comprehensive solutions.
 
 ## System Architecture
 
+### Current State (V1.1)
+- Production-ready core functionality with solid technical foundation
+- Functional but tightly coupled architecture suitable for current scale
+- External validation: ChatGPT assessment confirms modern tech stack and clean structure
+
 ### Frontend Architecture
 - **Framework**: React 18 with TypeScript
 - **Routing**: Wouter for client-side routing
@@ -39,6 +44,13 @@ User feedback: Very appreciative of thorough help and comprehensive solutions.
 - **User System**: Four-tier system (guest, registered, admin, mega-admin) with role-based access control.
 - **Reading Experience**: Kindle-like interface with advanced typography, automatic story position saving/restoration for all users, touch navigation with swipe gestures.
 - **Deployment Strategy**: Vite for frontend build, esbuild for backend, static files served from `dist/public`, Node.js (ES module support), PostgreSQL, HTTPS. Scalability via serverless database, database-backed sessions, CDN for static assets, and stateless API design.
+
+### Future Architecture (V2.0+ Roadmap)
+- **Modular Design**: Planned decoupling of story engine, auth providers, and content management
+- **Enhanced UX**: Emotion-driven components with tension mechanics and visual breadcrumbs
+- **Analytics Layer**: A/B testing framework and conversion optimization
+- **Scalability**: Plugin-based architecture for multi-provider auth and swappable monetization strategies
+- See `ARCHITECTURE_ROADMAP.md` for detailed implementation plan
 
 ## External Dependencies
 
