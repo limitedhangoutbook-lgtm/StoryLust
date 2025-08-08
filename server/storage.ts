@@ -866,48 +866,62 @@ export class Storage {
     };
   }
 
-  // Calculate sketch-based layout matching user's design
+  // Calculate branching tree layout to show story structure
   private calculateStoryLayout(pages: any[], choices: any[]) {
     const layoutNodes: Array<{ page: any; x: number; y: number }> = [];
     
-    // Sort pages by order for main story flow
-    const sortedPages = [...pages].sort((a, b) => a.order - b.order);
-    
-    // Track main story path vs premium branches
-    const mainStoryX = 2; // Center column for main story
-    const premiumBranchX = 5; // Right side for premium endings
-    let mainStoryY = 0;
-    let premiumEndingY = 2; // Start premium endings lower
-    
-    sortedPages.forEach((page, index) => {
-      const pageChoices = choices.filter(c => c.fromPageId === page.id);
-      const isEndingPage = pageChoices.length === 0 && page.order > 1;
-      
-      if (index === 0) {
-        // Starting page - top center of main path
-        layoutNodes.push({ page, x: mainStoryX, y: mainStoryY });
-        mainStoryY += 2;
-      } else if (isEndingPage) {
-        // Check if this ending is reached via premium choice
-        const isPremiumEnding = choices.some(choice => 
-          choice.toPageId === page.id && choice.eggplantCost > 0
-        );
-        
-        if (isPremiumEnding) {
-          // Premium endings go to the right
-          layoutNodes.push({ page, x: premiumBranchX, y: premiumEndingY });
-          premiumEndingY += 1.5;
-        } else {
-          // Free ending continues main path
-          layoutNodes.push({ page, x: mainStoryX, y: mainStoryY });
-          mainStoryY += 2;
+    // Create a map of page connections
+    const pageConnections = new Map<string, string[]>();
+    choices.forEach(choice => {
+      if (choice.toPageId) {
+        if (!pageConnections.has(choice.fromPageId)) {
+          pageConnections.set(choice.fromPageId, []);
         }
-      } else {
-        // Choice pages continue main vertical flow
-        layoutNodes.push({ page, x: mainStoryX, y: mainStoryY });
-        mainStoryY += 2;
+        pageConnections.get(choice.fromPageId)!.push(choice.toPageId);
       }
     });
+    
+    // Find the starting page
+    const startPage = pages.find(p => p.order === 1);
+    if (!startPage) return [];
+    
+    // Build tree structure using breadth-first search
+    const positioned = new Set<string>();
+    const queue: Array<{ pageId: string; x: number; y: number; level: number }> = [];
+    
+    // Position starting page at center top
+    queue.push({ pageId: startPage.id, x: 0, y: 0, level: 0 });
+    
+    while (queue.length > 0) {
+      const current = queue.shift()!;
+      
+      if (positioned.has(current.pageId)) continue;
+      positioned.add(current.pageId);
+      
+      const page = pages.find(p => p.id === current.pageId);
+      if (page) {
+        layoutNodes.push({ page, x: current.x, y: current.y });
+        
+        // Get children (pages this connects to)
+        const children = pageConnections.get(current.pageId) || [];
+        const childPages = children.map(id => pages.find(p => p.id === id)).filter(Boolean);
+        
+        if (childPages.length > 0) {
+          // Spread children horizontally based on number of branches
+          const startX = current.x - (childPages.length - 1) * 0.5;
+          childPages.forEach((childPage, index) => {
+            if (!positioned.has(childPage.id)) {
+              queue.push({
+                pageId: childPage.id,
+                x: startX + index * 1.5, // Spread branches horizontally
+                y: current.y + 1.5, // Move down vertically
+                level: current.level + 1
+              });
+            }
+          });
+        }
+      }
+    }
     
     return layoutNodes;
   }
