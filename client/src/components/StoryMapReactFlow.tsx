@@ -48,64 +48,68 @@ interface StoryMapProps {
   onNodeClick?: (pageNumber: number) => void;
 }
 
-// Custom node component matching your eggplant purple design
+// Custom node component - Super Cute Eggplant Design 🍆
 const StoryNode = ({ data }: { data: any }) => {
   const { pageNumber, title, isPremium, isOwned, isCurrentPage, type, onClick } = data;
   
-  // Eggplant purple color scheme
-  const getNodeColor = () => {
-    if (isCurrentPage) return '#fbbf24'; // Current page highlight
-    if (isPremium && isOwned) return '#a855f7'; // Eggplant purple for premium paid
-    if (isPremium && !isOwned) return '#6b21a8'; // Deep purple for premium locked
-    return '#92400e'; // Warm brown for free
+  const handleClick = () => {
+    if (onClick) {
+      onClick(pageNumber);
+    }
   };
 
-  const getStrokeColor = () => {
-    if (isCurrentPage) return '#f59e0b';
-    if (isPremium && isOwned) return '#9333ea';
-    if (isPremium && !isOwned) return '#581c87';
-    return '#78350f';
+  const getNodeStyle = () => {
+    if (isCurrentPage) {
+      return 'bg-gradient-to-br from-yellow-300 via-yellow-400 to-amber-400 border-yellow-300 text-amber-900 ring-4 ring-yellow-300 ring-opacity-50 animate-pulse shadow-2xl transform scale-110';
+    }
+    
+    if (type === 'ending') {
+      return 'bg-gradient-to-br from-pink-400 via-rose-500 to-red-500 text-white border-rose-400 rounded-xl shadow-lg transform rotate-2 hover:-rotate-1';
+    }
+    
+    if (isPremium) {
+      if (isOwned) {
+        return 'bg-gradient-to-br from-purple-400 via-violet-500 to-purple-600 text-white border-purple-300 shadow-lg hover:shadow-purple-300/50';
+      } else {
+        return 'bg-gradient-to-br from-purple-200 via-purple-300 to-purple-400 text-purple-800 border-purple-400 border-dashed shadow-md opacity-80';
+      }
+    }
+    
+    return 'bg-gradient-to-br from-emerald-400 via-teal-500 to-cyan-500 text-white border-teal-400 shadow-lg hover:shadow-teal-300/50';
   };
 
-  const isEnding = type === 'ending';
+  const getNodeIcon = () => {
+    if (isCurrentPage) return '👑';
+    if (type === 'ending') return '🎯';
+    if (isPremium) return isOwned ? '🍆💜' : '🍆🔒';
+    return '📖';
+  };
 
   return (
-    <div 
-      className="cursor-pointer hover:scale-105 transition-all duration-300 relative"
-      onClick={() => onClick?.(pageNumber)}
-    >
-      {/* Node shadow */}
+    <div className="relative">
       <div 
-        className={`absolute top-1 left-1 ${isEnding ? 'w-16 h-8 rounded-lg' : 'w-12 h-12 rounded-full'}`}
-        style={{ backgroundColor: 'rgba(0,0,0,0.15)' }}
-      />
-      
-      {/* Main node */}
-      <div 
-        className={`relative flex items-center justify-center text-white font-bold text-sm ${
-          isEnding ? 'w-16 h-8 rounded-lg' : 'w-12 h-12 rounded-full'
-        } border-2 shadow-lg`}
-        style={{ 
-          backgroundColor: getNodeColor(),
-          borderColor: getStrokeColor()
-        }}
+        className={`
+          px-6 py-4 rounded-2xl border-3 cursor-pointer 
+          transition-all duration-300 hover:scale-110 hover:rotate-1
+          min-w-[140px] text-center font-bold shadow-xl
+          relative overflow-hidden
+          ${getNodeStyle()}
+        `}
+        onClick={handleClick}
       >
-        {pageNumber}
-      </div>
-      
-      {/* Current position indicator */}
-      {isCurrentPage && (
-        <div 
-          className={`absolute inset-0 ${
-            isEnding ? 'w-16 h-8 rounded-lg' : 'w-12 h-12 rounded-full'
-          } border-2 border-amber-500 border-dashed animate-pulse`}
-          style={{ transform: 'scale(1.2)' }}
-        />
-      )}
-      
-      {/* Two-word title */}
-      <div className="absolute top-full mt-2 text-center text-xs text-slate-700 dark:text-slate-300 whitespace-nowrap">
-        {title}
+        {isPremium && (
+          <div className="absolute inset-0 opacity-20">
+            <div className="absolute top-1 left-2 text-xs animate-pulse delay-100">✨</div>
+            <div className="absolute top-2 right-1 text-xs animate-pulse delay-300">✨</div>
+            <div className="absolute bottom-1 left-1 text-xs animate-pulse delay-500">✨</div>
+          </div>
+        )}
+        
+        <div className="flex flex-col items-center gap-1 relative z-10">
+          <div className="text-lg">{getNodeIcon()}</div>
+          <div className="font-bold text-xs opacity-90">Page {pageNumber}</div>
+          <div className="text-sm leading-tight">{title}</div>
+        </div>
       </div>
     </div>
   );
@@ -216,38 +220,54 @@ export default function StoryMapReactFlow({ storyId, currentPage = 1, onNodeClic
   }
 
   return (
-    <Card className="p-4">
+    <Card className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-200 shadow-xl">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold">Interactive Story Map</h3>
-        <div className="text-sm text-slate-600 dark:text-slate-400">
+        <h3 className="text-2xl font-bold text-purple-700 flex items-center gap-2">
+          🍆 Interactive Story Map ✨
+        </h3>
+        <div className="text-sm text-purple-600 font-medium bg-purple-100 px-3 py-1 rounded-full">
           {mapData.nodes.length} pages • {mapData.choices.length} choices
         </div>
       </div>
 
-      {/* Legend */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-slate-600 dark:text-slate-400 mb-4 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+      {/* Super Cute Legend */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-purple-700 mb-4 p-4 bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-xl shadow-lg">
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 border-2 border-amber-300 relative">
-            <div className="absolute inset-0 rounded-full border-2 border-amber-500 border-dashed animate-pulse" />
+          <div className="flex items-center">
+            <span className="text-lg">👑</span>
           </div>
-          <span className="font-medium">Current Position</span>
+          <span className="font-bold">You Are Here!</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-full" style={{ backgroundColor: '#92400e' }} />
-          <span className="font-medium">Free Content</span>
+          <div className="flex items-center">
+            <span className="text-lg">📖</span>
+          </div>
+          <span className="font-bold">Free Stories</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-full" style={{ backgroundColor: '#a855f7' }} />
-          <span className="font-medium">Premium Paid</span>
+          <div className="flex items-center">
+            <span className="text-lg">🍆💜</span>
+          </div>
+          <span className="font-bold">Premium Unlocked</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-7 h-5 rounded-lg" style={{ backgroundColor: '#92400e' }} />
-          <span className="font-medium">Story Ending</span>
+          <div className="flex items-center">
+            <span className="text-lg">🍆🔒</span>
+          </div>
+          <span className="font-bold">Premium Locked</span>
         </div>
       </div>
 
-      {/* React Flow Map */}
-      <div style={{ width: '100%', height: '600px' }} className="border rounded-lg overflow-hidden">
+      {/* React Flow Map - Super Cute Version */}
+      <div style={{ width: '100%', height: '600px' }} className="relative border-2 border-purple-300 rounded-xl overflow-hidden bg-gradient-to-br from-purple-50 via-pink-25 to-violet-75 shadow-2xl">
+        {/* Floating eggplant decorations */}
+        <div className="absolute top-4 left-4 text-4xl animate-bounce delay-100 z-10 pointer-events-none">🍆</div>
+        <div className="absolute top-6 right-8 text-3xl animate-pulse delay-300 z-10 pointer-events-none">🍆</div>
+        <div className="absolute bottom-8 left-12 text-2xl animate-bounce delay-500 z-10 pointer-events-none">💜</div>
+        <div className="absolute bottom-4 right-4 text-3xl animate-pulse delay-700 z-10 pointer-events-none">✨</div>
+        <div className="absolute top-1/2 left-2 text-xl animate-spin delay-1000 z-10 pointer-events-none" style={{animationDuration: '3s'}}>🍆</div>
+        <div className="absolute top-3/4 right-6 text-2xl animate-bounce delay-1200 z-10 pointer-events-none">💖</div>
+        
         <ReactFlow
           nodes={nodesState}
           edges={edgesState}
@@ -271,10 +291,10 @@ export default function StoryMapReactFlow({ storyId, currentPage = 1, onNodeClic
             nodeColor="#a855f7"
           />
           <Background 
-            gap={20} 
-            size={1} 
-            color="#e2e8f0"
-            className="dark:!stroke-slate-600"
+            gap={30} 
+            size={1.5} 
+            color="#e879f9"
+            className="dark:!stroke-purple-400 opacity-40"
           />
         </ReactFlow>
       </div>
