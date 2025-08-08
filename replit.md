@@ -8,6 +8,7 @@ Preferred communication style: Simple, everyday language.
 User feedback: Very appreciative of thorough help and comprehensive solutions.
 Story Map Design: Implemented user's bubble design specifications with eggplant purple color scheme, two-word names, and proper content filtering.
 Color Preference: Eggplant purple tones for premium content instead of pink/bright colors.
+Graph Terminology: Standard "node" terminology is acceptable for technical graph visualization components.
 
 ## System Architecture
 
@@ -18,7 +19,7 @@ Color Preference: Eggplant purple tones for premium content instead of pink/brig
 - **Architectural Improvement**: Added story engine abstraction while maintaining existing functionality
 - **Code Quality**: All debug statements removed, LSP errors resolved, production-ready error handling
 - **Navigation System**: Completely rebuilt swipe navigation with improved sensitivity and reliability - both swipe and button navigation working properly
-- **Terminology Cleanup Complete**: Systematic elimination of ALL "node" terminology from entire codebase - now uses consistent page-based terminology throughout (January 2025)
+- **Graph Terminology**: Uses standard graph visualization terminology (nodes, edges, connections) for technical accuracy in story map components
 - External validation: ChatGPT assessment confirms modern tech stack and clean structure
 
 ### Frontend Architecture
