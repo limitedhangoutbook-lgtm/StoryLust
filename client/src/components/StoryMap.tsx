@@ -41,7 +41,7 @@ interface StoryMapData {
   choices: MapChoice[];
 }
 
-export function StoryMap({ storyId, currentPage, isOpen, onClose, onNavigateToPage }: StoryMapProps) {
+function StoryMap({ storyId, currentPage, isOpen, onClose, onNavigateToPage }: StoryMapProps) {
   const [selectedPageBubble, setSelectedPageBubble] = useState<string | null>(null);
   const [scale, setScale] = useState(1);
   const [panX, setPanX] = useState(0);
@@ -481,3 +481,6 @@ export function StoryMap({ storyId, currentPage, isOpen, onClose, onNavigateToPa
     </div>
   );
 }
+
+export { StoryMap };
+export default StoryMap;
