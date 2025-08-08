@@ -1,6 +1,6 @@
-# TurnPage - Quick Share for AI Assistants
+# Wild Branch - Quick Share for AI Assistants
 
-## What is TurnPage?
+## What is Wild Branch?
 A mobile-first Progressive Web App for interactive erotica stories with premium content unlocked via eggplant currency (🍆).
 
 ## Key Context for AI Assistants

@@ -1,7 +1,7 @@
-# TurnPage Project Export
+# Wild Branch Project Export
 
 ## Project Overview
-TurnPage is a Progressive Web App for choose-your-own-adventure erotica stories featuring a premium content system with virtual eggplant currency.
+Wild Branch is a Progressive Web App for choose-your-own-adventure erotica stories featuring a premium content system with virtual eggplant currency.
 
 ## Key Features
 - Interactive storytelling with branching narratives

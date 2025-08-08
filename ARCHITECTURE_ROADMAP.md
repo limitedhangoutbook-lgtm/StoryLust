@@ -1,4 +1,4 @@
-# TurnPage Architecture Roadmap - V2.0+
+# Wild Branch Architecture Roadmap - V2.0+
 
 ## Current State (V1.1) ✅
 - Solid technical foundation with modern stack

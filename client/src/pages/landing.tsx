@@ -23,7 +23,7 @@ export default function Landing() {
           </div>
           
           <h1 className="text-4xl font-bold text-text-primary mb-4 leading-tight">
-            Turn<span className="text-rose-gold">Page</span>
+            Wild <span className="text-rose-gold">Branch</span>
           </h1>
           
           <p className="text-lg text-text-secondary mb-8 leading-relaxed max-w-sm mx-auto">

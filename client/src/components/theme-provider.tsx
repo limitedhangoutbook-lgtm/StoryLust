@@ -20,7 +20,7 @@ type ThemeProviderProps = {
 export function ThemeProvider({
   children,
   defaultTheme = "dark",
-  storageKey = "turnpage-ui-theme",
+  storageKey = "wildbranch-ui-theme",
 }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>(
     () => (localStorage.getItem(storageKey) as Theme) || defaultTheme

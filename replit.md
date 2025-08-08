@@ -1,7 +1,7 @@
 # replit.md
 
 ## Overview
-TurnPage is a choose-your-own-adventure mobile web application designed for interactive storytelling with branching narratives. It includes user authentication, reading progress tracking, and a premium content system utilizing virtual currency. The application is optimized for mobile devices and built as a Progressive Web App (PWA).
+Wild Branch is a choose-your-own-adventure mobile web application designed for interactive storytelling with branching narratives. It includes user authentication, reading progress tracking, and a premium content system utilizing virtual currency. The application is optimized for mobile devices and built as a Progressive Web App (PWA).
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
