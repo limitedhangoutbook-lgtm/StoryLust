@@ -196,7 +196,7 @@ function StoryMap({ storyId, currentPage, isOpen, onClose, onNavigateToPage }: S
           ) : (
             <div className="relative">
               {/* Professional Story Flow Canvas - Enhanced with zoom and pan */}
-              <div className="relative overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 bg-gradient-to-br from-slate-50 via-gray-50 to-blue-50 dark:from-slate-900 dark:via-gray-900 dark:to-blue-950 cursor-grab active:cursor-grabbing">
+              <div className="relative overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 bg-gradient-to-br from-purple-50 via-white to-pink-50 dark:from-gray-900 dark:via-gray-800 dark:to-purple-900 cursor-grab active:cursor-grabbing">
                 <svg
                   width="100%"
                   height="600"
@@ -233,7 +233,7 @@ function StoryMap({ storyId, currentPage, isOpen, onClose, onNavigateToPage }: S
                 
                 <rect width="100%" height="100%" fill="url(#gridPattern)" opacity="0.4"/>
 
-                {/* Professional connection paths */}
+                {/* Clear connecting arrows between pages */}
                 {mapData?.choices.map((choice) => {
                   const fromNode = mapData.pageBubbles.find(n => n.id === choice.fromPageId);
                   const toNode = mapData.pageBubbles.find(n => n.id === choice.toPageId);
@@ -241,167 +241,122 @@ function StoryMap({ storyId, currentPage, isOpen, onClose, onNavigateToPage }: S
                   if (!fromNode || !toNode) return null;
 
                   const x1 = (fromNode.x * 100) + 80;
-                  const y1 = (fromNode.y * 80) + 60;
+                  const y1 = (fromNode.y * 80) + 40;
                   const x2 = (toNode.x * 100) + 80;
-                  const y2 = (toNode.y * 80) + 60;
+                  const y2 = (toNode.y * 80) + 40;
 
-                  // Sketch-style paths: straight for vertical main flow, curved for horizontal branches
-                  const deltaX = x2 - x1;
-                  const deltaY = y2 - y1;
-                  const isHorizontalBranch = Math.abs(deltaX) > Math.abs(deltaY);
-                  
-                  let pathData;
-                  if (isHorizontalBranch) {
-                    // Curved path for premium branches (like in sketch)
-                    const midX = x1 + deltaX * 0.7;
-                    const midY = y1 + deltaY * 0.3;
-                    pathData = `M ${x1} ${y1} Q ${midX} ${midY} ${x2} ${y2}`;
-                  } else {
-                    // Straight line for main story flow
-                    pathData = `M ${x1} ${y1} L ${x2} ${y2}`;
-                  }
+                  // Simple straight line paths for clarity
+                  const pathData = `M ${x1} ${y1} L ${x2} ${y2}`;
 
                   return (
                     <g key={choice.id}>
-                      {/* Connection shadow */}
-                      <path
-                        d={pathData}
-                        stroke="rgba(0,0,0,0.1)"
-                        strokeWidth="6"
-                        fill="none"
-                        transform="translate(2,2)"
-                      />
-                      {/* Main connection - enhanced flow arrows */}
+                      {/* Clean connecting arrows */}
                       <path
                         d={pathData}
                         stroke={choice.isPremium ? "#a855f7" : "#64748b"}
-                        strokeWidth={choice.isPremium ? "3" : "2.5"}
+                        strokeWidth="4"
                         fill="none"
-                        strokeDasharray={choice.isPremium ? "8,4" : "none"}
-                        opacity={choice.isPremium && !choice.isOwned ? 0.6 : 0.9}
-                        markerEnd={choice.isPremium ? "url(#premium-arrowhead)" : "url(#arrowhead)"}
-                        className="transition-all duration-200 hover:opacity-100"
+                        strokeDasharray={choice.isPremium ? "12,6" : "none"}
+                        markerEnd="url(#arrowhead)"
+                        opacity="0.8"
+                        className="transition-opacity duration-200 hover:opacity-100"
                       />
                     </g>
                   );
                 })}
 
-                {/* Enhanced arrow markers */}
+                {/* Clear arrow markers */}
                 <defs>
                   <marker
                     id="arrowhead"
-                    markerWidth="14"
-                    markerHeight="10"
-                    refX="12"
-                    refY="5"
+                    markerWidth="16"
+                    markerHeight="12"
+                    refX="14"
+                    refY="6"
                     orient="auto"
-                    markerUnits="strokeWidth"
                   >
                     <path
-                      d="M 0 0 L 14 5 L 0 10 L 3 5 Z"
-                      fill="#64748b"
-                      stroke="none"
-                    />
-                  </marker>
-                  <marker
-                    id="premium-arrowhead"
-                    markerWidth="14"
-                    markerHeight="10"
-                    refX="12"
-                    refY="5"
-                    orient="auto"
-                    markerUnits="strokeWidth"
-                  >
-                    <path
-                      d="M 0 0 L 14 5 L 0 10 L 3 5 Z"
-                      fill="#a855f7"
+                      d="M 0 0 L 16 6 L 0 12 L 4 6 Z"
+                      fill="currentColor"
                       stroke="none"
                     />
                   </marker>
                 </defs>
 
-                {/* Professional nodes with enhanced styling */}
+                {/* Clean white card page bubbles */}
                 {mapData?.pageBubbles.map((pageBubble) => {
-                  const x = (pageBubble.x * 100) + 40;
-                  const y = (pageBubble.y * 80) + 40;
+                  const x = (pageBubble.x * 100) + 20;
+                  const y = (pageBubble.y * 80) + 20;
                   const isCurrentPage = pageBubble.pageNumber === currentPage;
                   
                   return (
                     <g key={pageBubble.id}>
-                      {/* Professional page bubble styling with depth */}
-                      <g className="cursor-pointer hover:scale-105 transition-all duration-300" onClick={() => handlePageBubbleClick(pageBubble)}>
-                        {/* Bubble shadow */}
-                        {pageBubble.type === 'ending' ? (
-                          <rect
-                            x={x + 3}
-                            y={y + 3}
-                            width="80"
-                            height="40"
-                            rx="16"
-                            fill="rgba(0,0,0,0.15)"
-                          />
-                        ) : (
-                          <circle
-                            cx={x + 43}
-                            cy={y + 23}
-                            r="25"
-                            fill="rgba(0,0,0,0.15)"
-                          />
-                        )}
+                      <g className="cursor-pointer hover:scale-105 transition-all duration-200" onClick={() => handlePageBubbleClick(pageBubble)}>
+                        {/* Card shadow */}
+                        <rect
+                          x={x + 2}
+                          y={y + 2}
+                          width="120"
+                          height="60"
+                          rx="12"
+                          fill="rgba(0,0,0,0.1)"
+                        />
                         
-                        {/* Main bubble - eggplant purple color scheme */}
-                        {pageBubble.type === 'ending' ? (
-                          <rect
-                            x={x}
-                            y={y}
-                            width="60"
-                            height="30"
-                            rx="8"
-                            fill={isCurrentPage ? "#fbbf24" : 
-                                  pageBubble.isPremium && pageBubble.isOwned ? "#a855f7" : // Eggplant purple for premium paid
-                                  pageBubble.isPremium && !pageBubble.isOwned ? "#6b21a8" : // Deep purple for premium locked
-                                  "#92400e"} // Warm brown for free
-                            stroke={isCurrentPage ? "#f59e0b" : 
-                                    pageBubble.isPremium && pageBubble.isOwned ? "#9333ea" :
-                                    pageBubble.isPremium && !pageBubble.isOwned ? "#581c87" :
-                                    "#78350f"}
-                            strokeWidth="2"
-                          />
-                        ) : (
-                          <circle
-                            cx={x + 30}
-                            cy={y + 15}
-                            r="20"
-                            fill={isCurrentPage ? "#fbbf24" : 
-                                  pageBubble.isPremium && pageBubble.isOwned ? "#a855f7" : // Eggplant purple for premium paid
-                                  pageBubble.isPremium && !pageBubble.isOwned ? "#6b21a8" : // Deep purple for premium locked
-                                  "#92400e"} // Warm brown for free
-                            stroke={isCurrentPage ? "#f59e0b" : 
-                                    pageBubble.isPremium && pageBubble.isOwned ? "#9333ea" :
-                                    pageBubble.isPremium && !pageBubble.isOwned ? "#581c87" :
-                                    "#78350f"}
-                            strokeWidth="2"
-                          />
-                        )}
+                        {/* White card background */}
+                        <rect
+                          x={x}
+                          y={y}
+                          width="120"
+                          height="60"
+                          rx="12"
+                          fill="white"
+                          stroke={isCurrentPage ? "#a855f7" : pageBubble.isPremium ? "#a855f7" : "#e2e8f0"}
+                          strokeWidth={isCurrentPage ? "3" : "2"}
+                          strokeDasharray={pageBubble.isPremium && !pageBubble.isOwned ? "6,3" : "none"}
+                        />
                         
-                        {/* Bubble content - simplified */}
+                        {/* Page content */}
                         <text
-                          x={pageBubble.type === 'ending' ? x + 30 : x + 30}
-                          y={pageBubble.type === 'ending' ? y + 20 : y + 20}
+                          x={x + 60}
+                          y={y + 25}
                           textAnchor="middle"
-                          className="fill-white text-sm font-bold pointer-events-none"
-                          style={{ fontSize: '12px' }}
+                          className="fill-gray-700 text-xs font-semibold pointer-events-none"
+                          style={{ fontSize: '10px' }}
                         >
-                          {pageBubble.pageNumber}
+                          Page {pageBubble.pageNumber}
                         </text>
+                        <text
+                          x={x + 60}
+                          y={y + 42}
+                          textAnchor="middle"
+                          className="fill-gray-500 text-xs pointer-events-none"
+                          style={{ fontSize: '9px' }}
+                        >
+                          {pageBubble.title.split(' ').slice(0, 2).join(' ')}
+                        </text>
+                        
+                        {/* Premium indicator */}
+                        {pageBubble.isPremium && (
+                          <text
+                            x={x + 105}
+                            y={y + 15}
+                            textAnchor="middle"
+                            className="pointer-events-none"
+                            style={{ fontSize: '14px' }}
+                          >
+                            🍆
+                          </text>
+                        )}
                       </g>
                       
-                      {/* Current position indicator - simpler */}
+                      {/* Current position indicator */}
                       {isCurrentPage && (
-                        <circle
-                          cx={pageBubble.type === 'ending' ? x + 30 : x + 30}
-                          cy={pageBubble.type === 'ending' ? y + 15 : y + 15}
-                          r="28"
+                        <rect
+                          x={x - 3}
+                          y={y - 3}
+                          width="126"
+                          height="66"
+                          rx="15"
                           fill="none"
                           stroke="#f59e0b"
                           strokeWidth="2"
@@ -410,16 +365,7 @@ function StoryMap({ storyId, currentPage, isOpen, onClose, onNavigateToPage }: S
                         />
                       )}
                       
-                      {/* Two-word title below */}
-                      <text
-                        x={x + 30}
-                        y={y + 50}
-                        textAnchor="middle"
-                        className="fill-slate-700 dark:fill-slate-300 text-xs pointer-events-none"
-                        style={{ fontSize: '10px' }}
-                      >
-                        {pageBubble.title}
-                      </text>
+
                     </g>
                   );
                 })}
