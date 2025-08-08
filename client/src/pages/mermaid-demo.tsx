@@ -3,7 +3,7 @@ import { useLocation } from 'wouter';
 import MermaidStoryMap from '@/components/MermaidStoryMap';
 import StoryMap from '@/components/StoryMap';
 import G6StoryMap from '@/components/G6StoryMap';
-import GraphinStoryMap from '@/components/GraphinStoryMap';
+// GraphinStoryMap temporarily disabled due to package compatibility issues
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
@@ -11,7 +11,7 @@ import { RefreshCw, Wand2, MapIcon, Sparkles } from 'lucide-react';
 
 export default function MermaidDemo() {
   const [location] = useLocation();
-  const [viewMode, setViewMode] = useState<'g6' | 'graphin' | 'mermaid' | 'manual'>('g6');
+  const [viewMode, setViewMode] = useState<'g6' | 'mermaid' | 'manual'>('g6');
   const [isMapOpen, setIsMapOpen] = useState(true);
   
   const searchParams = new URLSearchParams(location.split('?')[1]);
@@ -36,13 +36,13 @@ export default function MermaidDemo() {
           
           {/* Mode Switcher */}
           <Card className="inline-block p-6 mb-6 bg-white/80 backdrop-blur-sm">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-3 gap-4">
               <Button
                 variant={viewMode === 'g6' ? 'default' : 'outline'}
                 onClick={() => setViewMode('g6')}
-                className="h-auto p-3 flex flex-col items-center gap-2"
+                className="h-auto p-4 flex flex-col items-center gap-2"
               >
-                <Sparkles className="w-5 h-5" />
+                <Sparkles className="w-6 h-6" />
                 <div className="text-center">
                   <div className="font-semibold">G6 Graph</div>
                   <div className="text-xs opacity-75">Enterprise grade</div>
@@ -50,23 +50,11 @@ export default function MermaidDemo() {
               </Button>
               
               <Button
-                variant={viewMode === 'graphin' ? 'default' : 'outline'}
-                onClick={() => setViewMode('graphin')}
-                className="h-auto p-3 flex flex-col items-center gap-2"
-              >
-                <RefreshCw className="w-5 h-5" />
-                <div className="text-center">
-                  <div className="font-semibold">Graphin</div>
-                  <div className="text-xs opacity-75">React optimized</div>
-                </div>
-              </Button>
-              
-              <Button
                 variant={viewMode === 'mermaid' ? 'default' : 'outline'}
                 onClick={() => setViewMode('mermaid')}
-                className="h-auto p-3 flex flex-col items-center gap-2"
+                className="h-auto p-4 flex flex-col items-center gap-2"
               >
-                <Wand2 className="w-5 h-5" />
+                <Wand2 className="w-6 h-6" />
                 <div className="text-center">
                   <div className="font-semibold">Mermaid</div>
                   <div className="text-xs opacity-75">Markdown style</div>
@@ -76,9 +64,9 @@ export default function MermaidDemo() {
               <Button
                 variant={viewMode === 'manual' ? 'default' : 'outline'}
                 onClick={() => setViewMode('manual')}
-                className="h-auto p-3 flex flex-col items-center gap-2"
+                className="h-auto p-4 flex flex-col items-center gap-2"
               >
-                <MapIcon className="w-5 h-5" />
+                <MapIcon className="w-6 h-6" />
                 <div className="text-center">
                   <div className="font-semibold">Manual SVG</div>
                   <div className="text-xs opacity-75">Custom design</div>
@@ -92,7 +80,6 @@ export default function MermaidDemo() {
                 <span className="text-sm font-medium text-purple-700">
                   Currently showing: {
                     viewMode === 'g6' ? 'AntV G6 Professional Graph' :
-                    viewMode === 'graphin' ? 'Graphin React Framework' :
                     viewMode === 'mermaid' ? 'Mermaid.js Auto-Layout' : 
                     'Manual SVG Layout'
                   }
@@ -134,19 +121,7 @@ export default function MermaidDemo() {
               </div>
             )}
             
-            {viewMode === 'graphin' && (
-              <div>
-                <h2 className="text-2xl font-bold text-center mb-4 text-green-700 flex items-center justify-center gap-2">
-                  <RefreshCw className="w-6 h-6" />
-                  Graphin React Framework
-                </h2>
-                <GraphinStoryMap 
-                  storyId={storyId}
-                  currentPage={currentPage}
-                  onNodeClick={handlePageClick}
-                />
-              </div>
-            )}
+            {/* Graphin temporarily disabled due to package compatibility */}
             
             {viewMode === 'mermaid' && (
               <div>
@@ -180,33 +155,20 @@ export default function MermaidDemo() {
 
             {/* Comparison Info */}
             <Card className="p-6 bg-white/80 backdrop-blur-sm">
-              <h3 className="text-xl font-bold mb-4 text-center">Engine Comparison Matrix</h3>
-              <div className="grid md:grid-cols-4 gap-4">
+              <h3 className="text-xl font-bold mb-4 text-center">Professional Story Map Engines</h3>
+              <div className="grid md:grid-cols-3 gap-6">
                 <div className="text-center">
                   <div className="flex items-center justify-center gap-2 mb-3">
                     <Sparkles className="w-5 h-5 text-purple-600" />
-                    <h4 className="font-bold text-purple-700">G6 Graph</h4>
+                    <h4 className="font-bold text-purple-700">AntV G6 Graph</h4>
                   </div>
-                  <ul className="text-sm space-y-1 text-left">
+                  <ul className="text-sm space-y-2 text-left">
                     <li>✅ Enterprise-grade performance</li>
                     <li>✅ 15+ layout algorithms</li>
                     <li>✅ GPU acceleration support</li>
-                    <li>✅ Advanced interactions</li>
+                    <li>✅ Advanced interactions (drag, zoom)</li>
                     <li>✅ Web Workers support</li>
-                  </ul>
-                </div>
-                
-                <div className="text-center">
-                  <div className="flex items-center justify-center gap-2 mb-3">
-                    <RefreshCw className="w-5 h-5 text-green-600" />
-                    <h4 className="font-bold text-green-700">Graphin</h4>
-                  </div>
-                  <ul className="text-sm space-y-1 text-left">
-                    <li>✅ React-first design</li>
-                    <li>✅ Built-in animations</li>
-                    <li>✅ Component ecosystem</li>
-                    <li>✅ Easy customization</li>
-                    <li>✅ Real-time updates</li>
+                    <li>✅ Automatic optimal positioning</li>
                   </ul>
                 </div>
                 
@@ -215,11 +177,12 @@ export default function MermaidDemo() {
                     <Wand2 className="w-5 h-5 text-blue-600" />
                     <h4 className="font-bold text-blue-700">Mermaid.js</h4>
                   </div>
-                  <ul className="text-sm space-y-1 text-left">
-                    <li>✅ Text-to-diagram</li>
-                    <li>✅ Lightweight & fast</li>
-                    <li>✅ GitHub integration</li>
-                    <li>✅ Simple syntax</li>
+                  <ul className="text-sm space-y-2 text-left">
+                    <li>✅ Text-to-diagram generation</li>
+                    <li>✅ Lightweight & fast rendering</li>
+                    <li>✅ GitHub integration ready</li>
+                    <li>✅ Simple markdown syntax</li>
+                    <li>✅ Automatic layout algorithms</li>
                     <li>❌ Limited interactivity</li>
                   </ul>
                 </div>
@@ -229,13 +192,22 @@ export default function MermaidDemo() {
                     <MapIcon className="w-5 h-5 text-orange-600" />
                     <h4 className="font-bold text-orange-700">Manual SVG</h4>
                   </div>
-                  <ul className="text-sm space-y-1 text-left">
+                  <ul className="text-sm space-y-2 text-left">
                     <li>✅ Pixel-perfect control</li>
                     <li>✅ Custom animations</li>
-                    <li>✅ Unique designs</li>
-                    <li>❌ Manual positioning</li>
+                    <li>✅ Unique bubble designs</li>
+                    <li>✅ Full creative control</li>
+                    <li>❌ Manual coordinate positioning</li>
                     <li>❌ Complex maintenance</li>
                   </ul>
+                </div>
+              </div>
+              
+              <div className="mt-6 text-center">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-100 rounded-full">
+                  <span className="text-sm font-medium text-green-700">
+                    🎯 Recommendation: Use G6 for automatic professional layouts or Manual SVG for unique designs
+                  </span>
                 </div>
               </div>
             </Card>

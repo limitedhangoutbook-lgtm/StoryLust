@@ -1,0 +1,130 @@
+Nice—Graphin is a solid pick. Here’s a dead-simple way to get a pretty, auto-laid-out story map running on Replit with minimal fuss.
+
+1) Install
+
+npm i @antv/graphin @antv/graphin-components @antv/layout
+
+2) Minimal React example (Vite/CRA both fine)
+
+// App.tsx
+import React, { useRef, useEffect } from "react";
+import Graphin, { GraphinData, GraphinContext } from "@antv/graphin";
+import { MiniMap, ZoomCanvas, DragCanvas, DragNode } from "@antv/graphin-components";
+import "@antv/graphin/dist/index.css";
+
+const data: GraphinData = {
+  nodes: [
+    { id: "free-1",   label: "FREE: Setup",       style:{ keyshape:{ fill:"#0ea5e9" } } },
+    { id: "fork-1",   label: "Fork 1 (Urinals)" },
+    { id: "free-1B",  label: "FREE path",         style:{ keyshape:{ fill:"#0ea5e9" } } },
+    { id: "prem-1A",  label: "PREMIUM A",         data:{ premium:true } },
+    { id: "fork-2",   label: "Fork 2 (Piss?)" },
+    { id: "free-2B",  label: "FREE path",         style:{ keyshape:{ fill:"#0ea5e9" } } },
+    { id: "prem-2A",  label: "PREMIUM A",         data:{ premium:true } },
+    { id: "fork-3",   label: "Fork 3 (Eat her?)" },
+    { id: "free-3B",  label: "FREE path",         style:{ keyshape:{ fill:"#0ea5e9" } } },
+    { id: "prem-3A",  label: "PREMIUM A",         data:{ premium:true } },
+  ],
+  edges: [
+    { source:"free-1", target:"fork-1" },
+    { source:"fork-1", target:"free-1B",  data:{ type:"free" } },
+    { source:"fork-1", target:"prem-1A",  data:{ type:"premium" } },
+    { source:"free-1B",target:"fork-2" },
+    { source:"fork-2", target:"free-2B",  data:{ type:"free" } },
+    { source:"fork-2", target:"prem-2A",  data:{ type:"premium" } },
+    { source:"free-2B",target:"fork-3" },
+    { source:"fork-3", target:"free-3B",  data:{ type:"free" } },
+    { source:"fork-3", target:"prem-3A",  data:{ type:"premium" } },
+  ],
+};
+
+const layout = {
+  type: "dagre", // from @antv/layout
+  rankdir: "LR",
+  nodesep: 40,
+  ranksep: 80,
+};
+
+function Map() {
+  const { graph } = React.useContext(GraphinContext);
+
+  useEffect(() => {
+    if (!graph) return;
+    // Color premium edges & add a lock badge to premium nodes
+    data.edges.forEach(edge => {
+      if (edge.data?.type === "premium") {
+        graph.updateItem(graph.findById(`${edge.source}-${edge.target}`), {
+          style: { stroke: "#f59e0b", lineWidth: 2 },
+        });
+      }
+    });
+    data.nodes.forEach(n => {
+      if ((n as any).data?.premium) {
+        graph.updateItem(graph.findById(n.id), {
+          style: {
+            keyshape: { fill: "#f59e0b", stroke: "#b45309" },
+            label: { value: (n as any).label + " 🔒" },
+          },
+        });
+      }
+    });
+
+    // Click to “navigate”
+    graph.on("node:click", (e:any) => {
+      const id = e.item.getID();
+      if ((graph.getItemModel(e.item) as any).data?.premium) {
+        // open your pay modal
+        console.log("Open paywall for", id);
+      } else {
+        // jump to scene
+        console.log("Go to scene:", id);
+      }
+    });
+
+    graph.fitView(20);
+  }, [graph]);
+
+  return (
+    <>
+      <ZoomCanvas enableOptimize />
+      <DragCanvas />
+      <DragNode />
+      <MiniMap />
+    </>
+  );
+}
+
+export default function App() {
+  return (
+    <div style={{ height: "100vh", background: "#0b1020" }}>
+      <Graphin data={data} layout={layout} theme={{ mode: "dark" }}>
+        <Map />
+      </Graphin>
+    </div>
+  );
+}
+
+3) Quick polish tips
+
+Colors: use one strong color for FREE nodes (e.g., teal) and a gold/amber for PREMIUM. Locks on labels (“🔒”) convert well.
+
+DAG layout: rankdir: "LR" reads like a story. Increase ranksep if labels collide.
+
+Edge clarity: set premium edges thicker and/or dashed; free edges thin/solid.
+
+Fit & resize: call graph.fitView(20) after layout and on window resize.
+
+Performance: Graphin is fine up to hundreds of nodes; if the map grows huge, enable enableOptimize on interactions and consider collapsing subtrees.
+
+
+4) Common Replit gotchas
+
+Import the CSS: import "@antv/graphin/dist/index.css"; (or the nodes render unstyled).
+
+If you see layout errors, ensure @antv/layout is installed (Graphin uses it under the hood for dagre).
+
+Vite + TS: add /// <reference types="vite/client" /> if your editor whines about SVG imports, etc.
+
+
+If this boots cleanly, we can layer in: badges (premium price), hover tooltips (“Hotter path”), a legend, and a “Download PNG/SVG” button later. Want me to add tooltips + export next?
+
