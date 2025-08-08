@@ -48,8 +48,8 @@ interface StoryMapProps {
   onNodeClick?: (pageNumber: number) => void;
 }
 
-// Custom node component - Super Cute Eggplant Design 🍆
-const StoryNode = ({ data }: { data: any }) => {
+// Custom story page component - Super Cute Eggplant Design 🍆
+const StoryPageBubble = ({ data }: { data: any }) => {
   const { pageNumber, title, isPremium, isOwned, isCurrentPage, type, onClick } = data;
   
   const handleClick = () => {
@@ -115,8 +115,8 @@ const StoryNode = ({ data }: { data: any }) => {
   );
 };
 
-const nodeTypes = {
-  storyNode: StoryNode,
+const pageTypes = {
+  storyPage: StoryPageBubble,
 };
 
 export default function StoryMapReactFlow({ storyId, currentPage = 1, onNodeClick }: StoryMapProps) {
@@ -142,21 +142,21 @@ export default function StoryMapReactFlow({ storyId, currentPage = 1, onNodeClic
     fetchMapData();
   }, [storyId]);
 
-  // Convert story data to React Flow nodes and edges
+  // Convert story data to React Flow pages and connections
   const { nodes, edges } = useMemo(() => {
     if (!mapData) return { nodes: [], edges: [] };
 
-    const flowNodes: Node[] = mapData.nodes.map((node) => ({
-      id: node.id,
-      type: 'storyNode',
-      position: { x: node.x * 150, y: node.y * 120 }, // Spread out more for better visibility
+    const flowPages: Node[] = mapData.nodes.map((page) => ({
+      id: page.id,
+      type: 'storyPage',
+      position: { x: page.x * 150, y: page.y * 120 }, // Spread out more for better visibility
       data: {
-        pageNumber: node.pageNumber,
-        title: node.title,
-        isPremium: node.isPremium,
-        isOwned: node.isOwned,
-        isCurrentPage: node.pageNumber === currentPage,
-        type: node.type,
+        pageNumber: page.pageNumber,
+        title: page.title,
+        isPremium: page.isPremium,
+        isOwned: page.isOwned,
+        isCurrentPage: page.pageNumber === currentPage,
+        type: page.type,
         onClick: onNodeClick,
       },
       sourcePosition: Position.Bottom,
@@ -187,17 +187,17 @@ export default function StoryMapReactFlow({ storyId, currentPage = 1, onNodeClic
         },
       }));
 
-    return { nodes: flowNodes, edges: flowEdges };
+    return { nodes: flowPages, edges: flowEdges };
   }, [mapData, currentPage, onNodeClick]);
 
-  const [nodesState, setNodes, onNodesChange] = useNodesState(nodes);
+  const [pagesState, setPages, onPagesChange] = useNodesState(nodes);
   const [edgesState, setEdges, onEdgesChange] = useEdgesState(edges);
 
-  // Update nodes when data changes
+  // Update pages when data changes
   React.useEffect(() => {
-    setNodes(nodes);
+    setPages(nodes);
     setEdges(edges);
-  }, [nodes, edges, setNodes, setEdges]);
+  }, [nodes, edges, setPages, setEdges]);
 
   if (isLoading) {
     return (
@@ -269,11 +269,11 @@ export default function StoryMapReactFlow({ storyId, currentPage = 1, onNodeClic
         <div className="absolute top-3/4 right-6 text-2xl animate-bounce delay-1200 z-10 pointer-events-none">💖</div>
         
         <ReactFlow
-          nodes={nodesState}
+          nodes={pagesState}
           edges={edgesState}
-          onNodesChange={onNodesChange}
+          onNodesChange={onPagesChange}
           onEdgesChange={onEdgesChange}
-          nodeTypes={nodeTypes}
+          nodeTypes={pageTypes}
           connectionMode={ConnectionMode.Loose}
           fitView
           fitViewOptions={{ padding: 0.2 }}
