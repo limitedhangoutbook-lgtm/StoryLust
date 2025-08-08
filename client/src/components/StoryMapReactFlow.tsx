@@ -255,14 +255,13 @@ export default function StoryMapReactFlow({ storyId, currentPage = 1, onNodeClic
       </div>
 
       {/* React Flow Map - Clean Professional Version */}
-      <div style={{ width: '100%', height: '600px' }} className="relative border-2 border-purple-200 rounded-xl overflow-hidden bg-gradient-to-br from-purple-25 to-purple-50 shadow-lg">
-        {/* Semi-transparent background eggplants - subtle backdrop */}
-        <div className="absolute top-16 left-16 text-9xl z-0 pointer-events-none opacity-5">🍆</div>
-        <div className="absolute top-32 right-20 text-7xl z-0 pointer-events-none opacity-8">🍆</div>
-        <div className="absolute bottom-24 left-24 text-8xl z-0 pointer-events-none opacity-6">🍆</div>
-        <div className="absolute bottom-20 right-16 text-9xl z-0 pointer-events-none opacity-5">🍆</div>
-        <div className="absolute top-1/2 left-1/3 text-12xl z-0 pointer-events-none opacity-4">🍆</div>
-        <div className="absolute top-1/3 right-1/4 text-8xl z-0 pointer-events-none opacity-7">🍆</div>
+      <div style={{ width: '100%', height: '600px' }} className="relative border-2 border-purple-100 rounded-xl overflow-hidden bg-gradient-to-br from-purple-50 via-violet-25 to-purple-75 shadow-lg">
+        {/* Ultra-subtle background eggplants */}
+        <div className="absolute top-20 left-20 text-8xl z-0 pointer-events-none opacity-2">🍆</div>
+        <div className="absolute top-40 right-24 text-6xl z-0 pointer-events-none opacity-3">🍆</div>
+        <div className="absolute bottom-32 left-28 text-7xl z-0 pointer-events-none opacity-2">🍆</div>
+        <div className="absolute bottom-24 right-20 text-8xl z-0 pointer-events-none opacity-2">🍆</div>
+        <div className="absolute top-1/2 left-1/2 text-9xl z-0 pointer-events-none opacity-1">🍆</div>
         
         <ReactFlow
           nodes={pagesState}
