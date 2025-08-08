@@ -6,7 +6,8 @@ TurnPage is a choose-your-own-adventure mobile web application designed for inte
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 User feedback: Very appreciative of thorough help and comprehensive solutions.
-Story Map Design: Current implementation "still off by a lot" - user will create Canva design reference for commercial-grade visual direction.
+Story Map Design: Implemented user's bubble design specifications with eggplant purple color scheme, two-word names, and proper content filtering.
+Color Preference: Eggplant purple tones for premium content instead of pink/bright colors.
 
 ## System Architecture
 

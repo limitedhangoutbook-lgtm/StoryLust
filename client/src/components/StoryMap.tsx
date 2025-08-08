@@ -333,7 +333,7 @@ export function StoryMap({ storyId, currentPage, isOpen, onClose, onNavigateToPa
                           />
                         )}
                         
-                        {/* Main node - color coded like sketch */}
+                        {/* Main node - eggplant purple color scheme */}
                         {node.type === 'ending' ? (
                           <rect
                             x={x}
@@ -342,13 +342,13 @@ export function StoryMap({ storyId, currentPage, isOpen, onClose, onNavigateToPa
                             height="30"
                             rx="8"
                             fill={isCurrentPage ? "#fbbf24" : 
-                                  node.isPremium && node.isOwned ? "#ec4899" : // Pink for premium paid
-                                  node.isPremium && !node.isOwned ? "#8b5cf6" : // Purple for premium locked
-                                  "#8b4513"} // Brown for free
+                                  node.isPremium && node.isOwned ? "#a855f7" : // Eggplant purple for premium paid
+                                  node.isPremium && !node.isOwned ? "#6b21a8" : // Deep purple for premium locked
+                                  "#92400e"} // Warm brown for free
                             stroke={isCurrentPage ? "#f59e0b" : 
-                                    node.isPremium && node.isOwned ? "#db2777" :
-                                    node.isPremium && !node.isOwned ? "#7c3aed" :
-                                    "#654321"}
+                                    node.isPremium && node.isOwned ? "#9333ea" :
+                                    node.isPremium && !node.isOwned ? "#581c87" :
+                                    "#78350f"}
                             strokeWidth="2"
                           />
                         ) : (
@@ -357,13 +357,13 @@ export function StoryMap({ storyId, currentPage, isOpen, onClose, onNavigateToPa
                             cy={y + 15}
                             r="20"
                             fill={isCurrentPage ? "#fbbf24" : 
-                                  node.isPremium && node.isOwned ? "#ec4899" : // Pink for premium paid
-                                  node.isPremium && !node.isOwned ? "#8b5cf6" : // Purple for premium locked
-                                  "#8b4513"} // Brown for free
+                                  node.isPremium && node.isOwned ? "#a855f7" : // Eggplant purple for premium paid
+                                  node.isPremium && !node.isOwned ? "#6b21a8" : // Deep purple for premium locked
+                                  "#92400e"} // Warm brown for free
                             stroke={isCurrentPage ? "#f59e0b" : 
-                                    node.isPremium && node.isOwned ? "#db2777" :
-                                    node.isPremium && !node.isOwned ? "#7c3aed" :
-                                    "#654321"}
+                                    node.isPremium && node.isOwned ? "#9333ea" :
+                                    node.isPremium && !node.isOwned ? "#581c87" :
+                                    "#78350f"}
                             strokeWidth="2"
                           />
                         )}
@@ -428,15 +428,15 @@ export function StoryMap({ storyId, currentPage, isOpen, onClose, onNavigateToPa
                     <span className="font-medium">Current Position</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="w-6 h-6 rounded-full" style={{ backgroundColor: '#8b4513' }} />
+                    <div className="w-6 h-6 rounded-full" style={{ backgroundColor: '#92400e' }} />
                     <span className="font-medium">Free Content</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="w-6 h-6 rounded-full" style={{ backgroundColor: '#ec4899' }} />
+                    <div className="w-6 h-6 rounded-full" style={{ backgroundColor: '#a855f7' }} />
                     <span className="font-medium">Premium Paid</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="w-7 h-5 rounded-lg" style={{ backgroundColor: '#8b4513' }} />
+                    <div className="w-7 h-5 rounded-lg" style={{ backgroundColor: '#92400e' }} />
                     <span className="font-medium">Story Ending</span>
                   </div>
                   <div className="flex items-center gap-3 md:col-span-2">

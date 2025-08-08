@@ -773,6 +773,8 @@ export class Storage {
       !choice.isPremium || ownedChoiceIds.has(choice.id)
     );
 
+
+
     // Create map nodes with positioning
     const mapNodes: Array<{
       id: string;
