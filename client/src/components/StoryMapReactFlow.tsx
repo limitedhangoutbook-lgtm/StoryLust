@@ -60,28 +60,28 @@ const StoryPageBubble = ({ data }: { data: any }) => {
 
   const getNodeStyle = () => {
     if (isCurrentPage) {
-      return 'bg-gradient-to-br from-yellow-300 via-yellow-400 to-amber-400 border-yellow-300 text-amber-900 ring-4 ring-yellow-300 ring-opacity-50 animate-pulse shadow-2xl transform scale-110';
+      return 'bg-gradient-to-br from-rose-300 to-rose-400 border-rose-300 text-white shadow-lg';
     }
     
     if (type === 'ending') {
-      return 'bg-gradient-to-br from-pink-400 via-rose-500 to-red-500 text-white border-rose-400 rounded-xl shadow-lg transform rotate-2 hover:-rotate-1';
+      return 'bg-gradient-to-br from-rose-400 to-rose-500 text-white border-rose-400 rounded-xl shadow-lg';
     }
     
     if (isPremium) {
       if (isOwned) {
-        return 'bg-gradient-to-br from-purple-400 via-violet-500 to-purple-600 text-white border-purple-300 shadow-lg hover:shadow-purple-300/50';
+        return 'bg-gradient-to-br from-purple-400 to-purple-500 text-white border-purple-300 shadow-lg';
       } else {
-        return 'bg-gradient-to-br from-purple-200 via-purple-300 to-purple-400 text-purple-800 border-purple-400 border-dashed shadow-md opacity-80';
+        return 'bg-gradient-to-br from-purple-200 to-purple-300 text-purple-800 border-purple-400 border-dashed shadow-md';
       }
     }
     
-    return 'bg-gradient-to-br from-emerald-400 via-teal-500 to-cyan-500 text-white border-teal-400 shadow-lg hover:shadow-teal-300/50';
+    return 'bg-gradient-to-br from-rose-200 to-rose-300 text-rose-800 border-rose-300 shadow-lg';
   };
 
   const getNodeIcon = () => {
     if (isCurrentPage) return '👑';
     if (type === 'ending') return '🎯';
-    if (isPremium) return isOwned ? '🍆💜' : '🍆🔒';
+    if (isPremium) return isOwned ? '🍆' : '🍆';
     return '📖';
   };
 
@@ -89,26 +89,18 @@ const StoryPageBubble = ({ data }: { data: any }) => {
     <div className="relative">
       <div 
         className={`
-          px-6 py-4 rounded-2xl border-3 cursor-pointer 
-          transition-all duration-300 hover:scale-110 hover:rotate-1
-          min-w-[140px] text-center font-bold shadow-xl
-          relative overflow-hidden
+          px-8 py-6 rounded-2xl border-2 cursor-pointer 
+          transition-colors duration-200 hover:brightness-110
+          min-w-[180px] text-center font-bold shadow-lg
+          relative
           ${getNodeStyle()}
         `}
         onClick={handleClick}
       >
-        {isPremium && (
-          <div className="absolute inset-0 opacity-20">
-            <div className="absolute top-1 left-2 text-xs animate-pulse delay-100">✨</div>
-            <div className="absolute top-2 right-1 text-xs animate-pulse delay-300">✨</div>
-            <div className="absolute bottom-1 left-1 text-xs animate-pulse delay-500">✨</div>
-          </div>
-        )}
-        
-        <div className="flex flex-col items-center gap-1 relative z-10">
-          <div className="text-lg">{getNodeIcon()}</div>
-          <div className="font-bold text-xs opacity-90">Page {pageNumber}</div>
-          <div className="text-sm leading-tight">{title}</div>
+        <div className="flex flex-col items-center gap-2">
+          <div className="text-4xl">{getNodeIcon()}</div>
+          <div className="font-bold text-sm opacity-90">Page {pageNumber}</div>
+          <div className="text-base leading-tight font-medium">{title}</div>
         </div>
       </div>
     </div>
@@ -164,7 +156,7 @@ export default function StoryMapReactFlow({ storyId, currentPage = 1, onNodeClic
     }));
 
     const flowEdges: Edge[] = mapData.choices
-      .filter(choice => choice.toPageId) // Only include choices with destinations
+      .filter(choice => choice.toPageId && mapData.nodes.find(n => n.id === choice.fromPageId) && mapData.nodes.find(n => n.id === choice.toPageId))
       .map((choice) => ({
         id: choice.id,
         source: choice.fromPageId,
@@ -172,13 +164,13 @@ export default function StoryMapReactFlow({ storyId, currentPage = 1, onNodeClic
         type: 'smoothstep',
         animated: choice.isPremium,
         style: {
-          stroke: choice.isPremium ? '#dc2626' : '#374151',
+          stroke: choice.isPremium ? '#a855f7' : '#f3e8ff',
           strokeWidth: choice.isPremium ? 3 : 2,
           strokeDasharray: choice.isPremium ? '8,4' : undefined,
         },
         markerEnd: {
           type: MarkerType.ArrowClosed,
-          color: choice.isPremium ? '#dc2626' : '#374151',
+          color: choice.isPremium ? '#a855f7' : '#f3e8ff',
         },
         label: choice.isPremium ? `🍆${choice.eggplantCost}` : undefined,
         labelStyle: {
@@ -246,27 +238,25 @@ export default function StoryMapReactFlow({ storyId, currentPage = 1, onNodeClic
         </div>
         <div className="flex items-center gap-2">
           <div className="flex items-center">
-            <span className="text-lg">🍆💜</span>
+            <span className="text-2xl">🍆</span>
           </div>
-          <span className="font-bold">Premium Unlocked</span>
+          <span className="font-bold">Premium Content</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="flex items-center">
-            <span className="text-lg">🍆🔒</span>
+            <span className="text-2xl">🎯</span>
           </div>
-          <span className="font-bold">Premium Locked</span>
+          <span className="font-bold">Story Endings</span>
         </div>
       </div>
 
-      {/* React Flow Map - Super Cute Version */}
-      <div style={{ width: '100%', height: '600px' }} className="relative border-2 border-purple-300 rounded-xl overflow-hidden bg-gradient-to-br from-purple-50 via-pink-25 to-violet-75 shadow-2xl">
-        {/* Floating eggplant decorations */}
-        <div className="absolute top-4 left-4 text-4xl animate-bounce delay-100 z-10 pointer-events-none">🍆</div>
-        <div className="absolute top-6 right-8 text-3xl animate-pulse delay-300 z-10 pointer-events-none">🍆</div>
-        <div className="absolute bottom-8 left-12 text-2xl animate-bounce delay-500 z-10 pointer-events-none">💜</div>
-        <div className="absolute bottom-4 right-4 text-3xl animate-pulse delay-700 z-10 pointer-events-none">✨</div>
-        <div className="absolute top-1/2 left-2 text-xl animate-spin delay-1000 z-10 pointer-events-none" style={{animationDuration: '3s'}}>🍆</div>
-        <div className="absolute top-3/4 right-6 text-2xl animate-bounce delay-1200 z-10 pointer-events-none">💖</div>
+      {/* React Flow Map - Clean Professional Version */}
+      <div style={{ width: '100%', height: '600px' }} className="relative border-2 border-purple-200 rounded-xl overflow-hidden bg-gradient-to-br from-purple-25 to-purple-50 shadow-lg">
+        {/* Static corner decorations - no animations */}
+        <div className="absolute top-6 left-6 text-5xl z-10 pointer-events-none opacity-40">🍆</div>
+        <div className="absolute top-6 right-6 text-5xl z-10 pointer-events-none opacity-40">🍆</div>
+        <div className="absolute bottom-6 left-6 text-5xl z-10 pointer-events-none opacity-40">🍆</div>
+        <div className="absolute bottom-6 right-6 text-5xl z-10 pointer-events-none opacity-40">🍆</div>
         
         <ReactFlow
           nodes={pagesState}
@@ -291,10 +281,10 @@ export default function StoryMapReactFlow({ storyId, currentPage = 1, onNodeClic
             nodeColor="#a855f7"
           />
           <Background 
-            gap={30} 
-            size={1.5} 
-            color="#e879f9"
-            className="dark:!stroke-purple-400 opacity-40"
+            gap={24} 
+            size={1} 
+            color="#e9d5ff"
+            className="opacity-30"
           />
         </ReactFlow>
       </div>
