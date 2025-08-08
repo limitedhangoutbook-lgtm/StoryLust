@@ -60,22 +60,22 @@ const StoryPageBubble = ({ data }: { data: any }) => {
 
   const getNodeStyle = () => {
     if (isCurrentPage) {
-      return 'bg-gradient-to-br from-rose-300 to-rose-400 border-rose-300 text-white shadow-lg';
+      return 'bg-white border-2 border-purple-500 text-slate-800 shadow-lg ring-2 ring-purple-200';
     }
     
     if (type === 'ending') {
-      return 'bg-gradient-to-br from-rose-400 to-rose-500 text-white border-rose-400 rounded-xl shadow-lg';
+      return 'bg-white border-2 border-slate-300 text-slate-800 shadow-md';
     }
     
     if (isPremium) {
       if (isOwned) {
-        return 'bg-gradient-to-br from-purple-400 to-purple-500 text-white border-purple-300 shadow-lg';
+        return 'bg-white border-2 border-purple-400 text-slate-800 shadow-md';
       } else {
-        return 'bg-gradient-to-br from-purple-200 to-purple-300 text-purple-800 border-purple-400 border-dashed shadow-md';
+        return 'bg-white border-2 border-dashed border-purple-300 text-slate-600 shadow-sm';
       }
     }
     
-    return 'bg-gradient-to-br from-rose-200 to-rose-300 text-rose-800 border-rose-300 shadow-lg';
+    return 'bg-white border-2 border-slate-300 text-slate-800 shadow-md';
   };
 
   const getNodeIcon = () => {
@@ -89,18 +89,18 @@ const StoryPageBubble = ({ data }: { data: any }) => {
     <div className="relative">
       <div 
         className={`
-          px-8 py-6 rounded-2xl border-2 cursor-pointer 
-          transition-colors duration-200 hover:brightness-110
-          min-w-[200px] text-center font-bold shadow-lg
+          px-6 py-4 rounded-xl cursor-pointer 
+          transition-all duration-200 hover:shadow-lg hover:scale-105
+          min-w-[160px] max-w-[200px] text-center
           relative
           ${getNodeStyle()}
         `}
         onClick={handleClick}
       >
-        <div className="flex flex-col items-center gap-3">
-          <div className="text-6xl">{getNodeIcon()}</div>
-          <div className="font-bold text-base opacity-90">Page {pageNumber}</div>
-          <div className="text-lg leading-tight font-medium">{title}</div>
+        <div className="flex flex-col items-center gap-2">
+          <div className="text-3xl mb-1">{getNodeIcon()}</div>
+          <div className="text-xs font-medium text-slate-500 uppercase tracking-wider">Page {pageNumber}</div>
+          <div className="text-sm font-semibold leading-tight">{title}</div>
         </div>
       </div>
     </div>
@@ -168,13 +168,13 @@ export default function StoryMapReactFlow({ storyId, currentPage = 1, onNodeClic
         type: 'smoothstep',
         animated: choice.isPremium,
         style: {
-          stroke: choice.isPremium ? '#a855f7' : '#f3e8ff',
-          strokeWidth: choice.isPremium ? 3 : 2,
-          strokeDasharray: choice.isPremium ? '8,4' : undefined,
+          stroke: choice.isPremium ? '#a855f7' : '#94a3b8',
+          strokeWidth: 2,
+          strokeDasharray: choice.isPremium ? '5,5' : undefined,
         },
         markerEnd: {
           type: MarkerType.ArrowClosed,
-          color: choice.isPremium ? '#a855f7' : '#f3e8ff',
+          color: choice.isPremium ? '#a855f7' : '#94a3b8',
         },
         label: choice.isPremium ? `🍆${choice.eggplantCost}` : undefined,
         labelStyle: {
@@ -254,14 +254,17 @@ export default function StoryMapReactFlow({ storyId, currentPage = 1, onNodeClic
         </div>
       </div>
 
-      {/* React Flow Map - Clean Professional Version */}
-      <div style={{ width: '100%', height: '600px' }} className="relative border-2 border-purple-100 rounded-xl overflow-hidden bg-gradient-to-br from-purple-50 via-violet-25 to-purple-75 shadow-lg">
-        {/* Ultra-subtle background eggplants */}
-        <div className="absolute top-20 left-20 text-8xl z-0 pointer-events-none opacity-2">🍆</div>
-        <div className="absolute top-40 right-24 text-6xl z-0 pointer-events-none opacity-3">🍆</div>
-        <div className="absolute bottom-32 left-28 text-7xl z-0 pointer-events-none opacity-2">🍆</div>
-        <div className="absolute bottom-24 right-20 text-8xl z-0 pointer-events-none opacity-2">🍆</div>
-        <div className="absolute top-1/2 left-1/2 text-9xl z-0 pointer-events-none opacity-1">🍆</div>
+      {/* React Flow Map - Professional Design */}
+      <div style={{ width: '100%', height: '600px' }} className="relative border border-slate-200 rounded-lg overflow-hidden bg-white shadow-sm">
+        {/* Professional background pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <svg width="100%" height="100%" viewBox="0 0 100 100" className="absolute inset-0">
+            <pattern id="dots" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+              <circle cx="10" cy="10" r="1" fill="#a855f7" />
+            </pattern>
+            <rect width="100%" height="100%" fill="url(#dots)" />
+          </svg>
+        </div>
         
         <ReactFlow
           nodes={pagesState}
@@ -286,9 +289,9 @@ export default function StoryMapReactFlow({ storyId, currentPage = 1, onNodeClic
             nodeColor="#a855f7"
           />
           <Background 
-            gap={24} 
-            size={1} 
-            color="#e9d5ff"
+            gap={32} 
+            size={0.5} 
+            color="#e2e8f0"
             className="opacity-30"
           />
         </ReactFlow>
