@@ -166,9 +166,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ownedChoiceIds = new Set(purchasedPaths.map(p => p.choiceId));
       }
       
+      console.log('Calling getStoryMapData with:', { storyId, ownedChoiceIds: ownedChoiceIds.size });
       const mapData = await storage.getStoryMapData(storyId, ownedChoiceIds);
+      console.log('Map data result:', { bubbleCount: mapData?.nodes?.length, choiceCount: mapData?.choices?.length });
       res.json(mapData);
     } catch (error) {
+      console.error('Error in story map route:', error);
+      console.error('Error stack:', error.stack);
       res.status(500).json({ message: "Failed to fetch story map" });
     }
   });

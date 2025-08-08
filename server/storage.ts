@@ -751,6 +751,8 @@ export class Storage {
       .from(storyPages)
       .where(eq(storyPages.storyId, storyId))
       .orderBy(storyPages.order);
+      
+    console.log(`Found ${pages.length} pages for story ${storyId}`);
 
     const allChoices = await db
       .select({
@@ -780,8 +782,8 @@ export class Storage {
 
 
 
-    // Create map nodes with positioning
-    const mapNodes: Array<{
+    // Create map page bubbles with positioning
+    const mapBubbles: Array<{
       id: string;
       type: 'page' | 'choice' | 'ending';
       pageNumber: number;
@@ -793,31 +795,14 @@ export class Storage {
       connections: string[];
     }> = [];
 
-    // Add accessible pages as nodes
-    const accessiblePageIds = new Set<string>();
-    
-    // Always include starting page (page 1)
-    const startingPage = pages.find(p => p.order === 1);
-    if (startingPage) {
-      accessiblePageIds.add(startingPage.id);
-    }
-
-    // Add pages that are reachable through accessible choices
-    accessibleChoices.forEach(choice => {
-      accessiblePageIds.add(choice.fromPageId);
-      if (choice.toPageId) {
-        accessiblePageIds.add(choice.toPageId);
-      }
-    });
-
-    // Build nodes with top-down layout
-    const accessiblePages = pages.filter(page => accessiblePageIds.has(page.id));
+    // Use ALL pages to show complete story structure, not just accessible ones
+    const accessiblePages = pages;
     
     // Create a hierarchical layout
-    const layoutNodes = this.calculateStoryLayout(accessiblePages, accessibleChoices);
+    const layoutBubbles = this.calculateStoryLayout(accessiblePages, accessibleChoices);
     
-    layoutNodes.forEach(layoutNode => {
-      const page = layoutNode.page;
+    layoutBubbles.forEach(layoutBubble => {
+      const page = layoutBubble.page;
       const pageChoices = accessibleChoices.filter(c => c.fromPageId === page.id);
       const isChoicePage = pageChoices.length > 0;
       const isEndingPage = pageChoices.length === 0 && page.order > 1;
@@ -837,22 +822,22 @@ export class Storage {
         }
       });
 
-      mapNodes.push({
+      mapBubbles.push({
         id: page.id,
         type: isEndingPage ? 'ending' : isChoicePage ? 'choice' : 'page',
         pageNumber: page.order,
         title: displayName,
         isPremium: hasPremiumPath,
         isOwned: isOwned,
-        x: layoutNode.x,
-        y: layoutNode.y,
+        x: layoutBubble.x,
+        y: layoutBubble.y,
         connections: pageChoices.map(c => c.id),
       });
     });
 
     return {
       storyId,
-      nodes: mapNodes,
+      nodes: mapBubbles,
       choices: accessibleChoices.map(choice => ({
         id: choice.id,
         fromPageId: choice.fromPageId,
@@ -866,64 +851,89 @@ export class Storage {
     };
   }
 
-  // Calculate branching tree layout to show story structure
+  // Calculate branching layout using page order numbers instead of IDs
   private calculateStoryLayout(pages: any[], choices: any[]) {
-    const layoutNodes: Array<{ page: any; x: number; y: number }> = [];
+    const layoutBubbles: Array<{ page: any; x: number; y: number }> = [];
     
-    // Create a map of page connections
-    const pageConnections = new Map<string, string[]>();
+    // Sort pages by order
+    const sortedPages = [...pages].sort((a, b) => a.order - b.order);
+    
+    // Create a map of page order -> page connections using targetPage numbers
+    const pageConnections = new Map<number, number[]>();
+    
     choices.forEach(choice => {
-      if (choice.toPageId) {
-        if (!pageConnections.has(choice.fromPageId)) {
-          pageConnections.set(choice.fromPageId, []);
+      if (choice.targetPage) {
+        const fromPage = pages.find(p => p.id === choice.fromPageId);
+        if (fromPage) {
+          if (!pageConnections.has(fromPage.order)) {
+            pageConnections.set(fromPage.order, []);
+          }
+          pageConnections.get(fromPage.order)!.push(choice.targetPage);
         }
-        pageConnections.get(choice.fromPageId)!.push(choice.toPageId);
       }
     });
     
-    // Find the starting page
-    const startPage = pages.find(p => p.order === 1);
-    if (!startPage) return [];
-    
-    // Build tree structure using breadth-first search
-    const positioned = new Set<string>();
-    const queue: Array<{ pageId: string; x: number; y: number; level: number }> = [];
+    // Build tree structure using breadth-first search with page orders
+    const positioned = new Set<number>();
+    const queue: Array<{ pageOrder: number; x: number; y: number; level: number }> = [];
     
     // Position starting page at center top
-    queue.push({ pageId: startPage.id, x: 0, y: 0, level: 0 });
+    queue.push({ pageOrder: 1, x: 0, y: 0, level: 0 });
     
     while (queue.length > 0) {
       const current = queue.shift()!;
       
-      if (positioned.has(current.pageId)) continue;
-      positioned.add(current.pageId);
+      if (positioned.has(current.pageOrder)) continue;
+      positioned.add(current.pageOrder);
       
-      const page = pages.find(p => p.id === current.pageId);
+      const page = sortedPages.find(p => p.order === current.pageOrder);
       if (page) {
-        layoutNodes.push({ page, x: current.x, y: current.y });
+        layoutBubbles.push({ page, x: current.x, y: current.y });
         
-        // Get children (pages this connects to)
-        const children = pageConnections.get(current.pageId) || [];
-        const childPages = children.map(id => pages.find(p => p.id === id)).filter(Boolean);
+        // Get children using targetPage numbers
+        const childOrderNumbers = pageConnections.get(current.pageOrder) || [];
+        const childPages = childOrderNumbers.map(order => sortedPages.find(p => p.order === order)).filter(Boolean);
         
         if (childPages.length > 0) {
           // Spread children horizontally based on number of branches
-          const startX = current.x - (childPages.length - 1) * 0.5;
+          const startX = current.x - (childPages.length - 1) * 0.75;
           childPages.forEach((childPage, index) => {
-            if (!positioned.has(childPage.id)) {
+            if (!positioned.has(childPage.order)) {
               queue.push({
-                pageId: childPage.id,
+                pageOrder: childPage.order,
                 x: startX + index * 1.5, // Spread branches horizontally
                 y: current.y + 1.5, // Move down vertically
                 level: current.level + 1
               });
             }
           });
+        } else if (current.pageOrder < sortedPages.length) {
+          // For linear progression without choices, add the next page in order
+          const nextPage = sortedPages.find(p => p.order === current.pageOrder + 1);
+          if (nextPage && !positioned.has(nextPage.order)) {
+            queue.push({
+              pageOrder: nextPage.order,
+              x: current.x, // Keep same x position for linear flow
+              y: current.y + 1.5, // Move down vertically
+              level: current.level + 1
+            });
+          }
         }
       }
     }
     
-    return layoutNodes;
+    // Add any remaining unpositioned pages (orphaned pages)
+    sortedPages.forEach((page, index) => {
+      if (!positioned.has(page.order)) {
+        layoutBubbles.push({ 
+          page, 
+          x: 3 + (index % 3), // Position orphaned pages to the right
+          y: Math.floor(index / 3) * 1.5,
+        });
+      }
+    });
+    
+    return layoutBubbles;
   }
 
   // Generate two-word names based on content like in the sketch
