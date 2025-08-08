@@ -102,13 +102,19 @@ export default function MermaidStoryMap({
   }, [storyId, currentPage, onNodeClick]);
 
   const generateMermaidFromStory = async (storyData: any): Promise<string> => {
-    console.log('Mermaid generating from story data:', storyData);
+    console.log('Mermaid API data received:', storyData);
     
     let mermaidCode = 'flowchart TD\n';
     
-    // Use pageBubbles instead of nodes
+    // Use pageBubbles from API response
     const nodes = storyData.pageBubbles || [];
-    const choices = storyData.choices || [];
+    
+    if (nodes.length === 0) {
+      console.log('No pageBubbles found in story data');
+      return 'flowchart TD\n    A["No story data available"]';
+    }
+    
+    console.log(`Processing ${nodes.length} story pages for Mermaid diagram`);
     
     // Add nodes with enhanced styling
     nodes.forEach((page: any) => {
@@ -121,16 +127,31 @@ export default function MermaidStoryMap({
     
     mermaidCode += '\n';
     
-    // Add edges
-    choices.forEach((choice: any) => {
-      if (choice.toPageId) {
-        if (choice.isPremium) {
-          mermaidCode += `    ${choice.fromPageId} -.->|"🍆 ${choice.eggplantCost}"| ${choice.toPageId}\n`;
-        } else {
-          mermaidCode += `    ${choice.fromPageId} --> ${choice.toPageId}\n`;
-        }
+    // Create connections based on the connections array in each page
+    nodes.forEach((page: any) => {
+      if (page.connections && page.connections.length > 0) {
+        page.connections.forEach((targetId: string) => {
+          // Find target page to check if it's premium
+          const targetPage = nodes.find((n: any) => n.id === targetId);
+          
+          if (targetPage && targetPage.isPremium) {
+            mermaidCode += `    ${page.id} -.->|"🍆 Premium"| ${targetId}\n`;
+          } else if (targetPage) {
+            mermaidCode += `    ${page.id} --> ${targetId}\n`;
+          }
+        });
       }
     });
+    
+    // If no connections found, create linear flow for demonstration
+    if (!nodes.some((page: any) => page.connections && page.connections.length > 0)) {
+      console.log('No connections found, creating basic flow from pages');
+      for (let i = 0; i < nodes.length - 1; i++) {
+        if (i < 5) { // Only show first few connections to avoid clutter
+          mermaidCode += `    ${nodes[i].id} --> ${nodes[i + 1].id}\n`;
+        }
+      }
+    }
     
     // Add styling
     mermaidCode += `
@@ -140,6 +161,7 @@ export default function MermaidStoryMap({
     classDef current fill:#fef3c7,stroke:#f59e0b,stroke-width:4px,color:#92400e
     `;
     
+    console.log('Generated Mermaid code:', mermaidCode);
     return mermaidCode;
   };
 
