@@ -40,21 +40,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(story);
   });
 
-  // Get starting node for a story (more specific routes first)
+  // Get starting page for a story (more specific routes first)
   app.get('/api/stories/:storyId/start', async (req, res) => {
-    const startingNode = await storage.getFirstStoryPage(req.params.storyId);
-    if (!startingNode) {
-      return res.status(404).json({ message: "Starting node not found" });
+    const startingPage = await storage.getFirstStoryPage(req.params.storyId);
+    if (!startingPage) {
+      return res.status(404).json({ message: "Starting page not found" });
     }
-    res.json(startingNode);
+    res.json(startingPage);
   });
 
-  app.get('/api/stories/:storyId/nodes/start', async (req, res) => {
-    const startingNode = await storage.getFirstStoryPage(req.params.storyId);
-    if (!startingNode) {
-      return res.status(404).json({ message: "Starting node not found" });
+  app.get('/api/stories/:storyId/pages/start', async (req, res) => {
+    const startingPage = await storage.getFirstStoryPage(req.params.storyId);
+    if (!startingPage) {
+      return res.status(404).json({ message: "Starting page not found" });
     }
-    res.json(startingNode);
+    res.json(startingPage);
   });
 
   // Get story by ID (more general route last)
@@ -276,18 +276,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "storyId, pageNumber, and title are required" });
       }
       
-      // Get the current node for this page - simplified approach
+      // Get the current page for this page - simplified approach
       const pages = await storage.getStoryPages(storyId);
-      const currentNode = pages.find(p => p.order === pageNumber);
+      const currentPage = pages.find(p => p.order === pageNumber);
       
-      if (!currentNode) {
+      if (!currentPage) {
         return res.status(404).json({ message: "Page not found" });
       }
       
       const bookmark = await storage.createPersonalBookmark({
         userId,
         storyId,
-        pageId: currentNode.id,
+        pageId: currentPage.id,
         title,
         notes,
       });
@@ -337,16 +337,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/reading-sessions/start', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const { storyId, startNodeId } = req.body;
+      const { storyId, startPageId } = req.body;
       
-      if (!storyId || !startNodeId) {
-        return res.status(400).json({ message: "storyId and startNodeId are required" });
+      if (!storyId || !startPageId) {
+        return res.status(400).json({ message: "storyId and startPageId are required" });
       }
       
       const session = await storage.startReadingSession({
         userId,
         storyId,
-        startPageId: startNodeId, // Fix schema mismatch
+        startPageId,
       });
       res.json(session);
     } catch (error) {
@@ -624,15 +624,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      // Get the starting node
-      const startingNode = await storage.getStoryStartingNode(storyId);
-      if (!startingNode) {
-        return res.status(404).json({ message: "Story starting node not found" });
+      // Get the starting page
+      const startingPage = await storage.getStoryStartingPage(storyId);
+      if (!startingPage) {
+        return res.status(404).json({ message: "Story starting page not found" });
       }
       
       res.json({
         success: true,
-        startingNode,
+        startingPage,
         message: "Story reset to beginning"
       });
     } catch (error) {
@@ -665,9 +665,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.status(404).json({ message: "Story not found" });
         }
         
-        const startingNode = await storage.getFirstStoryPage(storyId);
-        if (!startingNode) {
-          return res.status(404).json({ message: "Starting node not found" });
+        const startingPage = await storage.getFirstStoryPage(storyId);
+        if (!startingPage) {
+          return res.status(404).json({ message: "Starting page not found" });
         }
         
         const newProgress = await storage.saveReadingProgress({
@@ -717,7 +717,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/stories/:storyId/nodes', isAuthenticated, async (req: any, res) => {
+  app.get('/api/stories/:storyId/pages', isAuthenticated, async (req: any, res) => {
     try {
       const currentUser = await storage.getUser(req.user.claims.sub);
       if (currentUser?.role !== 'admin' && currentUser?.role !== 'mega-admin') {
@@ -728,8 +728,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const nodes = await storage.getStoryPages(storyId);
       res.json(nodes);
     } catch (error) {
-      console.error("Error fetching story nodes:", error);
-      res.status(500).json({ message: "Failed to fetch story nodes" });
+      console.error("Error fetching story pages:", error);
+      res.status(500).json({ message: "Failed to fetch story pages" });
     }
   });
 
@@ -967,7 +967,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/stories/:storyId/nodes', isAuthenticated, async (req: any, res) => {
+  app.post('/api/stories/:storyId/pages', isAuthenticated, async (req: any, res) => {
     try {
       const currentUser = await storage.getUser(req.user.claims.sub);
       if (currentUser?.role !== 'admin' && currentUser?.role !== 'mega-admin') {
@@ -991,8 +991,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.status(201).json(node);
     } catch (error) {
-      console.error("Error creating story node:", error);
-      res.status(500).json({ message: "Failed to create story node" });
+      console.error("Error creating story page:", error);
+      res.status(500).json({ message: "Failed to create story page" });
     }
   });
 
@@ -1009,8 +1009,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const node = await storage.updateStoryPage(pageId, updates);
       res.json(node);
     } catch (error) {
-      console.error("Error updating story node:", error);
-      res.status(500).json({ message: "Failed to update story node" });
+      console.error("Error updating story page:", error);
+      res.status(500).json({ message: "Failed to update story page" });
     }
   });
 
@@ -1023,10 +1023,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const { pageId } = req.params;
       await storage.deleteStoryPage(pageId);
-      res.json({ message: "Story node deleted successfully" });
+      res.json({ message: "Story page deleted successfully" });
     } catch (error) {
-      console.error("Error deleting story node:", error);
-      res.status(500).json({ message: "Failed to delete story node" });
+      console.error("Error deleting story page:", error);
+      res.status(500).json({ message: "Failed to delete story page" });
     }
   });
 

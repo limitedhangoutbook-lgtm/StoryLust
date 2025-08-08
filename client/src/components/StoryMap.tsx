@@ -12,7 +12,7 @@ interface StoryMapProps {
   onNavigateToPage: (pageNumber: number) => void;
 }
 
-interface MapNode {
+interface MapPageBubble {
   id: string;
   type: 'page' | 'choice' | 'ending';
   pageNumber: number;
@@ -37,12 +37,12 @@ interface MapChoice {
 
 interface StoryMapData {
   storyId: string;
-  nodes: MapNode[];
+  pageBubbles: MapPageBubble[];
   choices: MapChoice[];
 }
 
 export function StoryMap({ storyId, currentPage, isOpen, onClose, onNavigateToPage }: StoryMapProps) {
-  const [selectedNode, setSelectedNode] = useState<string | null>(null);
+  const [selectedPageBubble, setSelectedPageBubble] = useState<string | null>(null);
   const [scale, setScale] = useState(1);
   const [panX, setPanX] = useState(0);
   const [panY, setPanY] = useState(0);
@@ -61,12 +61,12 @@ export function StoryMap({ storyId, currentPage, isOpen, onClose, onNavigateToPa
     }
   };
 
-  // Handle node click for navigation
-  const handleNodeClick = (node: MapNode) => {
+  // Handle page bubble click for navigation
+  const handlePageBubbleClick = (pageBubble: MapPageBubble) => {
     if (!isDragging) {
-      setSelectedNode(node.id);
+      setSelectedPageBubble(pageBubble.id);
       // Navigate to the page number
-      onNavigateToPage(node.pageNumber);
+      onNavigateToPage(pageBubble.pageNumber);
       onClose(); // Close map after navigation
     }
   };
@@ -102,13 +102,13 @@ export function StoryMap({ storyId, currentPage, isOpen, onClose, onNavigateToPa
 
   // Auto-fit the map to show all content
   const fitToView = () => {
-    if (!mapData?.nodes.length) return;
+    if (!mapData?.pageBubbles.length) return;
     
     const margin = 100;
-    const minX = Math.min(...mapData.nodes.map(n => n.x * 100)) - margin;
-    const maxX = Math.max(...mapData.nodes.map(n => n.x * 100)) + margin;
-    const minY = Math.min(...mapData.nodes.map(n => n.y * 80)) - margin;
-    const maxY = Math.max(...mapData.nodes.map(n => n.y * 80)) + margin;
+    const minX = Math.min(...mapData.pageBubbles.map(n => n.x * 100)) - margin;
+    const maxX = Math.max(...mapData.pageBubbles.map(n => n.x * 100)) + margin;
+    const minY = Math.min(...mapData.pageBubbles.map(n => n.y * 80)) - margin;
+    const maxY = Math.max(...mapData.pageBubbles.map(n => n.y * 80)) + margin;
     
     const width = maxX - minX;
     const height = maxY - minY;
@@ -127,7 +127,7 @@ export function StoryMap({ storyId, currentPage, isOpen, onClose, onNavigateToPa
 
   // Fit to view when data loads
   useEffect(() => {
-    if (mapData?.nodes.length && isOpen) {
+    if (mapData?.pageBubbles.length && isOpen) {
       setTimeout(fitToView, 100); // Small delay to ensure component is mounted
     }
   }, [mapData, isOpen]);
@@ -306,17 +306,17 @@ export function StoryMap({ storyId, currentPage, isOpen, onClose, onNavigateToPa
                 </defs>
 
                 {/* Professional nodes with enhanced styling */}
-                {mapData?.nodes.map((node) => {
-                  const x = (node.x * 100) + 40;
-                  const y = (node.y * 80) + 40;
-                  const isCurrentPage = node.pageNumber === currentPage;
+                {mapData?.pageBubbles.map((pageBubble) => {
+                  const x = (pageBubble.x * 100) + 40;
+                  const y = (pageBubble.y * 80) + 40;
+                  const isCurrentPage = pageBubble.pageNumber === currentPage;
                   
                   return (
-                    <g key={node.id}>
-                      {/* Professional node styling with depth */}
-                      <g className="cursor-pointer hover:scale-105 transition-all duration-300" onClick={() => handleNodeClick(node)}>
-                        {/* Node shadow */}
-                        {node.type === 'ending' ? (
+                    <g key={pageBubble.id}>
+                      {/* Professional page bubble styling with depth */}
+                      <g className="cursor-pointer hover:scale-105 transition-all duration-300" onClick={() => handlePageBubbleClick(pageBubble)}>
+                        {/* Bubble shadow */}
+                        {pageBubble.type === 'ending' ? (
                           <rect
                             x={x + 3}
                             y={y + 3}
@@ -334,8 +334,8 @@ export function StoryMap({ storyId, currentPage, isOpen, onClose, onNavigateToPa
                           />
                         )}
                         
-                        {/* Main node - eggplant purple color scheme */}
-                        {node.type === 'ending' ? (
+                        {/* Main bubble - eggplant purple color scheme */}
+                        {pageBubble.type === 'ending' ? (
                           <rect
                             x={x}
                             y={y}
@@ -343,12 +343,12 @@ export function StoryMap({ storyId, currentPage, isOpen, onClose, onNavigateToPa
                             height="30"
                             rx="8"
                             fill={isCurrentPage ? "#fbbf24" : 
-                                  node.isPremium && node.isOwned ? "#a855f7" : // Eggplant purple for premium paid
-                                  node.isPremium && !node.isOwned ? "#6b21a8" : // Deep purple for premium locked
+                                  pageBubble.isPremium && pageBubble.isOwned ? "#a855f7" : // Eggplant purple for premium paid
+                                  pageBubble.isPremium && !pageBubble.isOwned ? "#6b21a8" : // Deep purple for premium locked
                                   "#92400e"} // Warm brown for free
                             stroke={isCurrentPage ? "#f59e0b" : 
-                                    node.isPremium && node.isOwned ? "#9333ea" :
-                                    node.isPremium && !node.isOwned ? "#581c87" :
+                                    pageBubble.isPremium && pageBubble.isOwned ? "#9333ea" :
+                                    pageBubble.isPremium && !pageBubble.isOwned ? "#581c87" :
                                     "#78350f"}
                             strokeWidth="2"
                           />
@@ -358,34 +358,34 @@ export function StoryMap({ storyId, currentPage, isOpen, onClose, onNavigateToPa
                             cy={y + 15}
                             r="20"
                             fill={isCurrentPage ? "#fbbf24" : 
-                                  node.isPremium && node.isOwned ? "#a855f7" : // Eggplant purple for premium paid
-                                  node.isPremium && !node.isOwned ? "#6b21a8" : // Deep purple for premium locked
+                                  pageBubble.isPremium && pageBubble.isOwned ? "#a855f7" : // Eggplant purple for premium paid
+                                  pageBubble.isPremium && !pageBubble.isOwned ? "#6b21a8" : // Deep purple for premium locked
                                   "#92400e"} // Warm brown for free
                             stroke={isCurrentPage ? "#f59e0b" : 
-                                    node.isPremium && node.isOwned ? "#9333ea" :
-                                    node.isPremium && !node.isOwned ? "#581c87" :
+                                    pageBubble.isPremium && pageBubble.isOwned ? "#9333ea" :
+                                    pageBubble.isPremium && !pageBubble.isOwned ? "#581c87" :
                                     "#78350f"}
                             strokeWidth="2"
                           />
                         )}
                         
-                        {/* Node content - simplified */}
+                        {/* Bubble content - simplified */}
                         <text
-                          x={node.type === 'ending' ? x + 30 : x + 30}
-                          y={node.type === 'ending' ? y + 20 : y + 20}
+                          x={pageBubble.type === 'ending' ? x + 30 : x + 30}
+                          y={pageBubble.type === 'ending' ? y + 20 : y + 20}
                           textAnchor="middle"
                           className="fill-white text-sm font-bold pointer-events-none"
                           style={{ fontSize: '12px' }}
                         >
-                          {node.pageNumber}
+                          {pageBubble.pageNumber}
                         </text>
                       </g>
                       
                       {/* Current position indicator - simpler */}
                       {isCurrentPage && (
                         <circle
-                          cx={node.type === 'ending' ? x + 30 : x + 30}
-                          cy={node.type === 'ending' ? y + 15 : y + 15}
+                          cx={pageBubble.type === 'ending' ? x + 30 : x + 30}
+                          cy={pageBubble.type === 'ending' ? y + 15 : y + 15}
                           r="28"
                           fill="none"
                           stroke="#f59e0b"
@@ -403,7 +403,7 @@ export function StoryMap({ storyId, currentPage, isOpen, onClose, onNavigateToPa
                         className="fill-slate-700 dark:fill-slate-300 text-xs pointer-events-none"
                         style={{ fontSize: '10px' }}
                       >
-                        {node.title}
+                        {pageBubble.title}
                       </text>
                     </g>
                   );

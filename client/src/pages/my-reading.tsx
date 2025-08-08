@@ -106,7 +106,7 @@ export default function MyReading() {
       // Clear reading progress by setting to the starting node
       await apiRequest("POST", '/api/reading-progress', {
         storyId,
-        currentNodeId: `${storyId.split('-')[0]}-start`, // Assume start node follows pattern
+        currentPageId: `${storyId.split('-')[0]}-start`, // Assume start page follows pattern
         isBookmarked: false
       });
       
@@ -274,7 +274,7 @@ export default function MyReading() {
                   onReadFromBeginning={() => openStoryFromBeginning(progress.storyId)}
                   onBookmark={() => handleBookmark(progress.storyId)}
                   showProgress={true}
-                  progressPercent={progress.isCompleted ? 100 : Math.min(100, (progress.currentNodeId ? 50 : 10))}
+                  progressPercent={progress.isCompleted ? 100 : Math.min(100, (progress.currentPageId ? 50 : 10))}
                 />
                 {progress.isCompleted && (
                   <div className="px-3 py-2 bg-rose-gold/10 border border-rose-gold/20 rounded-lg">

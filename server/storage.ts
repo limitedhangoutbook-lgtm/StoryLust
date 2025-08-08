@@ -202,7 +202,7 @@ export class Storage {
       pathCount,
     });
 
-    // Create all the pages as story nodes
+    // Create all the pages as story pages
     const nodeMap = new Map<string, string>(); // pageId -> pageId mapping
     
     for (const page of timelineData.pages) {
@@ -535,9 +535,9 @@ export class Storage {
         isPrivate: personalBookmarks.isPrivate,
         createdAt: personalBookmarks.createdAt,
         updatedAt: personalBookmarks.updatedAt,
-        // Include story and node details
+        // Include story and page details
         storyTitle: stories.title,
-        nodeTitle: storyPages.title,
+        pageTitle: storyPages.title,
       })
       .from(personalBookmarks)
       .leftJoin(stories, eq(personalBookmarks.storyId, stories.id))
@@ -837,7 +837,7 @@ export class Storage {
 
     return {
       storyId,
-      nodes: mapBubbles,
+      pageBubbles: mapBubbles,
       choices: accessibleChoices.map(choice => ({
         id: choice.id,
         fromPageId: choice.fromPageId,
@@ -970,7 +970,7 @@ export class Storage {
     return isChoicePage ? 'The Choice' : 'Process Flow';
   }
 
-  async getStoryStartingNode(storyId: string): Promise<StoryPage | undefined> {
+  async getStoryStartingPage(storyId: string): Promise<StoryPage | undefined> {
     const [node] = await db
       .select()
       .from(storyPages)

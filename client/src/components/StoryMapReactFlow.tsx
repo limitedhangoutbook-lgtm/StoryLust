@@ -19,7 +19,7 @@ import { ZoomIn, ZoomOut, Maximize } from 'lucide-react';
 
 interface StoryMapData {
   storyId: string;
-  nodes: Array<{
+  pageBubbles: Array<{
     id: string;
     type: 'page' | 'choice' | 'ending';
     pageNumber: number;
@@ -138,7 +138,7 @@ export default function StoryMapReactFlow({ storyId, currentPage = 1, onNodeClic
   const { nodes, edges } = useMemo(() => {
     if (!mapData) return { nodes: [], edges: [] };
 
-    const flowPages: Node[] = mapData.nodes.map((page) => ({
+    const flowPages: Node[] = mapData.pageBubbles.map((page) => ({
       id: page.id,
       type: 'storyPage',
       position: { x: page.x * 150, y: page.y * 120 }, // Spread out more for better visibility
@@ -158,8 +158,8 @@ export default function StoryMapReactFlow({ storyId, currentPage = 1, onNodeClic
     const flowEdges: Edge[] = mapData.choices
       .filter(choice => 
         choice.toPageId && 
-        mapData.nodes.find(n => n.id === choice.fromPageId) && 
-        mapData.nodes.find(n => n.id === choice.toPageId)
+        mapData.pageBubbles.find(n => n.id === choice.fromPageId) && 
+        mapData.pageBubbles.find(n => n.id === choice.toPageId)
       )
       .map((choice) => ({
         id: choice.id,
@@ -222,7 +222,7 @@ export default function StoryMapReactFlow({ storyId, currentPage = 1, onNodeClic
           🍆 Interactive Story Map ✨
         </h3>
         <div className="text-sm text-purple-600 font-medium bg-purple-100 px-3 py-1 rounded-full">
-          {mapData.nodes.length} pages • {mapData.choices.length} choices
+          {mapData.pageBubbles.length} pages • {mapData.choices.length} choices
         </div>
       </div>
 

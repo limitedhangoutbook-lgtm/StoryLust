@@ -173,7 +173,7 @@ export function Bookmarks() {
                           {formatDistanceToNow(new Date(bookmark.createdAt), { addSuffix: true })}
                         </p>
                         
-                        <Link href={`/story/${bookmark.storyId}?node=${bookmark.nodeId}`}>
+                        <Link href={`/story/${bookmark.storyId}?page=${bookmark.pageId}`}>
                           <Button size="sm" variant="outline">
                             Resume Reading
                             <ArrowRight className="ml-2 h-3 w-3" />

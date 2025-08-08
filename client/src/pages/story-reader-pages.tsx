@@ -37,7 +37,7 @@ export default function StoryReaderPages() {
     title: string; 
     content: string; 
     order: number;
-    nextNodeId?: string;
+    nextPageId?: string;
     isFirstChoice?: boolean;
   }>>({
     queryKey: [`/api/stories/${storyId}/pages`],

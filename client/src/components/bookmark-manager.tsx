@@ -12,11 +12,11 @@ import { formatDistanceToNow } from "date-fns";
 
 interface BookmarkManagerProps {
   storyId: string;
-  nodeId: string;
-  nodeTitle: string;
+  pageId: string;
+  pageTitle: string;
 }
 
-export function BookmarkManager({ storyId, nodeId, nodeTitle }: BookmarkManagerProps) {
+export function BookmarkManager({ storyId, pageId, pageTitle }: BookmarkManagerProps) {
   const [isCreating, setIsCreating] = useState(false);
   const [editingBookmark, setEditingBookmark] = useState<any>(null);
   const [title, setTitle] = useState("");
@@ -114,7 +114,7 @@ export function BookmarkManager({ storyId, nodeId, nodeTitle }: BookmarkManagerP
 
     createBookmarkMutation.mutate({
       storyId,
-      nodeId,
+      pageId,
       title: title.trim(),
       notes: notes.trim() || undefined,
     });
@@ -151,7 +151,7 @@ export function BookmarkManager({ storyId, nodeId, nodeTitle }: BookmarkManagerP
   };
 
   // Check if current page is already bookmarked
-  const isCurrentPageBookmarked = bookmarks.some((b: any) => b.nodeId === nodeId);
+  const isCurrentPageBookmarked = bookmarks.some((b: any) => b.pageId === pageId);
 
   return (
     <div className="space-y-4">
@@ -159,7 +159,7 @@ export function BookmarkManager({ storyId, nodeId, nodeTitle }: BookmarkManagerP
       {!isCurrentPageBookmarked && (
         <Button
           onClick={() => {
-            setTitle(`Bookmark: ${nodeTitle}`);
+            setTitle(`Bookmark: ${pageTitle}`);
             setIsCreating(true);
           }}
           variant="outline"
@@ -235,7 +235,7 @@ export function BookmarkManager({ storyId, nodeId, nodeTitle }: BookmarkManagerP
                     <div className="flex-1 min-w-0">
                       <p className="font-medium truncate">{bookmark.title}</p>
                       <p className="text-xs text-muted-foreground">
-                        {bookmark.nodeTitle}
+                        {bookmark.pageTitle}
                       </p>
                       {bookmark.notes && (
                         <p className="text-xs text-muted-foreground mt-1">

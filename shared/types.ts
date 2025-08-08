@@ -28,7 +28,7 @@ export interface Choice {
   targetPageId: string;
 }
 
-export interface StoryNode {
+export interface StoryPageBubble {
   id: string;
   type: 'choice' | 'ending' | 'page';
   title: string;
@@ -43,14 +43,14 @@ export interface StoryNode {
 export interface StoryChoice {
   id: string;
   text: string;
-  nextNodeId: string;
+  nextPageId: string;
   isPremium?: boolean;
   eggplantCost?: number;
 }
 
 export interface Connection {
-  fromNodeId: string;
-  toNodeId: string;
+  fromPageId: string;
+  toPageId: string;
   choiceId: string;
   isPremium?: boolean;
 }
