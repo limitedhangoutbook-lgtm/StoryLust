@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { X, Navigation, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import StoryMapReactFlow from './StoryMapReactFlow';
 
 interface StoryMapProps {
   storyId: string;
