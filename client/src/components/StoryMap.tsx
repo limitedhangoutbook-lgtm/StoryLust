@@ -196,7 +196,7 @@ function StoryMap({ storyId, currentPage, isOpen, onClose, onNavigateToPage }: S
           ) : (
             <div className="relative">
               {/* Professional Story Flow Canvas - Enhanced with zoom and pan */}
-              <div className="relative overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 bg-gradient-to-br from-purple-50 via-white to-pink-50 dark:from-gray-900 dark:via-gray-800 dark:to-purple-900 cursor-grab active:cursor-grabbing">
+              <div className="relative overflow-hidden rounded-xl border border-purple-200 dark:border-purple-700 bg-gradient-to-br from-purple-25 via-white to-purple-50 dark:from-gray-900 dark:via-purple-950 dark:to-purple-900 cursor-grab active:cursor-grabbing">
                 <svg
                   width="100%"
                   height="600"
@@ -253,13 +253,13 @@ function StoryMap({ storyId, currentPage, isOpen, onClose, onNavigateToPage }: S
                       {/* Clean connecting arrows */}
                       <path
                         d={pathData}
-                        stroke={choice.isPremium ? "#a855f7" : "#64748b"}
-                        strokeWidth="4"
+                        stroke={choice.isPremium ? "#8b5cf6" : "#6b7280"}
+                        strokeWidth={choice.isPremium ? "5" : "3.5"}
                         fill="none"
-                        strokeDasharray={choice.isPremium ? "12,6" : "none"}
+                        strokeDasharray={choice.isPremium ? "10,5" : "none"}
                         markerEnd="url(#arrowhead)"
-                        opacity="0.8"
-                        className="transition-opacity duration-200 hover:opacity-100"
+                        opacity={choice.isPremium ? "0.9" : "0.7"}
+                        className="transition-all duration-200 hover:opacity-100 hover:stroke-width-6"
                       />
                     </g>
                   );
@@ -309,10 +309,12 @@ function StoryMap({ storyId, currentPage, isOpen, onClose, onNavigateToPage }: S
                           width="120"
                           height="60"
                           rx="12"
-                          fill="white"
-                          stroke={isCurrentPage ? "#a855f7" : pageBubble.isPremium ? "#a855f7" : "#e2e8f0"}
-                          strokeWidth={isCurrentPage ? "3" : "2"}
-                          strokeDasharray={pageBubble.isPremium && !pageBubble.isOwned ? "6,3" : "none"}
+                          fill={pageBubble.isPremium ? "#faf7ff" : "white"}
+                          stroke={isCurrentPage ? "#8b5cf6" : 
+                                 pageBubble.isPremium && pageBubble.isOwned ? "#a855f7" : 
+                                 pageBubble.isPremium && !pageBubble.isOwned ? "#c4b5fd" : "#e5e7eb"}
+                          strokeWidth={isCurrentPage ? "3" : pageBubble.isPremium ? "2.5" : "2"}
+                          strokeDasharray={pageBubble.isPremium && !pageBubble.isOwned ? "8,4" : "none"}
                         />
                         
                         {/* Page content */}
