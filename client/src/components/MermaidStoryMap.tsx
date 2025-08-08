@@ -69,27 +69,35 @@ export default function MermaidStoryMap({
         }
 
         // Render new diagram
-        const { svg } = await mermaid.render('story-diagram', mermaidDefinition);
+        console.log('About to render Mermaid diagram with definition:', mermaidDefinition);
         
-        if (mermaidRef.current) {
-          mermaidRef.current.innerHTML = svg;
+        try {
+          const { svg } = await mermaid.render('story-diagram-' + Date.now(), mermaidDefinition);
+          console.log('Mermaid render successful, SVG length:', svg.length);
           
-          // Add click handlers to nodes
-          const nodes = mermaidRef.current.querySelectorAll('.node');
-          nodes.forEach(node => {
-            const nodeId = node.id;
-            const pageMatch = nodeId.match(/page(\d+)/);
-            if (pageMatch && onNodeClick) {
-              const pageNumber = parseInt(pageMatch[1]);
-              node.addEventListener('click', () => onNodeClick(pageNumber));
-              (node as HTMLElement).style.cursor = 'pointer';
-            }
-          });
+          if (mermaidRef.current) {
+            mermaidRef.current.innerHTML = svg;
+            console.log('SVG inserted into DOM element');
+          
+            // Add click handlers to nodes
+            const nodes = mermaidRef.current.querySelectorAll('.node');
+            nodes.forEach(node => {
+              const nodeId = node.id;
+              const pageMatch = nodeId.match(/page(\d+)/);
+              if (pageMatch && onNodeClick) {
+                const pageNumber = parseInt(pageMatch[1]);
+                node.addEventListener('click', () => onNodeClick(pageNumber));
+                (node as HTMLElement).style.cursor = 'pointer';
+              }
+            });
 
-          // Highlight current page
-          highlightCurrentPage(currentPage);
+            // Highlight current page
+            highlightCurrentPage(currentPage);
+          }
+        } catch (renderError) {
+          console.error('Mermaid render error:', renderError);
+          throw renderError;
         }
-
       } catch (err) {
         console.error('Error rendering Mermaid diagram:', err);
         setError(err instanceof Error ? err.message : 'Failed to render diagram');
