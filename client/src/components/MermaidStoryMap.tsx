@@ -102,10 +102,16 @@ export default function MermaidStoryMap({
   }, [storyId, currentPage, onNodeClick]);
 
   const generateMermaidFromStory = async (storyData: any): Promise<string> => {
+    console.log('Mermaid generating from story data:', storyData);
+    
     let mermaidCode = 'flowchart TD\n';
     
+    // Use pageBubbles instead of nodes
+    const nodes = storyData.pageBubbles || [];
+    const choices = storyData.choices || [];
+    
     // Add nodes with enhanced styling
-    storyData.pageBubbles.forEach((page: any) => {
+    nodes.forEach((page: any) => {
       const icon = page.isPremium ? '🍆' : page.type === 'ending' ? '🎯' : '📖';
       const title = page.title.split(' ').slice(0, 2).join('<br/>');
       const styleClass = page.isPremium ? 'premium' : page.type === 'ending' ? 'ending' : 'normal';
@@ -116,7 +122,7 @@ export default function MermaidStoryMap({
     mermaidCode += '\n';
     
     // Add edges
-    storyData.choices.forEach((choice: any) => {
+    choices.forEach((choice: any) => {
       if (choice.toPageId) {
         if (choice.isPremium) {
           mermaidCode += `    ${choice.fromPageId} -.->|"🍆 ${choice.eggplantCost}"| ${choice.toPageId}\n`;

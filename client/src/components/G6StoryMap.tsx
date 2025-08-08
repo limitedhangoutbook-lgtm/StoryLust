@@ -108,7 +108,7 @@ export default function G6StoryMap({
           style: nodeStyle
         };
       }),
-      edges: data.choices
+      edges: (data.choices || [])
         .filter((choice: any) => choice.toPageId)
         .map((choice: any) => ({
           id: choice.id,
@@ -230,9 +230,18 @@ export default function G6StoryMap({
         const response = await fetch(`/api/stories/${storyId}/map`);
         if (!response.ok) throw new Error('Failed to fetch story data');
         
-        const data = await response.json();
-        setStoryData(data);
-        initializeGraph(data);
+        const apiData = await response.json();
+        console.log('G6 API data received:', apiData);
+        
+        // Transform API response to expected format
+        const transformedData = {
+          nodes: apiData.pageBubbles || [],
+          choices: apiData.choices || []
+        };
+        
+        console.log('G6 Transformed data:', transformedData);
+        setStoryData(transformedData);
+        initializeGraph(transformedData);
 
       } catch (err) {
         console.error('Error loading story map:', err);
