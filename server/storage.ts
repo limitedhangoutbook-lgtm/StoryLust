@@ -815,13 +815,28 @@ export class Storage {
       const isChoicePage = pageChoices.length > 0;
       const isEndingPage = pageChoices.length === 0 && page.order > 1;
 
+      // Generate two-word name based on content
+      let displayName = this.generateTwoWordName(page.title || '', page.content || '', isChoicePage, isEndingPage);
+
+      // Determine if this is a premium path
+      let hasPremiumPath = false;
+      let isOwned = true;
+      pageChoices.forEach(choice => {
+        if (choice.isPremium) {
+          hasPremiumPath = true;
+          if (!ownedChoiceIds.has(choice.id)) {
+            isOwned = false;
+          }
+        }
+      });
+
       mapNodes.push({
         id: page.id,
         type: isEndingPage ? 'ending' : isChoicePage ? 'choice' : 'page',
         pageNumber: page.order,
-        title: page.title,
-        isPremium: false,
-        isOwned: true,
+        title: displayName,
+        isPremium: hasPremiumPath,
+        isOwned: isOwned,
         x: layoutNode.x,
         y: layoutNode.y,
         connections: pageChoices.map(c => c.id),
@@ -888,6 +903,40 @@ export class Storage {
     });
     
     return layoutNodes;
+  }
+
+  // Generate two-word names based on content like in the sketch
+  private generateTwoWordName(title: string, content: string, isChoicePage: boolean, isEndingPage: boolean): string {
+    // If it's an ending, use ending-specific words
+    if (isEndingPage) {
+      const endingWords = ['Back', 'Home', 'Away', 'Total', 'Submission', 'Dominated', 'Escape'];
+      const endings = ['Home', 'Away', 'Submission', 'Dominated', 'Escape', 'Complete'];
+      return `${endingWords[Math.floor(Math.random() * endingWords.length)]} ${endings[Math.floor(Math.random() * endings.length)]}`;
+    }
+
+    // For choice pages, extract meaningful words
+    const allText = `${title} ${content}`.toLowerCase();
+    
+    // Common two-word patterns from your sketch
+    const choicePatterns = [
+      'Look Hard', 'Sneak Around', 'Quick Peek', 'Subtle Flirting', 
+      'Making Work', 'The Choice', 'Back Wife', 'Away Go',
+      'Total Submission', 'Process Flow', 'Decision Point'
+    ];
+
+    // Try to match content to patterns
+    if (allText.includes('peek') || allText.includes('look')) return 'Quick Peek';
+    if (allText.includes('sneak') || allText.includes('around')) return 'Sneak Around';
+    if (allText.includes('hard') || allText.includes('difficult')) return 'Look Hard';
+    if (allText.includes('flirt') || allText.includes('subtle')) return 'Subtle Flirting';
+    if (allText.includes('work') || allText.includes('job')) return 'Making Work';
+    if (allText.includes('choice') || allText.includes('decide')) return 'The Choice';
+    if (allText.includes('wife') || allText.includes('home')) return 'Back Wife';
+    if (allText.includes('submit') || allText.includes('surrender')) return 'Total Submission';
+    if (allText.includes('dominate') || allText.includes('control')) return 'Dominated';
+    
+    // Default choice page name
+    return isChoicePage ? 'The Choice' : 'Process Flow';
   }
 
   async getStoryStartingNode(storyId: string): Promise<StoryPage | undefined> {

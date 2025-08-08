@@ -333,7 +333,7 @@ export function StoryMap({ storyId, currentPage, isOpen, onClose, onNavigateToPa
                           />
                         )}
                         
-                        {/* Main node - simplified like sketch */}
+                        {/* Main node - color coded like sketch */}
                         {node.type === 'ending' ? (
                           <rect
                             x={x}
@@ -341,8 +341,14 @@ export function StoryMap({ storyId, currentPage, isOpen, onClose, onNavigateToPa
                             width="60"
                             height="30"
                             rx="8"
-                            fill={isCurrentPage ? "#fbbf24" : "#4b5563"}
-                            stroke={isCurrentPage ? "#f59e0b" : "#374151"}
+                            fill={isCurrentPage ? "#fbbf24" : 
+                                  node.isPremium && node.isOwned ? "#ec4899" : // Pink for premium paid
+                                  node.isPremium && !node.isOwned ? "#8b5cf6" : // Purple for premium locked
+                                  "#8b4513"} // Brown for free
+                            stroke={isCurrentPage ? "#f59e0b" : 
+                                    node.isPremium && node.isOwned ? "#db2777" :
+                                    node.isPremium && !node.isOwned ? "#7c3aed" :
+                                    "#654321"}
                             strokeWidth="2"
                           />
                         ) : (
@@ -350,8 +356,14 @@ export function StoryMap({ storyId, currentPage, isOpen, onClose, onNavigateToPa
                             cx={x + 30}
                             cy={y + 15}
                             r="20"
-                            fill={isCurrentPage ? "#fbbf24" : "#6b7280"}
-                            stroke={isCurrentPage ? "#f59e0b" : "#374151"}
+                            fill={isCurrentPage ? "#fbbf24" : 
+                                  node.isPremium && node.isOwned ? "#ec4899" : // Pink for premium paid
+                                  node.isPremium && !node.isOwned ? "#8b5cf6" : // Purple for premium locked
+                                  "#8b4513"} // Brown for free
+                            stroke={isCurrentPage ? "#f59e0b" : 
+                                    node.isPremium && node.isOwned ? "#db2777" :
+                                    node.isPremium && !node.isOwned ? "#7c3aed" :
+                                    "#654321"}
                             strokeWidth="2"
                           />
                         )}
@@ -382,7 +394,7 @@ export function StoryMap({ storyId, currentPage, isOpen, onClose, onNavigateToPa
                         />
                       )}
                       
-                      {/* Simple title below */}
+                      {/* Two-word title below */}
                       <text
                         x={x + 30}
                         y={y + 50}
@@ -390,7 +402,7 @@ export function StoryMap({ storyId, currentPage, isOpen, onClose, onNavigateToPa
                         className="fill-slate-700 dark:fill-slate-300 text-xs pointer-events-none"
                         style={{ fontSize: '10px' }}
                       >
-                        {node.title.slice(0, 8)}{node.title.length > 8 ? '...' : ''}
+                        {node.title}
                       </text>
                     </g>
                   );
@@ -410,43 +422,34 @@ export function StoryMap({ storyId, currentPage, isOpen, onClose, onNavigateToPa
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-slate-600 dark:text-slate-400">
                   <div className="flex items-center gap-3">
                     <div className="relative">
-                      <div className="w-6 h-6 rounded-full bg-gradient-to-br from-gray-500 to-gray-600 border-2 border-slate-300 shadow-sm" />
-                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full border border-white text-xs text-white flex items-center justify-center">1</div>
-                    </div>
-                    <span className="font-medium">Story Page</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="relative">
-                      <div className="w-6 h-6 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 border-2 border-emerald-300 shadow-sm flex items-center justify-center text-white text-xs">⊕</div>
-                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full border border-white text-xs text-white flex items-center justify-center">2</div>
-                    </div>
-                    <span className="font-medium">Choice Point</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="relative">
-                      <div className="w-7 h-5 rounded-lg bg-gradient-to-br from-gray-600 to-gray-700 border-2 border-gray-400 shadow-sm flex items-center justify-center text-white text-xs">★</div>
-                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full border border-white text-xs text-white flex items-center justify-center">3</div>
-                    </div>
-                    <span className="font-medium">Story Ending</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="relative">
                       <div className="w-6 h-6 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 border-2 border-amber-300 shadow-sm" />
                       <div className="absolute inset-0 rounded-full border-2 border-amber-500 border-dashed animate-spin" style={{ animationDuration: '4s' }} />
                     </div>
                     <span className="font-medium">Current Position</span>
                   </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-6 h-6 rounded-full" style={{ backgroundColor: '#8b4513' }} />
+                    <span className="font-medium">Free Content</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-6 h-6 rounded-full" style={{ backgroundColor: '#ec4899' }} />
+                    <span className="font-medium">Premium Paid</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-7 h-5 rounded-lg" style={{ backgroundColor: '#8b4513' }} />
+                    <span className="font-medium">Story Ending</span>
+                  </div>
                   <div className="flex items-center gap-3 md:col-span-2">
                     <svg width="24" height="12" className="flex-shrink-0">
                       <defs>
                         <linearGradient id="legendGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                          <stop offset="0%" stopColor="#f59e0b" />
-                          <stop offset="100%" stopColor="#d97706" />
+                          <stop offset="0%" stopColor="#dc2626" />
+                          <stop offset="100%" stopColor="#b91c1c" />
                         </linearGradient>
                       </defs>
                       <path d="M 2 6 C 8 2, 16 10, 22 6" stroke="url(#legendGradient)" strokeWidth="3" fill="none" strokeDasharray="6,3" />
                     </svg>
-                    <span className="font-medium">Premium Path (requires 🍆 eggplants)</span>
+                    <span className="font-medium">Premium Path (red dashed)</span>
                   </div>
                 </div>
                 <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950/50 rounded-lg border border-blue-200 dark:border-blue-800">
