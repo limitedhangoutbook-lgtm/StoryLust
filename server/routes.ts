@@ -157,6 +157,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/stories/:storyId/map', async (req: any, res) => {
     try {
       const { storyId } = req.params;
+      const useOptimizedLayout = req.query.optimized === 'true';
       
       // Get user's purchased paths if authenticated
       let ownedChoiceIds = new Set<string>();
@@ -167,13 +168,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       console.log('Calling getStoryMapData with:', { storyId, ownedChoiceIds: ownedChoiceIds.size });
-      const mapData = await storage.getStoryMapData(storyId, ownedChoiceIds);
+      let mapData = await storage.getStoryMapData(storyId, ownedChoiceIds);
       console.log('Map data result:', { bubbleCount: mapData?.nodes?.length, choiceCount: mapData?.choices?.length });
+
+      // Apply AI layout optimization if requested
+      if (useOptimizedLayout && mapData) {
+        const { storyLayoutGenerator } = await import('./services/storyLayoutGenerator');
+        mapData = storyLayoutGenerator.generateOptimizedLayout(mapData);
+      }
+      
       res.json(mapData);
     } catch (error) {
       console.error('Error in story map route:', error);
-      console.error('Error stack:', error.stack);
+      console.error('Error stack:', (error as Error).stack);
       res.status(500).json({ message: "Failed to fetch story map" });
+    }
+  });
+
+  // Generate Mermaid code for story
+  app.get('/api/stories/:storyId/mermaid', async (req: any, res) => {
+    try {
+      const { storyId } = req.params;
+      
+      // Get user's purchased paths if authenticated
+      let ownedChoiceIds = new Set<string>();
+      if (req.isAuthenticated()) {
+        const userId = req.user.claims.sub;
+        const purchasedPaths = await storage.getUserPurchasedPaths(userId, storyId);
+        ownedChoiceIds = new Set(purchasedPaths.map(p => p.choiceId));
+      }
+      
+      const mapData = await storage.getStoryMapData(storyId, ownedChoiceIds);
+      if (!mapData) {
+        return res.status(404).json({ message: 'Story not found' });
+      }
+
+      const { storyLayoutGenerator } = await import('./services/storyLayoutGenerator');
+      const mermaidCode = storyLayoutGenerator.generateMermaidDefinition(mapData);
+      
+      res.json({ 
+        mermaidCode,
+        storyId,
+        pageCount: mapData.nodes.length,
+        choiceCount: mapData.choices.length
+      });
+    } catch (error) {
+      console.error('Error generating Mermaid code:', error);
+      res.status(500).json({ message: 'Failed to generate Mermaid diagram' });
     }
   });
 
