@@ -18,6 +18,7 @@ Color Preference: Eggplant purple tones for premium content instead of pink/brig
 - **Architectural Improvement**: Added story engine abstraction while maintaining existing functionality
 - **Code Quality**: All debug statements removed, LSP errors resolved, production-ready error handling
 - **Navigation System**: Completely rebuilt swipe navigation with improved sensitivity and reliability - both swipe and button navigation working properly
+- **Terminology Cleanup Complete**: Systematic elimination of ALL "node" terminology from entire codebase - now uses consistent page-based terminology throughout (January 2025)
 - External validation: ChatGPT assessment confirms modern tech stack and clean structure
 
 ### Frontend Architecture
