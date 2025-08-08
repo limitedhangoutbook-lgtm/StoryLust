@@ -235,8 +235,8 @@ export function StoryMap({ storyId, currentPage, isOpen, onClose, onNavigateToPa
 
                 {/* Professional connection paths */}
                 {mapData?.choices.map((choice) => {
-                  const fromNode = mapData.nodes.find(n => n.id === choice.fromPageId);
-                  const toNode = mapData.nodes.find(n => n.id === choice.toPageId);
+                  const fromNode = mapData.pageBubbles.find(n => n.id === choice.fromPageId);
+                  const toNode = mapData.pageBubbles.find(n => n.id === choice.toPageId);
                   
                   if (!fromNode || !toNode) return null;
 
@@ -271,16 +271,16 @@ export function StoryMap({ storyId, currentPage, isOpen, onClose, onNavigateToPa
                         fill="none"
                         transform="translate(2,2)"
                       />
-                      {/* Main connection - matching sketch style */}
+                      {/* Main connection - enhanced flow arrows */}
                       <path
                         d={pathData}
-                        stroke={choice.isPremium ? "#dc2626" : "#374151"}
-                        strokeWidth={choice.isPremium ? "3" : "2"}
+                        stroke={choice.isPremium ? "#a855f7" : "#64748b"}
+                        strokeWidth={choice.isPremium ? "3" : "2.5"}
                         fill="none"
                         strokeDasharray={choice.isPremium ? "8,4" : "none"}
-                        opacity={choice.isPremium && !choice.isOwned ? 0.7 : 1}
-                        markerEnd="url(#arrowhead)"
-                        className="transition-all duration-200"
+                        opacity={choice.isPremium && !choice.isOwned ? 0.6 : 0.9}
+                        markerEnd={choice.isPremium ? "url(#premium-arrowhead)" : "url(#arrowhead)"}
+                        className="transition-all duration-200 hover:opacity-100"
                       />
                     </g>
                   );
@@ -290,16 +290,31 @@ export function StoryMap({ storyId, currentPage, isOpen, onClose, onNavigateToPa
                 <defs>
                   <marker
                     id="arrowhead"
-                    markerWidth="12"
-                    markerHeight="8"
-                    refX="11"
-                    refY="4"
+                    markerWidth="14"
+                    markerHeight="10"
+                    refX="12"
+                    refY="5"
                     orient="auto"
                     markerUnits="strokeWidth"
                   >
                     <path
-                      d="M 0 0 L 12 4 L 0 8 Z"
-                      fill="url(#connectionGradient)"
+                      d="M 0 0 L 14 5 L 0 10 L 3 5 Z"
+                      fill="#64748b"
+                      stroke="none"
+                    />
+                  </marker>
+                  <marker
+                    id="premium-arrowhead"
+                    markerWidth="14"
+                    markerHeight="10"
+                    refX="12"
+                    refY="5"
+                    orient="auto"
+                    markerUnits="strokeWidth"
+                  >
+                    <path
+                      d="M 0 0 L 14 5 L 0 10 L 3 5 Z"
+                      fill="#a855f7"
                       stroke="none"
                     />
                   </marker>

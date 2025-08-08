@@ -168,13 +168,16 @@ export default function StoryMapReactFlow({ storyId, currentPage = 1, onNodeClic
         type: 'smoothstep',
         animated: choice.isPremium,
         style: {
-          stroke: choice.isPremium ? '#a855f7' : '#94a3b8',
-          strokeWidth: 2,
-          strokeDasharray: choice.isPremium ? '5,5' : undefined,
+          stroke: choice.isPremium ? '#a855f7' : '#64748b',
+          strokeWidth: choice.isPremium ? 4 : 3,
+          strokeDasharray: choice.isPremium ? '10,5' : undefined,
+          opacity: choice.isPremium && !choice.isOwned ? 0.6 : 0.9,
         },
         markerEnd: {
           type: MarkerType.ArrowClosed,
-          color: choice.isPremium ? '#a855f7' : '#94a3b8',
+          width: 24,
+          height: 18,
+          color: choice.isPremium ? '#a855f7' : '#64748b',
         },
         label: choice.isPremium ? `🍆${choice.eggplantCost}` : undefined,
         labelStyle: {
