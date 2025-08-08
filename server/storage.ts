@@ -768,10 +768,15 @@ export class Storage {
       .where(eq(storyPages.storyId, storyId))
       .orderBy(storyPages.order, storyChoices.order);
 
-    // Build accessible choice tree (only free or owned choices)
-    const accessibleChoices = allChoices.filter(choice => 
-      !choice.isPremium || ownedChoiceIds.has(choice.id)
-    );
+    // Build accessible choice tree (only real branching choices, not navigation)
+    const accessibleChoices = allChoices.filter(choice => {
+      // Skip simple navigation choices
+      if (choice.choiceText === "Continue" || choice.choiceText === "Next") {
+        return false;
+      }
+      // Only include free choices or owned premium choices
+      return !choice.isPremium || ownedChoiceIds.has(choice.id);
+    });
 
 
 

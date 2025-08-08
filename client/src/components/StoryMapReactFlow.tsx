@@ -91,16 +91,16 @@ const StoryPageBubble = ({ data }: { data: any }) => {
         className={`
           px-8 py-6 rounded-2xl border-2 cursor-pointer 
           transition-colors duration-200 hover:brightness-110
-          min-w-[180px] text-center font-bold shadow-lg
+          min-w-[200px] text-center font-bold shadow-lg
           relative
           ${getNodeStyle()}
         `}
         onClick={handleClick}
       >
-        <div className="flex flex-col items-center gap-2">
-          <div className="text-4xl">{getNodeIcon()}</div>
-          <div className="font-bold text-sm opacity-90">Page {pageNumber}</div>
-          <div className="text-base leading-tight font-medium">{title}</div>
+        <div className="flex flex-col items-center gap-3">
+          <div className="text-6xl">{getNodeIcon()}</div>
+          <div className="font-bold text-base opacity-90">Page {pageNumber}</div>
+          <div className="text-lg leading-tight font-medium">{title}</div>
         </div>
       </div>
     </div>
@@ -156,7 +156,11 @@ export default function StoryMapReactFlow({ storyId, currentPage = 1, onNodeClic
     }));
 
     const flowEdges: Edge[] = mapData.choices
-      .filter(choice => choice.toPageId && mapData.nodes.find(n => n.id === choice.fromPageId) && mapData.nodes.find(n => n.id === choice.toPageId))
+      .filter(choice => 
+        choice.toPageId && 
+        mapData.nodes.find(n => n.id === choice.fromPageId) && 
+        mapData.nodes.find(n => n.id === choice.toPageId)
+      )
       .map((choice) => ({
         id: choice.id,
         source: choice.fromPageId,
@@ -252,11 +256,13 @@ export default function StoryMapReactFlow({ storyId, currentPage = 1, onNodeClic
 
       {/* React Flow Map - Clean Professional Version */}
       <div style={{ width: '100%', height: '600px' }} className="relative border-2 border-purple-200 rounded-xl overflow-hidden bg-gradient-to-br from-purple-25 to-purple-50 shadow-lg">
-        {/* Static corner decorations - no animations */}
-        <div className="absolute top-6 left-6 text-5xl z-10 pointer-events-none opacity-40">🍆</div>
-        <div className="absolute top-6 right-6 text-5xl z-10 pointer-events-none opacity-40">🍆</div>
-        <div className="absolute bottom-6 left-6 text-5xl z-10 pointer-events-none opacity-40">🍆</div>
-        <div className="absolute bottom-6 right-6 text-5xl z-10 pointer-events-none opacity-40">🍆</div>
+        {/* Semi-transparent background eggplants - subtle backdrop */}
+        <div className="absolute top-16 left-16 text-9xl z-0 pointer-events-none opacity-5">🍆</div>
+        <div className="absolute top-32 right-20 text-7xl z-0 pointer-events-none opacity-8">🍆</div>
+        <div className="absolute bottom-24 left-24 text-8xl z-0 pointer-events-none opacity-6">🍆</div>
+        <div className="absolute bottom-20 right-16 text-9xl z-0 pointer-events-none opacity-5">🍆</div>
+        <div className="absolute top-1/2 left-1/3 text-12xl z-0 pointer-events-none opacity-4">🍆</div>
+        <div className="absolute top-1/3 right-1/4 text-8xl z-0 pointer-events-none opacity-7">🍆</div>
         
         <ReactFlow
           nodes={pagesState}
