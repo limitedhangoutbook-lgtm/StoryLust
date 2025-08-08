@@ -42,6 +42,11 @@ interface StoryMapData {
 
 export function StoryMap({ storyId, currentPage, isOpen, onClose, onNavigateToPage }: StoryMapProps) {
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
+  const [scale, setScale] = useState(1);
+  const [panX, setPanX] = useState(0);
+  const [panY, setPanY] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
   const { data: mapData, isLoading } = useQuery<StoryMapData>({
     queryKey: [`/api/stories/${storyId}/map`],
@@ -57,11 +62,74 @@ export function StoryMap({ storyId, currentPage, isOpen, onClose, onNavigateToPa
 
   // Handle node click for navigation
   const handleNodeClick = (node: MapNode) => {
-    setSelectedNode(node.id);
-    // Navigate to the page number
-    onNavigateToPage(node.pageNumber);
-    onClose(); // Close map after navigation
+    if (!isDragging) {
+      setSelectedNode(node.id);
+      // Navigate to the page number
+      onNavigateToPage(node.pageNumber);
+      onClose(); // Close map after navigation
+    }
   };
+
+  // Zoom and pan controls
+  const handleZoom = (delta: number) => {
+    setScale(prev => Math.max(0.3, Math.min(3, prev + delta)));
+  };
+
+  const handleWheel = (e: React.WheelEvent) => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -0.1 : 0.1;
+    handleZoom(delta);
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (e.button === 0) { // Left mouse button
+      setIsDragging(true);
+      setDragStart({ x: e.clientX - panX, y: e.clientY - panY });
+    }
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (isDragging) {
+      setPanX(e.clientX - dragStart.x);
+      setPanY(e.clientY - dragStart.y);
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  // Auto-fit the map to show all content
+  const fitToView = () => {
+    if (!mapData?.nodes.length) return;
+    
+    const margin = 100;
+    const minX = Math.min(...mapData.nodes.map(n => n.x * 100)) - margin;
+    const maxX = Math.max(...mapData.nodes.map(n => n.x * 100)) + margin;
+    const minY = Math.min(...mapData.nodes.map(n => n.y * 80)) - margin;
+    const maxY = Math.max(...mapData.nodes.map(n => n.y * 80)) + margin;
+    
+    const width = maxX - minX;
+    const height = maxY - minY;
+    
+    // Calculate scale to fit content
+    const containerWidth = 800;
+    const containerHeight = 600;
+    const scaleX = containerWidth / width;
+    const scaleY = containerHeight / height;
+    const newScale = Math.min(scaleX, scaleY, 1);
+    
+    setScale(newScale);
+    setPanX(-minX * newScale + (containerWidth - width * newScale) / 2);
+    setPanY(-minY * newScale + (containerHeight - height * newScale) / 2);
+  };
+
+  // Fit to view when data loads
+  useEffect(() => {
+    if (mapData?.nodes.length && isOpen) {
+      setTimeout(fitToView, 100); // Small delay to ensure component is mounted
+    }
+  }, [mapData, isOpen]);
 
   if (!isOpen) return null;
 
@@ -70,7 +138,7 @@ export function StoryMap({ storyId, currentPage, isOpen, onClose, onNavigateToPa
       className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
       onClick={handleBackdropClick}
     >
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-2xl max-w-6xl w-full max-h-[95vh] overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-2">
@@ -78,33 +146,68 @@ export function StoryMap({ storyId, currentPage, isOpen, onClose, onNavigateToPa
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
               Story Map
             </h2>
+            <div className="text-sm text-gray-500 dark:text-gray-400 ml-4">
+              Mouse wheel to zoom • Drag to pan • Click nodes to navigate
+            </div>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-          >
-            <X className="w-5 h-5" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleZoom(0.2)}
+              className="text-gray-600 dark:text-gray-300"
+            >
+              +
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleZoom(-0.2)}
+              className="text-gray-600 dark:text-gray-300"
+            >
+              -
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={fitToView}
+              className="text-gray-600 dark:text-gray-300"
+            >
+              Fit
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            >
+              <X className="w-5 h-5" />
+            </Button>
+          </div>
         </div>
 
         {/* Map Content */}
-        <div className="p-6 overflow-auto max-h-[calc(90vh-4rem)]">
+        <div className="p-6 overflow-hidden max-h-[calc(95vh-4rem)]">
           {isLoading ? (
             <div className="flex items-center justify-center h-64">
               <div className="animate-spin w-8 h-8 border-4 border-rose-500 border-t-transparent rounded-full" />
             </div>
           ) : (
             <div className="relative">
-              {/* Professional Story Flow Canvas */}
-              <div className="relative overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 bg-gradient-to-br from-slate-50 via-gray-50 to-blue-50 dark:from-slate-900 dark:via-gray-900 dark:to-blue-950">
+              {/* Professional Story Flow Canvas - Enhanced with zoom and pan */}
+              <div className="relative overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 bg-gradient-to-br from-slate-50 via-gray-50 to-blue-50 dark:from-slate-900 dark:via-gray-900 dark:to-blue-950 cursor-grab active:cursor-grabbing">
                 <svg
                   width="100%"
-                  height="500"
-                  viewBox="0 0 800 500"
+                  height="600"
+                  viewBox="0 0 800 600"
                   className="filter drop-shadow-sm"
+                  onWheel={handleWheel}
+                  onMouseDown={handleMouseDown}
+                  onMouseMove={handleMouseMove}
+                  onMouseUp={handleMouseUp}
+                  onMouseLeave={handleMouseUp}
                 >
+                  <g transform={`translate(${panX}, ${panY}) scale(${scale})`}>
                 {/* Gradient background pattern */}
                 <defs>
                   <pattern id="gridPattern" patternUnits="userSpaceOnUse" width="40" height="40">
@@ -292,7 +395,8 @@ export function StoryMap({ storyId, currentPage, isOpen, onClose, onNavigateToPa
                     </g>
                   );
                 })}
-              </svg>
+                  </g>
+                </svg>
               </div>
 
               {/* Professional Legend */}
