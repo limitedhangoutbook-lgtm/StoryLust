@@ -100,14 +100,14 @@ export default function StoryJumpMenu({ storyId, currentPage, onNavigateToPage }
           >
             <div className="flex items-center justify-between w-full">
               <div className="flex items-center gap-2">
+                <span className="text-xs text-gray-500 min-w-[20px] font-bold">
+                  {page.pageNumber}
+                </span>
                 <span className="text-xs text-gray-500">
                   {page.type === 'choice' ? '🔄' : page.type === 'ending' ? '🏁' : '📖'}
                 </span>
                 <span className="font-medium">{page.title}</span>
               </div>
-              <span className="text-xs text-gray-400 ml-2">
-                P.{page.pageNumber}
-              </span>
             </div>
           </DropdownMenuItem>
         ))}
@@ -131,8 +131,11 @@ export default function StoryJumpMenu({ storyId, currentPage, onNavigateToPage }
                 >
                   <div className="flex items-center justify-between w-full">
                     <div className="flex items-center gap-2">
+                      <span className="text-xs text-gray-400 min-w-[20px] font-bold">
+                        {page.pageNumber}
+                      </span>
                       <Lock className="w-3 h-3 text-amber-500" />
-                      <span>Locked Path</span>
+                      <span>{page.title}</span>
                     </div>
                     <span className="text-xs text-amber-600">
                       {cost}🍆
