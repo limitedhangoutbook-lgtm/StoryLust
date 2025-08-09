@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useLocation } from 'wouter';
 import StoryMap from '@/components/StoryMap';
+import ReactFlowStoryMap from '@/components/ReactFlowStoryMap';
 import { Button } from '@/components/ui/button';
 
 export default function StoryMapDemo() {
@@ -39,13 +40,31 @@ export default function StoryMapDemo() {
           </div>
         </div>
         
-        <StoryMap 
-          storyId={storyId} 
-          currentPage={currentPage}
-          isOpen={isMapOpen}
-          onClose={() => setIsMapOpen(false)}
-          onNavigateToPage={handlePageBubbleClick}
-        />
+        {/* React Flow Story Map - Modern Design */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-4">
+            🎨 React Flow Story Map (New Design)
+          </h2>
+          <ReactFlowStoryMap 
+            storyId={storyId} 
+            currentPage={currentPage}
+            onNavigateToPage={handlePageBubbleClick}
+          />
+        </div>
+
+        {/* Original Story Map */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-4">
+            📖 Original Story Map
+          </h2>
+          <StoryMap 
+            storyId={storyId} 
+            currentPage={currentPage}
+            isOpen={isMapOpen}
+            onClose={() => setIsMapOpen(false)}
+            onNavigateToPage={handlePageBubbleClick}
+          />
+        </div>
         
         {!isMapOpen && (
           <div className="text-center py-20">
