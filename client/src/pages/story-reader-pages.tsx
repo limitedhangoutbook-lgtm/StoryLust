@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft, Home } from "lucide-react";
 import { ChatMessageRenderer } from "@/components/chat-message-renderer";
 import StoryJumpMenu from "@/components/StoryJumpMenu";
+import { SpendButton } from "@/components/SpendButton";
 import type { StoryPage, Choice } from "@shared/types";
 
 export default function StoryReaderPages() {
@@ -500,42 +501,52 @@ export default function StoryReaderPages() {
           <div className="space-y-3 sm:space-y-4 mb-8">
             <h3 className="text-base sm:text-lg font-semibold text-kindle mb-3 sm:mb-4">What do you do?</h3>
             {choices.map((choice, index) => (
-              <button
-                key={choice.id}
-                onClick={() => handleChoiceClick(choice)}
-                disabled={selectChoiceMutation.isPending}
-                className={`w-full text-left p-3 sm:p-4 rounded-lg border transition-all ${
+              <div key={choice.id} className="space-y-2">
+                {/* Choice Text */}
+                <div className={`w-full text-left p-3 sm:p-4 rounded-lg border ${
                   choice.isPremium 
-                    ? 'border-rose-gold/30 hover:border-rose-gold hover:bg-rose-gold/5' 
-                    : 'border-dark-tertiary hover:border-kindle-secondary hover:bg-dark-secondary/30'
-                }`}
-              >
-                <div className="flex items-start space-x-2 sm:space-x-3">
-                  <span className={`font-bold text-base sm:text-lg ${choice.isPremium ? 'text-rose-gold' : 'text-kindle-secondary'}`}>
-                    {String.fromCharCode(65 + index)}.
-                  </span>
-                  <div className="flex-1">
-                    <span className="text-sm sm:text-base">
-                      {choice.choiceText}
+                    ? 'border-rose-gold/30 bg-rose-gold/5' 
+                    : 'border-dark-tertiary bg-dark-secondary/30'
+                }`}>
+                  <div className="flex items-start space-x-2 sm:space-x-3">
+                    <span className={`font-bold text-base sm:text-lg ${choice.isPremium ? 'text-rose-gold' : 'text-kindle-secondary'}`}>
+                      {String.fromCharCode(65 + index)}.
                     </span>
-                    {choice.isPremium && (
-                      <div className="mt-2">
-                        <div className="inline-flex items-center gap-1.5 px-2 sm:px-3 py-1 bg-rose-gold/15 text-rose-gold border border-rose-gold/30 rounded-full text-xs sm:text-sm font-semibold">
-                          <span>🍆</span>
-                          <span>{choice.eggplantCost || 0} eggplants</span>
+                    <div className="flex-1">
+                      <span className="text-sm sm:text-base text-kindle">
+                        {choice.choiceText}
+                      </span>
+                      {/* Show ownership status for authenticated users */}
+                      {choice.isPremium && isAuthenticated && purchasedPaths.some(p => p.choiceId === choice.id) && (
+                        <div className="inline-flex items-center gap-1 px-2 py-1 bg-green-500/15 text-green-400 border border-green-500/30 rounded-full text-xs font-medium mt-2">
+                          <span>✓</span>
+                          <span>Owned</span>
                         </div>
-                        {/* Show ownership status for authenticated users */}
-                        {isAuthenticated && purchasedPaths.some(p => p.choiceId === choice.id) && (
-                          <div className="inline-flex items-center gap-1 px-2 py-1 bg-green-500/15 text-green-400 border border-green-500/30 rounded-full text-xs font-medium ml-2">
-                            <span>✓</span>
-                            <span>Owned</span>
-                          </div>
-                        )}
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
                 </div>
-              </button>
+
+                {/* Choice Action Button */}
+                {choice.isPremium ? (
+                  <SpendButton
+                    cost={choice.eggplantCost || 0}
+                    currentBalance={(user as any)?.eggplants || 0}
+                    label={`Choose Option ${String.fromCharCode(65 + index)}`}
+                    disabled={selectChoiceMutation.isPending || (choice.isPremium && !isAuthenticated)}
+                    onConfirm={() => handleChoiceClick(choice)}
+                    className="w-full"
+                  />
+                ) : (
+                  <Button
+                    onClick={() => handleChoiceClick(choice)}
+                    disabled={selectChoiceMutation.isPending}
+                    className="w-full bg-dark-tertiary hover:bg-kindle-secondary/20 text-kindle border border-dark-tertiary hover:border-kindle-secondary"
+                  >
+                    Choose Option {String.fromCharCode(65 + index)}
+                  </Button>
+                )}
+              </div>
             ))}
           </div>
         )}

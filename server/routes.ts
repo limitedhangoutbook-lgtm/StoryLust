@@ -539,11 +539,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const cost = choice.eggplantCost || 0;
           const userEggplants = user?.eggplants || 0;
           
-          if (!user || userEggplants < cost) {
+          // Enhanced server-side safety checks
+          if (!user) {
+            return res.status(404).json({ message: "User not found" });
+          }
+          
+          if (cost < 0) {
+            return res.status(400).json({ message: "Invalid eggplant cost" });
+          }
+          
+          if (userEggplants < cost) {
+            // Track insufficient funds attempts for fraud prevention
+            analytics.track({
+              type: 'insufficient_funds',
+              userId,
+              storyId,
+              choiceId,
+              timestamp: new Date(),
+              metadata: {
+                required: cost,
+                available: userEggplants,
+                deficit: cost - userEggplants
+              }
+            });
+            
             return res.status(400).json({ 
               message: "Not enough eggplants for this premium choice",
               required: cost,
-              available: userEggplants
+              available: userEggplants,
+              canPurchase: false
+            });
+          }
+          
+          // Double-check for race conditions (double-spending protection)
+          const doubleCheckPurchase = await storage.hasPurchasedPremiumPath(userId, choiceId);
+          if (doubleCheckPurchase) {
+            return res.status(409).json({ 
+              message: "Choice already purchased",
+              alreadyOwned: true
             });
           }
           
