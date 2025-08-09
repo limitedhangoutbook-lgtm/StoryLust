@@ -12,14 +12,15 @@ Graph Terminology: Standard "node" terminology is acceptable for technical graph
 
 ## System Architecture
 
-### Current State (V1.1 Production Ready)
+### Current State (V1.2 Streamlined Navigation)
 - **Production-ready core functionality** with solid technical foundation and complete codebase cleanup
-- **Phase 1 Complete**: Modular architecture integrated directly into V1.1 system
+- **Phase 1 Complete**: Modular architecture integrated directly into V1.2 system
 - **Analytics Enhancement**: Choice purchasing and user actions now tracked with conversion metrics
 - **Architectural Improvement**: Added story engine abstraction while maintaining existing functionality
 - **Code Quality**: All debug statements removed, LSP errors resolved, production-ready error handling
 - **Navigation System**: Completely rebuilt swipe navigation with improved sensitivity and reliability - both swipe and button navigation working properly
-- **Graph Terminology**: Uses standard graph visualization terminology (nodes, edges, connections) for technical accuracy in story map components
+- **Streamlined Story Navigation (V1.2)**: Replaced complex story maps with elegant jump menu system to maintain reader flow state and reduce cognitive load
+- **UX Philosophy**: Adopted "edging" flow state approach - breadcrumb navigation and compact jump menus prevent spoilers while enabling easy story exploration
 - External validation: ChatGPT assessment confirms modern tech stack and clean structure
 
 ### Frontend Architecture
@@ -48,7 +49,7 @@ Graph Terminology: Standard "node" terminology is acceptable for technical graph
 - **Authentication System**: Replit OIDC, PostgreSQL-backed sessions (7-day TTL), automatic user creation/updates, HTTPS-only cookies.
 - **Content Management**: Flexible page-based storytelling, content filtering by audience (categories) and spice levels (1-3 chili peppers), eggplant-gated premium content with configurable costs.
 - **Payment Integration**: Stripe for payment processing, virtual diamond system, multiple diamond purchase tiers.
-- **Story Creation System**: Visual story creator with choice nodes (circles) and ending nodes (squares), supporting endless branching.
+- **Story Navigation System**: Clean jump menu interface with unlocked pages and premium content preview, designed to maintain flow state without spoilers.
 - **User System**: Four-tier system (guest, registered, admin, mega-admin) with role-based access control.
 - **Reading Experience**: Kindle-like interface with advanced typography, automatic story position saving/restoration for all users, touch navigation with swipe gestures.
 - **Deployment Strategy**: Vite for frontend build, esbuild for backend, static files served from `dist/public`, Node.js (ES module support), PostgreSQL, HTTPS. Scalability via serverless database, database-backed sessions, CDN for static assets, and stateless API design.

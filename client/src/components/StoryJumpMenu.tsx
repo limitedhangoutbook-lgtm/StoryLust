@@ -72,9 +72,9 @@ export default function StoryJumpMenu({ storyId, currentPage, onNavigateToPage }
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button 
-          variant="outline" 
+          variant="ghost" 
           size="sm"
-          className="bg-white/80 backdrop-blur-sm border-purple-200 hover:bg-purple-50 dark:bg-gray-800/80 dark:border-purple-700 dark:hover:bg-purple-900/50"
+          className="text-kindle-secondary hover:text-kindle p-2"
         >
           <MoreHorizontal className="w-4 h-4 mr-2" />
           Jump to Page

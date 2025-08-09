@@ -5,9 +5,9 @@ import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, Home, Map } from "lucide-react";
+import { ChevronLeft, Home } from "lucide-react";
 import { ChatMessageRenderer } from "@/components/chat-message-renderer";
-import { StoryMap } from "@/components/StoryMap";
+import StoryJumpMenu from "@/components/StoryJumpMenu";
 import type { StoryPage, Choice } from "@shared/types";
 
 export default function StoryReaderPages() {
@@ -20,7 +20,7 @@ export default function StoryReaderPages() {
   // Page-based state
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
-  const [showStoryMap, setShowStoryMap] = useState(false);
+
   
   const storyId = params?.storyId;
 
@@ -440,16 +440,12 @@ export default function StoryReaderPages() {
           </h1>
           
           <div className="flex items-center space-x-2">
-            {/* Story Map Button */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowStoryMap(true)}
-              className="text-kindle-secondary hover:text-kindle p-2"
-              title="Story Map"
-            >
-              <Map className="w-5 h-5" />
-            </Button>
+            {/* Jump Menu */}
+            <StoryJumpMenu
+              storyId={storyId || ""}
+              currentPage={currentPage}
+              onNavigateToPage={handleMapNavigation}
+            />
             
             {/* Floating Eggplant Counter */}
             {isAuthenticated && user && (
@@ -626,14 +622,7 @@ export default function StoryReaderPages() {
         </div>
       )}
 
-      {/* Story Map */}
-      <StoryMap
-        storyId={storyId || ""}
-        currentPage={currentPage}
-        isOpen={showStoryMap}
-        onClose={() => setShowStoryMap(false)}
-        onNavigateToPage={handleMapNavigation}
-      />
+
     </div>
   );
 }
