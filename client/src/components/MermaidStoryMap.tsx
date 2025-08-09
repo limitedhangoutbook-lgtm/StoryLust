@@ -48,10 +48,12 @@ export default function MermaidStoryMap({
 
   // Fetch and render Mermaid diagram
   useEffect(() => {
+    let mounted = true;
+    
     const fetchAndRender = async () => {
       try {
-        setIsLoading(true);
-        setError(null);
+        if (mounted) setIsLoading(true);
+        if (mounted) setError(null);
 
         // Fetch story data
         const response = await fetch(`/api/stories/${storyId}/map`);
@@ -61,23 +63,18 @@ export default function MermaidStoryMap({
 
         // Generate Mermaid code
         const mermaidDefinition = await generateMermaidFromStory(storyData);
-        setMermaidCode(mermaidDefinition);
+        if (mounted) setMermaidCode(mermaidDefinition);
 
-        // Clear previous diagram
-        if (mermaidRef.current) {
-          mermaidRef.current.innerHTML = '';
-        }
-
-        // Render new diagram
         console.log('About to render Mermaid diagram with definition:', mermaidDefinition);
         
         try {
           const { svg } = await mermaid.render('story-diagram-' + Date.now(), mermaidDefinition);
-          console.log('Mermaid render successful, SVG length:', svg.length);
+          console.log('Story Mermaid render successful, SVG length:', svg.length);
           
-          if (mermaidRef.current) {
+          // Check if component is still mounted and ref exists
+          if (mounted && mermaidRef.current) {
             mermaidRef.current.innerHTML = svg;
-            console.log('SVG inserted into DOM element');
+            console.log('Story SVG inserted into DOM element');
           
             // Add click handlers to nodes
             const nodes = mermaidRef.current.querySelectorAll('.node');
@@ -93,6 +90,8 @@ export default function MermaidStoryMap({
 
             // Highlight current page
             highlightCurrentPage(currentPage);
+          } else {
+            console.log('Component unmounted or ref null, skipping story SVG insertion');
           }
         } catch (renderError) {
           console.error('Mermaid render error:', renderError);
@@ -100,13 +99,17 @@ export default function MermaidStoryMap({
         }
       } catch (err) {
         console.error('Error rendering Mermaid diagram:', err);
-        setError(err instanceof Error ? err.message : 'Failed to render diagram');
+        if (mounted) setError(err instanceof Error ? err.message : 'Failed to render diagram');
       } finally {
-        setIsLoading(false);
+        if (mounted) setIsLoading(false);
       }
     };
 
     fetchAndRender();
+    
+    return () => {
+      mounted = false;
+    };
   }, [storyId, currentPage, onNodeClick]);
 
   const generateMermaidFromStory = async (storyData: any): Promise<string> => {

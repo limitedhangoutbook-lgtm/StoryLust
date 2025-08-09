@@ -16,6 +16,7 @@ import StoryBuilder from "@/pages/story-builder";
 import UserManagement from "@/pages/user-management";
 import StoryMapDemo from "@/pages/story-map-demo";
 import MermaidDemo from "@/pages/mermaid-demo";
+import MermaidSimple from "@/pages/mermaid-simple";
 // EggplantStore is handled by the Store component
 import { Bookmarks } from "@/pages/bookmarks";
 
@@ -43,6 +44,7 @@ function Router() {
       <Route path="/user-management" component={UserManagement} />
       <Route path="/story-map-demo" component={StoryMapDemo} />
       <Route path="/mermaid-demo" component={MermaidDemo} />
+      <Route path="/mermaid-simple" component={MermaidSimple} />
       <Route path="/landing" component={Landing} />
       <Route component={NotFound} />
     </Switch>
