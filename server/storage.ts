@@ -1073,12 +1073,11 @@ export class Storage {
       // If user has all cards, give them a random one anyway (for sharing)
       const cardsToChooseFrom = unownedCards.length > 0 ? unownedCards : availableCards;
       
-      // Weighted random selection based on rarity
+      // Weighted random selection based on rarity (simplified three-tier system)
       const rarityWeights = {
-        whisper: 50,  // Most common
-        ember: 30,    // Uncommon  
-        flame: 15,    // Rare
-        inferno: 5    // Ultra rare
+        ember: 60,    // Common
+        flame: 30,    // Uncommon  
+        inferno: 10   // Rare
       };
       
       const weightedCards: any[] = [];
@@ -1161,7 +1160,7 @@ export class Storage {
       .where(eq(userEndingCards.userId, userId));
 
     if (storyId) {
-      query = query.where(eq(endingCards.storyId, storyId));
+      query = query.where(eq(endingCards.storyId, storyId)) as any;
     }
 
     return await query.orderBy(desc(userEndingCards.unlockedAt));
@@ -1203,7 +1202,6 @@ export class Storage {
     const stats = {
       totalCards: userCards.length,
       cardsByRarity: {
-        whisper: 0,
         ember: 0,
         flame: 0,
         inferno: 0
@@ -1213,8 +1211,8 @@ export class Storage {
     };
 
     userCards.forEach(card => {
-      if (card.rarity && stats.cardsByRarity[card.rarity] !== undefined) {
-        stats.cardsByRarity[card.rarity]++;
+      if (card.rarity && (card.rarity === 'ember' || card.rarity === 'flame' || card.rarity === 'inferno')) {
+        stats.cardsByRarity[card.rarity as keyof typeof stats.cardsByRarity]++;
       }
     });
 

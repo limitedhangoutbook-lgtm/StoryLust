@@ -1,0 +1,139 @@
+Got it—three tiers only: **Ember**, **Flame**, **Inferno**. Here’s a tight, Replit-ready spec + drop-in React code.
+
+# Spec (v1)
+
+* **Frame styles**
+
+  * **Ember**: soft rose-gold edge, gentle static glow.
+  * **Flame**: gold “metal” edge (subtle gradient), stronger inner glow.
+  * **Inferno**: gold edge + animated shimmer (slow diagonal sweep), tiny spark pulse on reveal.
+* **Layout**: big image (top \~80%), one epilogue line, actions row: “Choose a different path” (left), “Home” (center). Share icon in the card’s **top-right**.
+* **Motion**: background dim 220ms, card slide-up 440ms with a 1.03→1.00 bounce; haptic tick on settle.
+* **Copy**: single future-tense line you write (diegetic).
+* **Assets**: suggestive, not explicit. Provide `alt`.
+
+# Minimal data
+
+```ts
+type EndingCard = {
+  rarity: "ember" | "flame" | "inferno";
+  imageUrl: string;
+  alt: string;
+  epilogue: string; // your sentence
+};
+```
+
+# React (Tailwind) — drop in
+
+```tsx
+import { motion } from "framer-motion";
+
+const rarityFrame = {
+  ember:  "from-rose-300/60 via-rose-400/50 to-rose-600/40",
+  flame:  "from-yellow-200 via-yellow-400 to-amber-500",
+  inferno:"from-yellow-100 via-amber-300 to-orange-400"
+};
+
+export function EndingCard({
+  rarity, imageUrl, alt, epilogue,
+  onHome, onRewind, onShare
+}: {
+  rarity: "ember"|"flame"|"inferno";
+  imageUrl: string; alt: string; epilogue: string;
+  onHome: () => void; onRewind: () => void; onShare: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-50">
+      {/* dimmer */}
+      <motion.div
+        initial={{ opacity: 0 }} animate={{ opacity: 0.6 }}
+        transition={{ duration: 0.22 }}
+        className="absolute inset-0 bg-black"
+      />
+      {/* card */}
+      <motion.div
+        initial={{ y: "100%", scale: 0.98, opacity: 0.9 }}
+        animate={{ y: 0, scale: 1, opacity: 1 }}
+        transition={{ duration: 0.44, ease: [0.22, 1, 0.36, 1] }}
+        onAnimationComplete={() => navigator.vibrate?.(12)}
+        className="absolute inset-x-3 bottom-3 sm:inset-x-10 sm:bottom-8"
+      >
+        <div className="mx-auto max-w-md rounded-3xl p-[2px] relative overflow-hidden">
+          {/* frame gradient */}
+          <div className={`absolute inset-0 bg-gradient-to-br ${rarityFrame[rarity]}`} />
+          {/* shimmer for inferno */}
+          {rarity === "inferno" && (
+            <div className="absolute -inset-1 bg-[linear-gradient(110deg,transparent,white,transparent)] opacity-20 animate-[shimmer_2.8s_linear_infinite]" />
+          )}
+          <div className="relative rounded-3xl bg-zinc-950 text-zinc-100">
+            {/* share */}
+            <button
+              onClick={onShare}
+              aria-label="Share"
+              className="absolute right-3 top-3 rounded-lg bg-white/5 px-2 py-1 text-xs hover:bg-white/10"
+            >Share</button>
+
+            {/* image */}
+            <img src={imageUrl} alt={alt} className="w-full h-72 object-cover rounded-t-3xl" />
+
+            {/* epilogue */}
+            <div className="px-4 py-3 text-sm text-zinc-200">
+              {epilogue}
+            </div>
+
+            {/* actions */}
+            <div className="flex items-center justify-between gap-2 px-3 pb-3">
+              <button
+                onClick={onRewind}
+                className="text-xs rounded-xl px-3 py-2 bg-white/5 hover:bg-white/10"
+              >
+                Choose a different path
+              </button>
+              <button
+                onClick={onHome}
+                className="text-xs rounded-xl px-3 py-2 bg-white/5 hover:bg-white/10"
+              >
+                Home
+              </button>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* keyframes (Tailwind plugin not required; add once globally) */}
+      <style>{`
+        @keyframes shimmer { 
+          0% { transform: translateX(-120%); } 
+          100% { transform: translateX(120%); } 
+        }
+      `}</style>
+    </div>
+  );
+}
+```
+
+### Usage
+
+```tsx
+<EndingCard
+  rarity="flame"
+  imageUrl="/cards/beach-shoulders.jpg"
+  alt="Moonlit beach, torso in shadow"
+  epilogue="You’ll say it was a one-time thing. It won’t be."
+  onRewind={() => jumpToFirstFork()}
+  onHome={() => router.push("/")}
+  onShare={() => openShare()}
+ />
+```
+
+### Notes for Replit
+
+* **No sound by default.** If you add a chime later, gate behind a settings toggle.
+* Keep animation timings as above; they read “premium” but not slow.
+* Images must be **suggestive, not explicit**; keep cards safe to screenshot.
+
+This gives you a clean ritual with clear visual separation:
+
+* **Ember** → subtle rose-gold
+* **Flame** → rich gold frame
+* **Inferno** → gold + shimmer (rare)

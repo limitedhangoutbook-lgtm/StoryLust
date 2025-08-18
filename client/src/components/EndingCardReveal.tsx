@@ -12,7 +12,7 @@ interface EndingCardRevealProps {
     cardSubtitle?: string;
     cardDescription: string;
     cardImageUrl?: string;
-    rarity: "whisper" | "ember" | "flame" | "inferno";
+    rarity: "ember" | "flame" | "inferno";
     emotionTag?: string;
     unlockCondition?: string;
     storyTitle?: string;
@@ -23,32 +23,24 @@ interface EndingCardRevealProps {
 }
 
 const rarityConfig = {
-  whisper: {
-    bg: "bg-gradient-to-br from-slate-600 to-slate-800",
-    border: "border-slate-500",
-    icon: Star,
-    glow: "shadow-slate-500/30",
-    text: "text-slate-200",
-    name: "Whisper"
-  },
   ember: {
-    bg: "bg-gradient-to-br from-orange-600 to-red-700", 
-    border: "border-orange-400",
+    bg: "bg-gradient-to-br from-rose-300/60 via-rose-400/50 to-rose-600/40", 
+    border: "border-rose-400",
     icon: Sparkles,
-    glow: "shadow-orange-500/40",
-    text: "text-orange-200",
+    glow: "shadow-rose-500/50",
+    text: "text-rose-100",
     name: "Ember"
   },
   flame: {
-    bg: "bg-gradient-to-br from-pink-600 to-purple-800",
-    border: "border-pink-400", 
+    bg: "bg-gradient-to-br from-yellow-200 via-yellow-400 to-amber-500",
+    border: "border-amber-400", 
     icon: Trophy,
-    glow: "shadow-pink-500/50",
-    text: "text-pink-200",
+    glow: "shadow-amber-500/60",
+    text: "text-amber-100",
     name: "Flame"
   },
   inferno: {
-    bg: "bg-gradient-to-br from-yellow-500 to-red-600",
+    bg: "bg-gradient-to-br from-yellow-100 via-amber-300 to-orange-400",
     border: "border-yellow-400",
     icon: Crown,
     glow: "shadow-yellow-500/60",

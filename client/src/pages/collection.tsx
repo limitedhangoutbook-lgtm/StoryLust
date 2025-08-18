@@ -7,32 +7,24 @@ import { Star, Sparkles, Trophy, Crown, Lock, Home } from "lucide-react";
 import { Link } from "wouter";
 
 const rarityConfig = {
-  whisper: {
-    bg: "bg-gradient-to-br from-slate-600 to-slate-800",
-    border: "border-slate-500",
-    icon: Star,
-    text: "text-slate-200",
-    accent: "text-slate-400",
-    name: "Whisper"
-  },
   ember: {
-    bg: "bg-gradient-to-br from-orange-600 to-red-700", 
-    border: "border-orange-400",
+    bg: "bg-gradient-to-br from-rose-300/60 via-rose-400/50 to-rose-600/40", 
+    border: "border-rose-400",
     icon: Sparkles,
-    text: "text-orange-200",
-    accent: "text-orange-300",
+    text: "text-rose-200",
+    accent: "text-rose-300",
     name: "Ember"
   },
   flame: {
-    bg: "bg-gradient-to-br from-pink-600 to-purple-800",
-    border: "border-pink-400", 
+    bg: "bg-gradient-to-br from-yellow-200 via-yellow-400 to-amber-500",
+    border: "border-amber-400", 
     icon: Trophy,
-    text: "text-pink-200",
-    accent: "text-pink-300",
+    text: "text-amber-200",
+    accent: "text-amber-300",
     name: "Flame"
   },
   inferno: {
-    bg: "bg-gradient-to-br from-yellow-500 to-red-600",
+    bg: "bg-gradient-to-br from-yellow-100 via-amber-300 to-orange-400",
     border: "border-yellow-400",
     icon: Crown,
     text: "text-yellow-100",
@@ -84,7 +76,7 @@ export default function Collection() {
     );
   }
 
-  const collection = data || { cards: [], stats: { totalCards: 0, cardsByRarity: {}, completedStories: 0, newCardsCount: 0 } };
+  const collection = data || { cards: [], stats: { totalCards: 0, cardsByRarity: { ember: 0, flame: 0, inferno: 0 }, completedStories: 0, newCardsCount: 0 } };
   const { cards, stats } = collection;
 
   return (
@@ -117,7 +109,7 @@ export default function Collection() {
                 <Icon className={`w-6 h-6 mx-auto mb-2 ${config.text}`} />
                 <div className="text-2xl font-bold text-kindle">{count}</div>
                 <div className="text-xs text-kindle-secondary uppercase tracking-wide">
-                  {config?.name || rarity}
+                  {config?.name || (rarity as string)}
                 </div>
               </Card>
             );
@@ -143,7 +135,7 @@ export default function Collection() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {cards.map((card: any) => {
-              const config = rarityConfig[card.rarity as keyof typeof rarityConfig];
+              const config = rarityConfig[card.rarity as keyof typeof rarityConfig] || rarityConfig.ember;
               const Icon = config.icon;
               
               return (
