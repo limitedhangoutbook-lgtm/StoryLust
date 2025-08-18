@@ -9,6 +9,7 @@ import { ChevronLeft, Home } from "lucide-react";
 import { ChatMessageRenderer } from "@/components/chat-message-renderer";
 import StoryJumpMenu from "@/components/StoryJumpMenu";
 import { SpendButton } from "@/components/SpendButton";
+import { SimpleSpendButton } from "@/components/SimpleSpendButton";
 import type { StoryPage, Choice } from "@shared/types";
 
 export default function StoryReaderPages() {
@@ -518,7 +519,7 @@ export default function StoryReaderPages() {
                       Sign In to Unlock ({choice.eggplantCost || 0} 🍆)
                     </Button>
                   ) : (
-                    <SpendButton
+                    <SimpleSpendButton
                       cost={choice.eggplantCost || 0}
                       currentBalance={(user as any)?.eggplants || 0}
                       label={`Choose Option ${String.fromCharCode(65 + index)}`}

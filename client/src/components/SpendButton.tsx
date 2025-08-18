@@ -27,19 +27,25 @@ export function SpendButton({
 
   const handlePointerDown = () => {
     if (disabled) return;
+    console.log('SpendButton: handlePointerDown - starting hold timer');
     setPressing(true);
     tRef.current = window.setTimeout(() => {
+      console.log('SpendButton: hold timer complete');
       setPressing(false);
       
       // Check if user has "don't ask again" preference for this story
       const storyId = window.location.pathname.split('/').pop() || '';
       const skipConfirm = localStorage.getItem(`skip-confirm-${storyId}`) === 'true';
       
+      console.log('SpendButton: skipConfirm =', skipConfirm);
+      
       if (skipConfirm) {
+        console.log('SpendButton: calling onConfirm directly');
         onConfirm();
         // Micro-vibration after confirmation
         if (navigator.vibrate) navigator.vibrate(12);
       } else {
+        console.log('SpendButton: showing confirmation modal');
         setShowConfirm(true);
       }
     }, 900); // 900ms hold time
@@ -74,19 +80,24 @@ export function SpendButton({
   return (
     <>
       <button
-        className={`relative rounded-xl px-4 py-3 bg-eggplant-600 hover:bg-eggplant-700 text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${className}`}
+        className={`relative rounded-xl px-4 py-3 bg-purple-600 hover:bg-purple-700 text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${className}`}
         disabled={disabled || !canAfford}
         onPointerDown={handlePointerDown}
         onPointerUp={handlePointerEnd}
         onPointerLeave={handlePointerEnd}
         onTouchStart={handlePointerDown}
         onTouchEnd={handlePointerEnd}
+        onClick={(e) => {
+          // Fallback for devices that don't support pointer events well
+          e.preventDefault();
+          console.log('SpendButton clicked - cost:', cost, 'balance:', currentBalance, 'disabled:', disabled || !canAfford);
+        }}
       >
         <span className="flex items-center justify-center gap-2">
           {label} · {cost} 🍆
         </span>
         {pressing && (
-          <span className="absolute inset-0 rounded-xl ring-2 ring-eggplant-300 animate-pulse bg-eggplant-500/20" />
+          <span className="absolute inset-0 rounded-xl ring-2 ring-purple-300 animate-pulse bg-purple-500/20" />
         )}
       </button>
 
