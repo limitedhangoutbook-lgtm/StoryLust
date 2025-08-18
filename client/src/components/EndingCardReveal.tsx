@@ -1,7 +1,8 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
-import { Sparkles, Trophy, Star, Crown } from "lucide-react";
+import { Sparkles, Trophy, Star, Crown, Share2, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 interface EndingCardRevealProps {
   isVisible: boolean;
@@ -11,48 +12,54 @@ interface EndingCardRevealProps {
     cardSubtitle?: string;
     cardDescription: string;
     cardImageUrl?: string;
-    rarity: "common" | "rare" | "epic" | "legendary";
+    rarity: "whisper" | "ember" | "flame" | "inferno";
     emotionTag?: string;
     unlockCondition?: string;
     storyTitle?: string;
+    isDuplicate?: boolean;
   };
   onContinue: () => void;
   onViewCollection?: () => void;
 }
 
 const rarityConfig = {
-  common: {
-    bg: "bg-gradient-to-br from-gray-600 to-gray-800",
-    border: "border-gray-500",
+  whisper: {
+    bg: "bg-gradient-to-br from-slate-600 to-slate-800",
+    border: "border-slate-500",
     icon: Star,
-    glow: "shadow-gray-500/30",
-    text: "text-gray-200"
+    glow: "shadow-slate-500/30",
+    text: "text-slate-200",
+    name: "Whisper"
   },
-  rare: {
-    bg: "bg-gradient-to-br from-blue-600 to-blue-800", 
-    border: "border-blue-400",
+  ember: {
+    bg: "bg-gradient-to-br from-orange-600 to-red-700", 
+    border: "border-orange-400",
     icon: Sparkles,
-    glow: "shadow-blue-500/40",
-    text: "text-blue-200"
+    glow: "shadow-orange-500/40",
+    text: "text-orange-200",
+    name: "Ember"
   },
-  epic: {
-    bg: "bg-gradient-to-br from-purple-600 to-purple-800",
-    border: "border-purple-400", 
+  flame: {
+    bg: "bg-gradient-to-br from-pink-600 to-purple-800",
+    border: "border-pink-400", 
     icon: Trophy,
-    glow: "shadow-purple-500/50",
-    text: "text-purple-200"
+    glow: "shadow-pink-500/50",
+    text: "text-pink-200",
+    name: "Flame"
   },
-  legendary: {
-    bg: "bg-gradient-to-br from-yellow-500 to-orange-600",
+  inferno: {
+    bg: "bg-gradient-to-br from-yellow-500 to-red-600",
     border: "border-yellow-400",
     icon: Crown,
     glow: "shadow-yellow-500/60",
-    text: "text-yellow-100"
+    text: "text-yellow-100",
+    name: "Inferno"
   }
 };
 
 export function EndingCardReveal({ isVisible, card, onContinue, onViewCollection }: EndingCardRevealProps) {
   const [showCard, setShowCard] = useState(false);
+  const { toast } = useToast();
   const config = rarityConfig[card.rarity];
   const Icon = config.icon;
 
@@ -72,6 +79,45 @@ export function EndingCardReveal({ isVisible, card, onContinue, onViewCollection
       navigator.vibrate([100, 50, 100]);
     }
   }, [showCard]);
+
+  const handleContinue = () => {
+    onContinue();
+  };
+
+  const handleShare = async () => {
+    const shareText = `I just unlocked "${card.cardTitle}" - a ${rarityConfig[card.rarity].name} rarity card in Wild Branch! 🍆✨`;
+    
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: `Wild Branch Card: ${card.cardTitle}`,
+          text: shareText,
+          url: window.location.origin
+        });
+      } else {
+        await navigator.clipboard.writeText(`${shareText}\n\n${window.location.origin}`);
+        toast({
+          title: "Copied to clipboard!",
+          description: "Share your card with friends",
+        });
+      }
+    } catch (error) {
+      // Fallback to copying
+      try {
+        await navigator.clipboard.writeText(`${shareText}\n\n${window.location.origin}`);
+        toast({
+          title: "Copied to clipboard!",
+          description: "Share your card with friends",
+        });
+      } catch (clipboardError) {
+        toast({
+          title: "Unable to share",
+          description: "Try manually copying the card details",
+          variant: "destructive",
+        });
+      }
+    }
+  };
 
   return (
     <AnimatePresence>
@@ -129,7 +175,7 @@ export function EndingCardReveal({ isVisible, card, onContinue, onViewCollection
                   >
                     <Icon size={16} className={config.text} />
                     <span className={`text-sm font-semibold uppercase tracking-wider ${config.text}`}>
-                      {card.rarity}
+                      {config.name}
                     </span>
                   </motion.div>
                 </div>
@@ -206,33 +252,50 @@ export function EndingCardReveal({ isVisible, card, onContinue, onViewCollection
                   transition={{ delay: 0.8 }}
                   className="space-y-3 pt-4"
                 >
-                  <Button
-                    onClick={onContinue}
-                    className="w-full bg-white/20 hover:bg-white/30 text-white font-semibold border border-white/30 backdrop-blur-sm"
-                  >
-                    Continue Story
-                  </Button>
-                  
-                  {onViewCollection && (
+                  <div className="space-y-2">
                     <Button
-                      onClick={onViewCollection}
-                      variant="outline"
-                      className="w-full bg-transparent hover:bg-white/10 text-white/80 border-white/30 font-medium"
+                      onClick={handleContinue}
+                      className="w-full bg-white/20 hover:bg-white/30 text-white font-semibold border border-white/30 backdrop-blur-sm"
                     >
-                      View Collection
+                      Continue Story
                     </Button>
-                  )}
+                    
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={handleShare}
+                        variant="outline"
+                        className="flex-1 bg-transparent hover:bg-white/10 text-white/80 border-white/30 font-medium"
+                      >
+                        <Share2 className="w-4 h-4 mr-2" />
+                        Share Card
+                      </Button>
+                      
+                      {onViewCollection && (
+                        <Button
+                          onClick={onViewCollection}
+                          variant="outline"
+                          className="flex-1 bg-transparent hover:bg-white/10 text-white/80 border-white/30 font-medium"
+                        >
+                          View Collection
+                        </Button>
+                      )}
+                    </div>
+                  </div>
                 </motion.div>
               </div>
 
-              {/* "NEW!" Badge */}
+              {/* Badge (NEW!/DUPLICATE) */}
               <motion.div
                 initial={{ scale: 0, rotate: -45 }}
                 animate={{ scale: 1, rotate: 0 }}
                 transition={{ delay: 0.2, type: "spring" }}
-                className="absolute -top-2 -right-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold shadow-lg"
+                className={`absolute -top-2 -right-2 px-2 py-1 rounded-full text-xs font-bold shadow-lg ${
+                  card.isDuplicate 
+                    ? "bg-blue-500 text-white" 
+                    : "bg-red-500 text-white"
+                }`}
               >
-                NEW!
+                {card.isDuplicate ? "SHARE!" : "NEW!"}
               </motion.div>
             </div>
           </motion.div>

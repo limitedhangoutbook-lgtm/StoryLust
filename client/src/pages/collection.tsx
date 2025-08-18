@@ -7,33 +7,37 @@ import { Star, Sparkles, Trophy, Crown, Lock, Home } from "lucide-react";
 import { Link } from "wouter";
 
 const rarityConfig = {
-  common: {
-    bg: "bg-gradient-to-br from-gray-600 to-gray-800",
-    border: "border-gray-500",
+  whisper: {
+    bg: "bg-gradient-to-br from-slate-600 to-slate-800",
+    border: "border-slate-500",
     icon: Star,
-    text: "text-gray-200",
-    accent: "text-gray-400"
+    text: "text-slate-200",
+    accent: "text-slate-400",
+    name: "Whisper"
   },
-  rare: {
-    bg: "bg-gradient-to-br from-blue-600 to-blue-800", 
-    border: "border-blue-400",
+  ember: {
+    bg: "bg-gradient-to-br from-orange-600 to-red-700", 
+    border: "border-orange-400",
     icon: Sparkles,
-    text: "text-blue-200",
-    accent: "text-blue-300"
+    text: "text-orange-200",
+    accent: "text-orange-300",
+    name: "Ember"
   },
-  epic: {
-    bg: "bg-gradient-to-br from-purple-600 to-purple-800",
-    border: "border-purple-400", 
+  flame: {
+    bg: "bg-gradient-to-br from-pink-600 to-purple-800",
+    border: "border-pink-400", 
     icon: Trophy,
-    text: "text-purple-200",
-    accent: "text-purple-300"
+    text: "text-pink-200",
+    accent: "text-pink-300",
+    name: "Flame"
   },
-  legendary: {
-    bg: "bg-gradient-to-br from-yellow-500 to-orange-600",
+  inferno: {
+    bg: "bg-gradient-to-br from-yellow-500 to-red-600",
     border: "border-yellow-400",
     icon: Crown,
     text: "text-yellow-100",
-    accent: "text-yellow-200"
+    accent: "text-yellow-200",
+    name: "Inferno"
   }
 };
 
@@ -113,7 +117,7 @@ export default function Collection() {
                 <Icon className={`w-6 h-6 mx-auto mb-2 ${config.text}`} />
                 <div className="text-2xl font-bold text-kindle">{count}</div>
                 <div className="text-xs text-kindle-secondary uppercase tracking-wide">
-                  {rarity}
+                  {config?.name || rarity}
                 </div>
               </Card>
             );
@@ -155,7 +159,7 @@ export default function Collection() {
                         className={`border-white/30 ${config.text} bg-white/10`}
                       >
                         <Icon className="w-3 h-3 mr-1" />
-                        {card.rarity.toUpperCase()}
+                        {config.name.toUpperCase()}
                       </Badge>
                       {card.isNewCard && (
                         <Badge className="bg-red-500 text-white text-xs">

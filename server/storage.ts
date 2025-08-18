@@ -1011,7 +1011,7 @@ export class Storage {
     cardSubtitle?: string;
     cardDescription: string;
     cardImageUrl?: string;
-    rarity?: "common" | "rare" | "epic" | "legendary";
+    rarity?: "whisper" | "ember" | "flame" | "inferno";
     emotionTag?: string;
     unlockCondition?: string;
     isSecret?: boolean;
@@ -1044,7 +1044,76 @@ export class Storage {
     return !!result;
   }
 
-  // Award ending card to user (when they reach an ending)
+  // Award random ending card to user (when they reach an ending)
+  async awardRandomEndingCard(userId: string, pageId: string): Promise<any> {
+    try {
+      // Get all possible cards for this ending page
+      const availableCards = await db
+        .select()
+        .from(endingCards)
+        .where(eq(endingCards.pageId, pageId));
+      
+      if (availableCards.length === 0) {
+        return { success: false, reason: 'no_cards_available' };
+      }
+
+      // Get user's existing cards for this page to avoid duplicates within the same session
+      const existingCards = await db
+        .select({ cardId: userEndingCards.cardId })
+        .from(userEndingCards)
+        .innerJoin(endingCards, eq(userEndingCards.cardId, endingCards.id))
+        .where(and(
+          eq(userEndingCards.userId, userId),
+          eq(endingCards.pageId, pageId)
+        ));
+      
+      const ownedCardIds = existingCards.map(c => c.cardId);
+      const unownedCards = availableCards.filter(card => !ownedCardIds.includes(card.id));
+      
+      // If user has all cards, give them a random one anyway (for sharing)
+      const cardsToChooseFrom = unownedCards.length > 0 ? unownedCards : availableCards;
+      
+      // Weighted random selection based on rarity
+      const rarityWeights = {
+        whisper: 50,  // Most common
+        ember: 30,    // Uncommon  
+        flame: 15,    // Rare
+        inferno: 5    // Ultra rare
+      };
+      
+      const weightedCards: any[] = [];
+      cardsToChooseFrom.forEach(card => {
+        const weight = rarityWeights[card.rarity as keyof typeof rarityWeights] || 50;
+        for (let i = 0; i < weight; i++) {
+          weightedCards.push(card);
+        }
+      });
+      
+      const selectedCard = weightedCards[Math.floor(Math.random() * weightedCards.length)];
+      
+      // Award the card (even if duplicate for sharing purposes)
+      const [userCard] = await db
+        .insert(userEndingCards)
+        .values({
+          userId,
+          cardId: selectedCard.id,
+          isNewCard: true
+        })
+        .returning();
+
+      return { 
+        success: true, 
+        userCard,
+        card: selectedCard,
+        isDuplicate: ownedCardIds.includes(selectedCard.id)
+      };
+    } catch (error) {
+      console.error('Error awarding random ending card:', error);
+      return { success: false, reason: 'database_error' };
+    }
+  }
+
+  // Award specific ending card to user (legacy method)
   async awardEndingCard(userId: string, cardId: string): Promise<any> {
     try {
       // Check if already collected
@@ -1134,10 +1203,10 @@ export class Storage {
     const stats = {
       totalCards: userCards.length,
       cardsByRarity: {
-        common: 0,
-        rare: 0,
-        epic: 0,
-        legendary: 0
+        whisper: 0,
+        ember: 0,
+        flame: 0,
+        inferno: 0
       },
       completedStories: new Set(userCards.map(card => card.storyId)).size,
       newCardsCount: userCards.filter(card => card.isNewCard).length

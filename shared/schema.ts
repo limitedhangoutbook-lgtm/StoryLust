@@ -125,7 +125,7 @@ export const endingCards = pgTable("ending_cards", {
   cardSubtitle: text("card_subtitle"), // Optional subtitle like "A Tale of Passion"
   cardDescription: text("card_description").notNull(), // Short flavor text about this ending
   cardImageUrl: text("card_image_url"), // Optional artwork for the card
-  rarity: varchar("rarity", { enum: ["common", "rare", "epic", "legendary"] }).default("common"),
+  rarity: varchar("rarity", { enum: ["whisper", "ember", "flame", "inferno"] }).default("whisper"),
   emotionTag: varchar("emotion_tag"), // "passionate", "tender", "wild", "bittersweet"
   unlockCondition: text("unlock_condition"), // Description like "Choose the risky path"
   isSecret: boolean("is_secret").default(false), // Hidden until unlocked

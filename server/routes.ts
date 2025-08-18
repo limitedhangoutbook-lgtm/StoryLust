@@ -1404,26 +1404,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.json({ card: null });
       }
 
-      // If user is authenticated, try to award the card
+      // If user is authenticated, try to award a random card from this ending
       if (userId) {
-        const awardResult = await storage.awardEndingCard(userId, card.id);
+        const awardResult = await storage.awardRandomEndingCard(userId, pageId);
         if (awardResult.success) {
-          // User earned a new card!
+          // User earned a card!
           return res.json({ 
             card: {
-              ...card,
-              isNewCard: true
+              ...awardResult.card,
+              isNewCard: !awardResult.isDuplicate,
+              isDuplicate: awardResult.isDuplicate
             },
             awarded: true
-          });
-        } else if (awardResult.reason === 'already_collected') {
-          // User already has this card
-          return res.json({ 
-            card: {
-              ...card,
-              isNewCard: false
-            },
-            awarded: false
           });
         }
       }
