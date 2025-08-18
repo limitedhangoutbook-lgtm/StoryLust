@@ -116,6 +116,34 @@ export const personalBookmarks = pgTable("personal_bookmarks", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Collectible ending cards (the "loot")
+export const endingCards = pgTable("ending_cards", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  storyId: varchar("story_id").notNull().references(() => stories.id, { onDelete: "cascade" }),
+  pageId: varchar("page_id").notNull().references(() => storyPages.id, { onDelete: "cascade" }), // The ending page
+  cardTitle: text("card_title").notNull(), // "The Desert Prince" or "Forbidden Love"
+  cardSubtitle: text("card_subtitle"), // Optional subtitle like "A Tale of Passion"
+  cardDescription: text("card_description").notNull(), // Short flavor text about this ending
+  cardImageUrl: text("card_image_url"), // Optional artwork for the card
+  rarity: varchar("rarity", { enum: ["common", "rare", "epic", "legendary"] }).default("common"),
+  emotionTag: varchar("emotion_tag"), // "passionate", "tender", "wild", "bittersweet"
+  unlockCondition: text("unlock_condition"), // Description like "Choose the risky path"
+  isSecret: boolean("is_secret").default(false), // Hidden until unlocked
+  sortOrder: integer("sort_order").default(0), // For display ordering
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// User's collected ending cards
+export const userEndingCards = pgTable("user_ending_cards", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  cardId: varchar("card_id").notNull().references(() => endingCards.id, { onDelete: "cascade" }),
+  unlockedAt: timestamp("unlocked_at").defaultNow(),
+  isNewCard: boolean("is_new_card").default(true), // For showing "NEW!" badge
+}, (table) => [
+  unique().on(table.userId, table.cardId), // Each user can only have each card once
+]);
+
 // Reading sessions for detailed analytics
 export const readingSessions = pgTable("reading_sessions", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -199,6 +227,30 @@ export const usersRelations = relations(users, ({ many }) => ({
   personalBookmarks: many(personalBookmarks),
   readingSessions: many(readingSessions),
   purchasedPremiumPaths: many(purchasedPremiumPaths),
+  collectedCards: many(userEndingCards),
+}));
+
+export const endingCardsRelations = relations(endingCards, ({ one, many }) => ({
+  story: one(stories, {
+    fields: [endingCards.storyId],
+    references: [stories.id],
+  }),
+  endingPage: one(storyPages, {
+    fields: [endingCards.pageId],
+    references: [storyPages.id],
+  }),
+  collectors: many(userEndingCards),
+}));
+
+export const userEndingCardsRelations = relations(userEndingCards, ({ one }) => ({
+  user: one(users, {
+    fields: [userEndingCards.userId],
+    references: [users.id],
+  }),
+  card: one(endingCards, {
+    fields: [userEndingCards.cardId],
+    references: [endingCards.id],
+  }),
 }));
 
 export const personalBookmarksRelations = relations(personalBookmarks, ({ one }) => ({
@@ -322,6 +374,16 @@ export const insertReadingSessionSchema = createInsertSchema(readingSessions).om
   createdAt: true,
 });
 
+export const insertEndingCardSchema = createInsertSchema(endingCards).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertUserEndingCardSchema = createInsertSchema(userEndingCards).omit({
+  id: true,
+  unlockedAt: true,
+});
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -338,6 +400,10 @@ export type ReadingSession = typeof readingSessions.$inferSelect;
 export type InsertReadingSession = typeof readingSessions.$inferInsert;
 export type AuthorMessage = typeof authorMessages.$inferSelect;
 export type InsertAuthorMessage = typeof authorMessages.$inferInsert;
+export type EndingCard = typeof endingCards.$inferSelect;
+export type InsertEndingCard = typeof endingCards.$inferInsert;
+export type UserEndingCard = typeof userEndingCards.$inferSelect;
+export type InsertUserEndingCard = typeof userEndingCards.$inferInsert;
 
 export type InsertStory = z.infer<typeof insertStorySchema>;
 export type InsertStoryPage = z.infer<typeof insertStoryPageSchema>;

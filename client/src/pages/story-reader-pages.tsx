@@ -11,6 +11,7 @@ import StoryJumpMenu from "@/components/StoryJumpMenu";
 import { SpendButton } from "@/components/SpendButton";
 import { SimpleSpendButton } from "@/components/SimpleSpendButton";
 import { PremiumUnlockAnimation } from "@/components/PremiumUnlockAnimation";
+import { EndingCardReveal } from "@/components/EndingCardReveal";
 import type { StoryPage, Choice } from "@shared/types";
 
 export default function StoryReaderPages() {
@@ -75,6 +76,10 @@ export default function StoryReaderPages() {
   // Track reset state to prevent progress restoration conflicts
   const [isResetting, setIsResetting] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
+  
+  // Ending card state
+  const [showEndingCard, setShowEndingCard] = useState(false);
+  const [endingCard, setEndingCard] = useState<any>(null);
 
   const saveProgress = useCallback((pageNumber: number) => {
     if (!storyId) return;
@@ -392,8 +397,42 @@ export default function StoryReaderPages() {
     }
   });
 
-  // Check if story is ending
-  const isEnding = currentPageData?.content?.includes("**THE END**") || false;
+  // Check if story is ending (no next choices available)
+  const isEnding = choices.length === 0 && currentPage === totalPages;
+  
+  // Check for ending card when reaching an ending
+  useEffect(() => {
+    const checkForEndingCard = async () => {
+      if (!isEnding || !currentPageData?.id || !isAuthenticated || showEndingCard) return;
+      
+      try {
+        const response = await apiRequest("GET", `/api/pages/${currentPageData.id}/ending-card`);
+        const data = await response.json();
+        
+        if (data.card) {
+          setEndingCard(data.card);
+          setShowEndingCard(true);
+        }
+      } catch (error) {
+        // No ending card exists for this page - that's okay
+        console.log("No ending card for this page");
+      }
+    };
+    
+    checkForEndingCard();
+  }, [isEnding, currentPageData?.id, isAuthenticated, showEndingCard]);
+
+  // Handle ending card actions
+  const handleCardContinue = () => {
+    setShowEndingCard(false);
+    setEndingCard(null);
+  };
+
+  const handleViewCollection = () => {
+    setShowEndingCard(false);
+    setEndingCard(null);
+    setLocation('/collection');
+  };
 
   if (!story || !currentPageData || allPages.length === 0) {
     return (
@@ -635,6 +674,15 @@ export default function StoryReaderPages() {
         </div>
       )}
 
+      {/* Ending Card Reveal */}
+      {endingCard && (
+        <EndingCardReveal
+          isVisible={showEndingCard}
+          card={endingCard}
+          onContinue={handleCardContinue}
+          onViewCollection={handleViewCollection}
+        />
+      )}
 
     </div>
   );

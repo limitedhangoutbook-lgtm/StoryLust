@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { eq, desc, and, sql } from "drizzle-orm";
+import { eq, desc, and, sql, asc, inArray } from "drizzle-orm";
 import {
   users,
   stories,
@@ -10,6 +10,8 @@ import {
   personalBookmarks,
   readingSessions,
   purchasedPremiumPaths,
+  endingCards,
+  userEndingCards,
   type User,
   type UpsertUser,
   type Story,
@@ -22,6 +24,10 @@ import {
   type InsertPersonalBookmark,
   type ReadingSession,
   type InsertReadingSession,
+  type EndingCard,
+  type InsertEndingCard,
+  type UserEndingCard,
+  type InsertUserEndingCard,
 
 } from "@shared/schema";
 
@@ -993,6 +999,157 @@ export class Storage {
     // This would query an analytics table in production
     // For now, return empty array - extend when implementing analytics storage
     return [];
+  }
+
+  // === ENDING CARDS SYSTEM ===
+  
+  // Create an ending card for a story
+  async createEndingCard(cardData: {
+    storyId: string;
+    pageId: string;
+    cardTitle: string;
+    cardSubtitle?: string;
+    cardDescription: string;
+    cardImageUrl?: string;
+    rarity?: "common" | "rare" | "epic" | "legendary";
+    emotionTag?: string;
+    unlockCondition?: string;
+    isSecret?: boolean;
+    sortOrder?: number;
+  }): Promise<any> {
+    const [card] = await db.insert(endingCards).values(cardData).returning();
+    return card;
+  }
+
+  // Get all ending cards for a story
+  async getStoryEndingCards(storyId: string): Promise<any[]> {
+    return await db
+      .select()
+      .from(endingCards)
+      .where(eq(endingCards.storyId, storyId))
+      .orderBy(asc(endingCards.sortOrder), asc(endingCards.cardTitle));
+  }
+
+  // Check if user has collected a specific ending card
+  async hasCollectedCard(userId: string, cardId: string): Promise<boolean> {
+    const [result] = await db
+      .select()
+      .from(userEndingCards)
+      .where(and(
+        eq(userEndingCards.userId, userId),
+        eq(userEndingCards.cardId, cardId)
+      ))
+      .limit(1);
+    
+    return !!result;
+  }
+
+  // Award ending card to user (when they reach an ending)
+  async awardEndingCard(userId: string, cardId: string): Promise<any> {
+    try {
+      // Check if already collected
+      const alreadyHas = await this.hasCollectedCard(userId, cardId);
+      if (alreadyHas) {
+        return { success: false, reason: 'already_collected' };
+      }
+
+      const [userCard] = await db
+        .insert(userEndingCards)
+        .values({
+          userId,
+          cardId,
+          isNewCard: true
+        })
+        .returning();
+
+      return { success: true, userCard };
+    } catch (error) {
+      return { success: false, reason: 'database_error' };
+    }
+  }
+
+  // Get user's collected ending cards
+  async getUserEndingCards(userId: string, storyId?: string): Promise<any[]> {
+    let query = db
+      .select({
+        id: userEndingCards.id,
+        cardId: userEndingCards.cardId,
+        unlockedAt: userEndingCards.unlockedAt,
+        isNewCard: userEndingCards.isNewCard,
+        cardTitle: endingCards.cardTitle,
+        cardSubtitle: endingCards.cardSubtitle,
+        cardDescription: endingCards.cardDescription,
+        cardImageUrl: endingCards.cardImageUrl,
+        rarity: endingCards.rarity,
+        emotionTag: endingCards.emotionTag,
+        unlockCondition: endingCards.unlockCondition,
+        storyId: endingCards.storyId,
+        storyTitle: stories.title
+      })
+      .from(userEndingCards)
+      .innerJoin(endingCards, eq(userEndingCards.cardId, endingCards.id))
+      .innerJoin(stories, eq(endingCards.storyId, stories.id))
+      .where(eq(userEndingCards.userId, userId));
+
+    if (storyId) {
+      query = query.where(eq(endingCards.storyId, storyId));
+    }
+
+    return await query.orderBy(desc(userEndingCards.unlockedAt));
+  }
+
+  // Mark cards as viewed (remove "NEW!" badge)
+  async markCardsAsViewed(userId: string, cardIds: string[]): Promise<void> {
+    if (cardIds.length === 0) return;
+    
+    await db
+      .update(userEndingCards)
+      .set({ isNewCard: false })
+      .where(and(
+        eq(userEndingCards.userId, userId),
+        inArray(userEndingCards.cardId, cardIds)
+      ));
+  }
+
+  // Get ending card for a specific story page (for auto-awarding)
+  async getEndingCardForPage(pageId: string): Promise<any> {
+    const [card] = await db
+      .select()
+      .from(endingCards)
+      .where(eq(endingCards.pageId, pageId))
+      .limit(1);
+    
+    return card;
+  }
+
+  // Get user's collection stats
+  async getUserCollectionStats(userId: string): Promise<{
+    totalCards: number;
+    cardsByRarity: Record<string, number>;
+    completedStories: number;
+    newCardsCount: number;
+  }> {
+    const userCards = await this.getUserEndingCards(userId);
+    
+    const stats = {
+      totalCards: userCards.length,
+      cardsByRarity: {
+        common: 0,
+        rare: 0,
+        epic: 0,
+        legendary: 0
+      },
+      completedStories: new Set(userCards.map(card => card.storyId)).size,
+      newCardsCount: userCards.filter(card => card.isNewCard).length
+    };
+
+    userCards.forEach(card => {
+      if (card.rarity && stats.cardsByRarity[card.rarity] !== undefined) {
+        stats.cardsByRarity[card.rarity]++;
+      }
+    });
+
+    return stats;
   }
 }
 

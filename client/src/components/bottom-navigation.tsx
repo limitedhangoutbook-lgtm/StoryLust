@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Home, BookOpen, User, ShoppingCart, Plus } from "lucide-react";
+import { Home, BookOpen, User, ShoppingCart, Plus, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { isAdmin } from "@shared/userRoles";
@@ -15,6 +15,12 @@ const navigationItems = [
     name: "My Reading",
     path: "/my-reading",
     icon: BookOpen,
+    requiresAuth: true,
+  },
+  {
+    name: "Collection",
+    path: "/collection",
+    icon: Star,
     requiresAuth: true,
   },
   {

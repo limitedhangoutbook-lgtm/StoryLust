@@ -19,6 +19,7 @@ import MermaidDemo from "@/pages/mermaid-demo";
 import MermaidSimple from "@/pages/mermaid-simple";
 // EggplantStore is handled by the Store component
 import { Bookmarks } from "@/pages/bookmarks";
+import Collection from "@/pages/collection";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -37,6 +38,7 @@ function Router() {
       <Route path="/story/:storyId" component={StoryReaderPages} />
       <Route path="/my-reading" component={MyReading} />
       <Route path="/bookmarks" component={Bookmarks} />
+      <Route path="/collection" component={Collection} />
       <Route path="/profile" component={Profile} />
       <Route path="/store" component={Store} />
       <Route path="/eggplants" component={Store} />

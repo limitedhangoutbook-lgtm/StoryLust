@@ -1323,6 +1323,125 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // === ENDING CARDS ROUTES ===
+  
+  // Get user's collected ending cards
+  app.get('/api/ending-cards/collection', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { storyId } = req.query;
+      
+      const userCards = await storage.getUserEndingCards(userId, storyId as string);
+      const stats = await storage.getUserCollectionStats(userId);
+      
+      res.json({
+        cards: userCards,
+        stats
+      });
+    } catch (error) {
+      console.error("Error fetching ending cards collection:", error);
+      res.status(500).json({ message: "Failed to fetch collection" });
+    }
+  });
+
+  // Mark cards as viewed (remove "NEW!" badge)
+  app.post('/api/ending-cards/mark-viewed', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { cardIds } = req.body;
+      
+      await storage.markCardsAsViewed(userId, cardIds);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error marking cards as viewed:", error);
+      res.status(500).json({ message: "Failed to mark cards as viewed" });
+    }
+  });
+
+  // Admin: Create ending card for a story
+  app.post('/api/ending-cards', isAuthenticated, async (req: any, res) => {
+    try {
+      const currentUser = await storage.getUser(req.user.claims.sub);
+      if (currentUser?.role !== 'admin' && currentUser?.role !== 'mega-admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const cardData = req.body;
+      const card = await storage.createEndingCard(cardData);
+      res.json(card);
+    } catch (error) {
+      console.error("Error creating ending card:", error);
+      res.status(500).json({ message: "Failed to create ending card" });
+    }
+  });
+
+  // Get all ending cards for a story (admin only)
+  app.get('/api/stories/:storyId/ending-cards', isAuthenticated, async (req: any, res) => {
+    try {
+      const currentUser = await storage.getUser(req.user.claims.sub);
+      if (currentUser?.role !== 'admin' && currentUser?.role !== 'mega-admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const { storyId } = req.params;
+      const cards = await storage.getStoryEndingCards(storyId);
+      res.json(cards);
+    } catch (error) {
+      console.error("Error fetching story ending cards:", error);
+      res.status(500).json({ message: "Failed to fetch ending cards" });
+    }
+  });
+
+  // Check for ending card on a specific page (auto-award if exists)
+  app.get('/api/pages/:pageId/ending-card', async (req: any, res) => {
+    try {
+      const { pageId } = req.params;
+      const userId = req.isAuthenticated() ? req.user.claims.sub : null;
+      
+      // Get ending card for this page
+      const card = await storage.getEndingCardForPage(pageId);
+      if (!card) {
+        return res.json({ card: null });
+      }
+
+      // If user is authenticated, try to award the card
+      if (userId) {
+        const awardResult = await storage.awardEndingCard(userId, card.id);
+        if (awardResult.success) {
+          // User earned a new card!
+          return res.json({ 
+            card: {
+              ...card,
+              isNewCard: true
+            },
+            awarded: true
+          });
+        } else if (awardResult.reason === 'already_collected') {
+          // User already has this card
+          return res.json({ 
+            card: {
+              ...card,
+              isNewCard: false
+            },
+            awarded: false
+          });
+        }
+      }
+
+      // For guests or award failures, just return card info
+      res.json({ 
+        card: {
+          ...card,
+          isNewCard: false
+        },
+        awarded: false
+      });
+    } catch (error) {
+      console.error("Error checking ending card:", error);
+      res.status(500).json({ message: "Failed to check ending card" });
+    }
+  });
+
   // Stripe webhook to handle successful payments
   app.post('/api/eggplants/webhook', async (req, res) => {
     const sig = req.headers['stripe-signature'];
