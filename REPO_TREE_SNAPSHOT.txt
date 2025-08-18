@@ -1,0 +1,201 @@
+WILD BRANCH - REPOSITORY TREE SNAPSHOT
+Generated: August 18, 2025
+========================================
+
+## PROJECT OVERVIEW
+Wild Branch: Progressive Web App for Choose Your Own Adventure erotica stories
+- TypeScript full-stack with React frontend and Express backend  
+- Neon PostgreSQL database with Drizzle ORM
+- Stripe payments for virtual eggplant currency
+- Replit OIDC authentication
+- Mobile-first PWA design with Kindle-like reading experience
+
+## REPOSITORY STRUCTURE
+
+```
+wild-branch/
+├── README.md                           # Project documentation
+├── replit.md                          # User preferences and architecture guide
+├── ARCHITECTURE_ROADMAP.md            # Future development plans
+├── PROJECT_EXPORT.md                  # Export documentation
+├── QUICK_SHARE.md                     # Quick sharing guide
+├── SAFE_SHARING_GUIDE.md              # Security guidelines
+├── REPO_TREE_SNAPSHOT.txt             # This file
+├── .replit                            # Replit configuration
+├── .gitignore                         # Git ignore rules
+├── package.json                       # Node.js dependencies
+├── package-lock.json                  # Dependency lock file
+├── tsconfig.json                      # TypeScript configuration
+├── vite.config.ts                     # Vite build configuration
+├── tailwind.config.ts                 # Tailwind CSS configuration
+├── postcss.config.js                  # PostCSS configuration
+├── components.json                    # shadcn/ui configuration
+├── drizzle.config.ts                  # Database configuration
+├── cookies.txt                        # Cookie storage
+│
+├── attached_assets/                   # User-uploaded assets
+│   ├── 4ede2b78-0430-438b-a2b0-634185b25430_1753816580839.jpg
+│   ├── 5015ddb8-30c3-4c4d-a548-486218303f47_1753816580842.jpg
+│   ├── Flow Chart Decision Maker_1754617668303.pdf
+│   ├── Pasted--Architecture-Good-Folder-structure-is-clean-and-scalable-Use-of-Drizzle-Neon-modern-so-1754179336397_1754179336398.txt
+│   ├── Pasted-Nice-Graphin-is-a-solid-pick-Here-s-a-dead-simple-way-to-get-a-pretty-auto-laid-out-story-map-runn-1754636530141_1754636530142.txt
+│   ├── Screenshot_20250729_010854_Replit_1753769348155.jpg
+│   ├── Screenshot_20250729_015839_Replit_1753772330874.jpg
+│   ├── Screenshot_20250729_201740_Replit_1753838274423.jpg
+│   ├── Screenshot_20250731_194808_Replit_1754009303593.jpg
+│   ├── davidbook_1753815404952.png
+│   └── image-2689324906983284140_1753765559041_1754184409117.jpg
+│
+├── client/                           # React frontend
+│   ├── src/
+│   │   ├── App.tsx                   # Main app component with routing
+│   │   ├── index.css                 # Global styles and theme variables
+│   │   ├── main.tsx                  # React entry point
+│   │   │
+│   │   ├── components/               # Reusable UI components
+│   │   │   ├── chat-message-renderer.tsx    # Story content renderer
+│   │   │   ├── SpendButton.tsx              # Hold-to-confirm premium button
+│   │   │   ├── SimpleSpendButton.tsx        # Simplified premium button (current)
+│   │   │   ├── StoryJumpMenu.tsx            # Navigation jump menu
+│   │   │   ├── theme-provider.tsx           # Dark/light theme context
+│   │   │   └── ui/                          # shadcn/ui component library
+│   │   │       ├── accordion.tsx
+│   │   │       ├── alert-dialog.tsx
+│   │   │       ├── avatar.tsx
+│   │   │       ├── badge.tsx
+│   │   │       ├── button.tsx
+│   │   │       ├── card.tsx
+│   │   │       ├── dialog.tsx
+│   │   │       ├── form.tsx
+│   │   │       ├── input.tsx
+│   │   │       ├── label.tsx
+│   │   │       ├── popover.tsx
+│   │   │       ├── progress.tsx
+│   │   │       ├── scroll-area.tsx
+│   │   │       ├── select.tsx
+│   │   │       ├── separator.tsx
+│   │   │       ├── sheet.tsx
+│   │   │       ├── skeleton.tsx
+│   │   │       ├── switch.tsx
+│   │   │       ├── tabs.tsx
+│   │   │       ├── toast.tsx
+│   │   │       ├── toaster.tsx
+│   │   │       └── tooltip.tsx
+│   │   │
+│   │   ├── hooks/                    # Custom React hooks
+│   │   │   ├── use-toast.ts         # Toast notification hook
+│   │   │   └── use-theme.ts         # Theme management hook
+│   │   │
+│   │   ├── lib/                     # Utility libraries
+│   │   │   ├── queryClient.ts       # TanStack Query configuration
+│   │   │   └── utils.ts             # General utility functions
+│   │   │
+│   │   └── pages/                   # Page components
+│   │       ├── admin-dashboard.tsx           # Admin management interface
+│   │       ├── buy-diamonds.tsx              # Diamond purchase page
+│   │       ├── home.tsx                      # Landing page
+│   │       ├── library.tsx                   # Story library/catalog
+│   │       ├── profile.tsx                   # User profile page
+│   │       ├── story-reader-pages.tsx        # Main story reading interface
+│   │       └── write-story.tsx               # Story creation interface
+│   │
+│   └── public/                      # Static assets
+│       ├── favicon.ico
+│       ├── manifest.json            # PWA manifest
+│       └── service-worker.js        # PWA service worker
+│
+├── server/                          # Express.js backend
+│   ├── index.ts                     # Main server entry point
+│   ├── vite.ts                      # Vite development server setup
+│   ├── auth.ts                      # Authentication middleware and handlers
+│   ├── routes.ts                    # API route definitions
+│   ├── storage.ts                   # Database operations layer
+│   ├── db.ts                        # Database connection and schema
+│   │
+│   ├── adapters/                    # External service adapters
+│   │   └── stripe.ts               # Stripe payment integration
+│   │
+│   ├── analytics/                   # Analytics and tracking
+│   │   └── events.ts               # Event tracking definitions
+│   │
+│   ├── auth/                        # Authentication modules
+│   │   ├── middleware.ts           # Auth middleware
+│   │   └── providers.ts            # OAuth providers (Replit OIDC)
+│   │
+│   ├── engines/                     # Story processing engines
+│   │   ├── story-engine.ts         # Core story logic
+│   │   └── choice-engine.ts        # Choice processing logic
+│   │
+│   └── services/                    # Business logic services
+│       ├── story-service.ts        # Story management
+│       ├── user-service.ts         # User management  
+│       ├── payment-service.ts      # Payment processing
+│       └── progress-service.ts     # Reading progress tracking
+│
+└── shared/                         # Shared TypeScript types
+    ├── schema.ts                   # Drizzle database schema
+    └── types.ts                    # Shared type definitions
+```
+
+## KEY FILES BREAKDOWN
+
+### Core Configuration
+- `package.json` - Dependencies: React 18, Express, Drizzle ORM, Stripe, TanStack Query
+- `vite.config.ts` - Development server configuration with proxy
+- `tailwind.config.ts` - Custom theme with eggplant purple, rose-gold accents
+- `drizzle.config.ts` - Database configuration for Neon PostgreSQL
+
+### Frontend Architecture
+- `client/src/App.tsx` - Wouter routing, authentication context
+- `client/src/pages/story-reader-pages.tsx` - Main story reader with swipe navigation
+- `client/src/components/SimpleSpendButton.tsx` - Premium choice confirmation modal
+- `client/src/components/StoryJumpMenu.tsx` - Jump navigation system
+- `client/src/index.css` - Dark Kindle theme, typography, custom CSS variables
+
+### Backend Architecture  
+- `server/index.ts` - Express server setup, middleware, session management
+- `server/auth.ts` - Replit OIDC authentication, user creation/updates
+- `server/routes.ts` - RESTful API endpoints for stories, choices, payments
+- `server/storage.ts` - Database operations with Drizzle ORM
+- `server/db.ts` - Database schema and connection
+
+### Database Schema (shared/schema.ts)
+- `users` - Authentication, eggplant balance, reading preferences
+- `stories` - Story metadata, categories, spice levels
+- `storyNodes` - Individual story pages with content
+- `storyChoices` - Choice options with premium costs
+- `readingProgress` - User reading position tracking
+- `userChoices` - User choice selections and purchase history
+- `sessions` - Authentication session storage
+
+## CURRENT STATE
+- **Version**: V1.2 Streamlined Navigation
+- **Status**: Production-ready core functionality
+- **Recent Updates**: 
+  - Replaced hold-to-confirm with simple click premium buttons
+  - Added soft confirmation modal with eggplant theme
+  - Fixed login-to-premium-purchase flow
+  - All LSP errors resolved, debug statements removed
+
+## AUTHENTICATION FLOW
+1. Guest browsing with free content access
+2. Premium choices show "Sign In to Unlock" buttons
+3. `/api/login` handles Replit OIDC authentication
+4. Automatic user creation/profile updates
+5. Session persistence with PostgreSQL store
+6. Premium content unlocked after eggplant purchase
+
+## PREMIUM CONTENT SYSTEM
+- Virtual eggplant currency (🍆) purchased with Stripe
+- Choice-based premium unlocks (not page-based)
+- Persistent access to purchased premium paths
+- Configurable eggplant costs per choice
+- Balance tracking and purchase history
+
+## MOBILE-FIRST DESIGN
+- Progressive Web App (PWA) with service worker
+- Touch-optimized swipe navigation
+- Bottom navigation bar
+- Kindle-like dark reading theme
+- Professional serif typography options
+- Responsive design for all screen sizes
