@@ -115,7 +115,15 @@ export default function Home() {
             <div className="w-8 h-8 gradient-rose-gold rounded-lg flex items-center justify-center">
               <BookOpen className="text-dark-primary text-sm" />
             </div>
-            <h1 className="text-xl font-bold tracking-tight text-text-primary">TurnPage</h1>
+            <div className="flex flex-col">
+              <h1 className="text-xl font-bold tracking-tight text-text-primary">TurnPage</h1>
+              <div className="flex items-center gap-1 -mt-1">
+                <span className="text-xs bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent font-semibold">
+                  100% human written erotica
+                </span>
+                <span className="text-xs">✍️</span>
+              </div>
+            </div>
           </div>
           <div className="flex items-center space-x-3">
             {user && isAdmin(user) ? (
