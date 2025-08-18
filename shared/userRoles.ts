@@ -1,4 +1,4 @@
-// User role system for TurnPage
+// User role system for WildBranch
 export type UserRole = "guest" | "registered" | "admin" | "mega-admin";
 
 export interface UserPermissions {

@@ -180,7 +180,7 @@ export class DatabaseStoryProvider implements StoryDataProvider {
         category: story.category || 'general',
         spiceLevel: story.spiceLevel || 1,
         totalPages: pages.length,
-        author: 'TurnPage', // Default author since not in schema
+        author: 'WildBranch', // Default author since not in schema
         coverImage: story.imageUrl
       };
     } catch (error) {

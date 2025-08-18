@@ -336,7 +336,7 @@ export default function Profile() {
               <div className="w-12 h-12 gradient-rose-gold rounded-2xl flex items-center justify-center mx-auto">
                 <BookOpen className="w-6 h-6 text-dark-primary" />
               </div>
-              <h4 className="font-semibold text-text-primary">TurnPage</h4>
+              <h4 className="font-semibold text-text-primary">WildBranch</h4>
               <p className="text-xs text-text-muted">
                 Choose your own adventure stories
               </p>

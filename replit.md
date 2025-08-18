@@ -9,6 +9,7 @@ User feedback: Very appreciative of thorough help and comprehensive solutions.
 Story Map Design: Implemented user's bubble design specifications with eggplant purple color scheme, two-word names, and proper content filtering.
 Color Preference: Eggplant purple tones for premium content instead of pink/bright colors.
 Graph Terminology: Standard "node" terminology is acceptable for technical graph visualization components.
+Brand Name: Official brand is "WildBranch" (user owns wildbranch.app domain) - all references updated from previous "TurnPage" naming.
 
 ## System Architecture
 
@@ -26,6 +27,7 @@ Graph Terminology: Standard "node" terminology is acceptable for technical graph
 - **Advanced Analytics System**: Implemented comprehensive premium choice analytics tracking interest rates, purchase completion rates, A/B testing capabilities, and preview mode for testing without payments
 - **Collectible Ending Cards System (V1.3)**: Random card drops per story ending with three-tier rarities (Ember, Flame, Inferno), weighted probability system, sharing functionality, dedicated collection page, and story builder title card creation tool
 - **Marketing-Friendly URLs**: Implemented typeable domain routes (wildbranch.com/desert, /campus, /wife) for video promotion campaigns with automatic story redirection
+- **Brand Standardization**: Complete migration from "TurnPage" to "WildBranch" across entire codebase, aligning with official domain ownership (wildbranch.app)
 - External validation: ChatGPT assessment confirms modern tech stack and clean structure
 
 ### Frontend Architecture

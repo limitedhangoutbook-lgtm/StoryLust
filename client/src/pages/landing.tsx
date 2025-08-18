@@ -11,7 +11,7 @@ export default function Landing() {
         <div className="absolute inset-0">
           <img 
             src="/davidbook_1753815404952.png" 
-            alt="Featured model for TurnPage stories" 
+            alt="Featured model for WildBranch stories" 
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-dark-primary via-dark-primary/80 to-dark-primary/40" />
@@ -42,7 +42,7 @@ export default function Landing() {
       {/* Features */}
       <div className="px-6 pb-12 space-y-6">
         <h2 className="text-2xl font-bold text-text-primary text-center mb-8">
-          Why Choose TurnPage?
+          Why Choose WildBranch?
         </h2>
         
         <div className="space-y-4">

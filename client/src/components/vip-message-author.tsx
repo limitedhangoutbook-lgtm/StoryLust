@@ -43,7 +43,7 @@ Message:
 ${message}
 
 ---
-This message was sent by a VIP member through TurnPage.
+This message was sent by a VIP member through WildBranch.
       `.trim();
 
       // Use dedicated author email for professional communication

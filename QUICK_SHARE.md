@@ -41,4 +41,4 @@ A mobile-first Progressive Web App for interactive erotica stories with premium 
 - Desert Seduction: 10 pages with diverse choice branches
 - Current test stories have first choice on page 5 and premium costs of 2-5 eggplants (system supports any values)
 
-Use this context when helping with TurnPage development or feature discussions.
+Use this context when helping with WildBranch development or feature discussions.

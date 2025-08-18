@@ -116,7 +116,7 @@ export default function Home() {
               <BookOpen className="text-dark-primary text-sm" />
             </div>
             <div className="flex flex-col">
-              <h1 className="text-xl font-bold tracking-tight text-text-primary">TurnPage</h1>
+              <h1 className="text-xl font-bold tracking-tight text-text-primary">WildBranch</h1>
               <div className="flex items-center gap-1 -mt-1">
                 <span className="text-xs bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent font-semibold">
                   100% human written erotica

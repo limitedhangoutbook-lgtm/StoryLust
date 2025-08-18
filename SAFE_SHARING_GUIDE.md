@@ -1,4 +1,4 @@
-# Safe Project Sharing for TurnPage
+# Safe Project Sharing for WildBranch
 
 ## Secure Sharing Method (Recommended)
 
