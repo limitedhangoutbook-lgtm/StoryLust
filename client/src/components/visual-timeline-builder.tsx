@@ -11,17 +11,30 @@ import { Switch } from "@/components/ui/switch";
 
 import type { StoryPage, Choice, ChatMessage } from "@shared/types";
 
+// Extended types for the visual timeline builder that includes ending cards
+interface TimelineStoryPage extends StoryPage {
+  endingCard?: {
+    cardTitle?: string;
+    cardSubtitle?: string;
+    cardDescription?: string;
+    cardImageUrl?: string;
+    rarity?: "ember" | "flame" | "inferno";
+    emotionTag?: string;
+    unlockCondition?: string;
+  };
+}
+
 interface VisualTimelineBuilderProps {
-  pages: StoryPage[];
-  onPagesChange: (pages: StoryPage[]) => void;
+  pages: TimelineStoryPage[];
+  onPagesChange: (pages: TimelineStoryPage[]) => void;
 }
 
 export function VisualTimelineBuilder({ pages, onPagesChange }: VisualTimelineBuilderProps) {
-  const [editingPage, setEditingPage] = useState<StoryPage | null>(null);
+  const [editingPage, setEditingPage] = useState<TimelineStoryPage | null>(null);
   const [editingChoice, setEditingChoice] = useState<{ pageId: string; choice: Choice } | null>(null);
 
   const addPage = (pageType: "story" | "choice" | "chat" = "story") => {
-    const newPage: StoryPage = {
+    const newPage: TimelineStoryPage = {
       id: `page-${Date.now()}`,
       title: pageType === "choice" ? `Choice Point ${pages.filter(p => p.pageType === "choice").length + 1}` : 
              pageType === "chat" ? `Chat ${pages.filter(p => p.pageType === "chat").length + 1}` :
@@ -35,7 +48,7 @@ export function VisualTimelineBuilder({ pages, onPagesChange }: VisualTimelineBu
     onPagesChange([...pages, newPage]);
   };
 
-  const updatePage = (pageId: string, updates: Partial<StoryPage>) => {
+  const updatePage = (pageId: string, updates: Partial<TimelineStoryPage>) => {
     const updatedPages = pages.map(page => 
       page.id === pageId ? { ...page, ...updates } : page
     );
@@ -645,6 +658,67 @@ export function VisualTimelineBuilder({ pages, onPagesChange }: VisualTimelineBu
                           placeholder="e.g., Choose the bold path with Prince Khalil"
                           className="bg-dark-tertiary border-dark-tertiary text-text-primary"
                         />
+                      </div>
+
+                      {/* Title Card Preview */}
+                      <div className="space-y-6">
+                        <div className="text-center">
+                          <h3 className="text-lg font-semibold mb-4 text-text-primary">Title Card Preview</h3>
+                          <div className="inline-block bg-gradient-to-br from-purple-900/20 to-pink-900/20 p-6 rounded-lg border border-purple-700/30">
+                            <div className="relative w-80 h-96 bg-gradient-to-br from-purple-900 to-pink-900 rounded-lg overflow-hidden">
+                              {/* Background Image */}
+                              <div className="absolute inset-0">
+                                {editingPage.endingCard?.cardImageUrl ? (
+                                  <img 
+                                    src={editingPage.endingCard.cardImageUrl} 
+                                    alt="Card background"
+                                    className="w-full h-full object-cover opacity-60"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full bg-gradient-to-br from-purple-800 to-pink-800" />
+                                )}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                              </div>
+
+                              {/* Content */}
+                              <div className="relative z-10 p-5 h-full flex flex-col">
+                                {/* Header with NEW badge */}
+                                <div className="flex justify-start items-start mb-4">
+                                  <div className="px-3 py-1.5 bg-purple-600/80 backdrop-blur-sm rounded text-sm font-medium text-white">
+                                    NEW
+                                  </div>
+                                </div>
+
+                                {/* Title */}
+                                <div className="mb-6">
+                                  <h3 className="text-2xl font-bold text-white leading-tight mb-2">
+                                    {editingPage.endingCard?.cardTitle || 'Card Title'}
+                                  </h3>
+                                  <p className="text-purple-200 text-base">
+                                    {editingPage.endingCard?.cardSubtitle || 'Subtitle'}
+                                  </p>
+                                </div>
+
+                                {/* Story Lines */}
+                                <div className="flex-1 mb-6">
+                                  <p className="text-white/90 text-base leading-relaxed">
+                                    {editingPage.endingCard?.cardDescription || 'Story description goes here...'}
+                                  </p>
+                                </div>
+
+                                {/* Buttons */}
+                                <div className="space-y-3">
+                                  <button className="w-full py-3 bg-purple-600 hover:bg-purple-700 rounded-lg text-white text-base font-medium transition-colors">
+                                    Share Story
+                                  </button>
+                                  <button className="w-full py-2.5 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg text-white text-sm transition-colors">
+                                    View Collection
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                       
                       <div className="flex justify-end">
