@@ -519,13 +519,21 @@ export default function StoryReaderPages() {
                     >
                       Sign In to Unlock ({choice.eggplantCost || 0} 🍆)
                     </Button>
+                  ) : purchasedPaths.some(p => p.choiceId === choice.id) ? (
+                    // User already owns this premium choice - show simple continue button
+                    <Button
+                      onClick={() => handleChoiceClick(choice)}
+                      disabled={selectChoiceMutation.isPending}
+                      className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold shadow-lg"
+                    >
+                      Continue to {String.fromCharCode(65 + index)} (Owned)
+                    </Button>
                   ) : (
+                    // User doesn't own this premium choice yet - show spending button
                     <SimpleSpendButton
                       cost={choice.eggplantCost || 0}
                       currentBalance={(user as any)?.eggplants || 0}
-                      label={purchasedPaths.some(p => p.choiceId === choice.id) 
-                        ? `Continue to ${String.fromCharCode(65 + index)}` 
-                        : `Unlock Path ${String.fromCharCode(65 + index)}`}
+                      label={`Unlock Path ${String.fromCharCode(65 + index)}`}
                       disabled={selectChoiceMutation.isPending}
                       onConfirm={() => handleChoiceClick(choice)}
                       className="w-full"
