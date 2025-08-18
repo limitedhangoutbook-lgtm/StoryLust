@@ -1466,6 +1466,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ received: true });
   });
 
+  // Story-specific typeable routes (e.g., /desert, /campus, /wife)
+  const storyRouteMap: Record<string, string> = {
+    'desert': 'desert-seduction',
+    'campus': 'campus-encounter',
+    'wife': 'desert-seduction', // Alias for marketing
+    'college': 'campus-encounter', // Alias for marketing
+  };
+
+  // Handle story-specific routes
+  Object.keys(storyRouteMap).forEach(route => {
+    app.get(`/${route}`, async (req, res) => {
+      const storyId = storyRouteMap[route];
+      
+      // Check if story exists
+      const story = await storage.getStory(storyId);
+      if (!story) {
+        return res.redirect('/');
+      }
+      
+      // Redirect to story reader with the specific story
+      return res.redirect(`/story/${storyId}`);
+    });
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

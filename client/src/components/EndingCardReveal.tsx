@@ -85,34 +85,51 @@ export function EndingCardReveal({ isVisible, card, onContinue, onViewCollection
   };
 
   const handleShare = async () => {
-    const shareText = `I just unlocked "${card.cardTitle}" - a ${rarityConfig[card.rarity].name} rarity card in Wild Branch! 🍆✨`;
+    // Create short, typeable URLs based on story
+    const storyUrlMap: Record<string, string> = {
+      'desert-seduction': 'desert',
+      'campus-encounter': 'campus'
+    };
+    
+    // Get current story ID from URL or default
+    const currentPath = window.location.pathname;
+    let storyId = 'desert'; // default
+    
+    if (currentPath.includes('desert-seduction')) {
+      storyId = 'desert';
+    } else if (currentPath.includes('campus-encounter')) {
+      storyId = 'campus';
+    }
+    
+    const shareUrl = `${window.location.origin}/${storyId}`;
+    const shareText = `Just unlocked "${card.cardTitle}" in Wild Branch! 🔥 Check out this story: ${shareUrl}`;
     
     try {
       if (navigator.share) {
         await navigator.share({
-          title: `Wild Branch Card: ${card.cardTitle}`,
+          title: `Wild Branch: ${card.cardTitle}`,
           text: shareText,
-          url: window.location.origin
+          url: shareUrl
         });
       } else {
-        await navigator.clipboard.writeText(`${shareText}\n\n${window.location.origin}`);
+        await navigator.clipboard.writeText(shareText);
         toast({
           title: "Copied to clipboard!",
-          description: "Share your card with friends",
+          description: "Share this story with friends",
         });
       }
     } catch (error) {
       // Fallback to copying
       try {
-        await navigator.clipboard.writeText(`${shareText}\n\n${window.location.origin}`);
+        await navigator.clipboard.writeText(shareText);
         toast({
           title: "Copied to clipboard!",
-          description: "Share your card with friends",
+          description: "Share this story with friends",
         });
       } catch (clipboardError) {
         toast({
           title: "Unable to share",
-          description: "Try manually copying the card details",
+          description: "Try manually copying the story link",
           variant: "destructive",
         });
       }
@@ -284,18 +301,14 @@ export function EndingCardReveal({ isVisible, card, onContinue, onViewCollection
                 </motion.div>
               </div>
 
-              {/* Badge (NEW!/DUPLICATE) */}
+              {/* NEW! Badge */}
               <motion.div
                 initial={{ scale: 0, rotate: -45 }}
                 animate={{ scale: 1, rotate: 0 }}
                 transition={{ delay: 0.2, type: "spring" }}
-                className={`absolute -top-2 -right-2 px-2 py-1 rounded-full text-xs font-bold shadow-lg ${
-                  card.isDuplicate 
-                    ? "bg-blue-500 text-white" 
-                    : "bg-red-500 text-white"
-                }`}
+                className="absolute -top-2 -right-2 px-2 py-1 rounded-full text-xs font-bold shadow-lg bg-red-500 text-white"
               >
-                {card.isDuplicate ? "SHARE!" : "NEW!"}
+                NEW!
               </motion.div>
             </div>
           </motion.div>
