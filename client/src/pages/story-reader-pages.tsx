@@ -257,28 +257,8 @@ export default function StoryReaderPages() {
     }
   };
 
-  // Handle choice click with authentication check
+  // Handle choice click - premium authentication is now handled in button rendering
   const handleChoiceClick = (choice: any) => {
-    // Check if this is a premium choice and user is not authenticated
-    if (choice.isPremium && !isAuthenticated) {
-      toast({
-        title: "Premium Content",
-        description: "Sign in to unlock premium story paths and get 20 free eggplants!",
-        action: (
-          <div className="flex gap-2">
-            <button
-              onClick={() => window.location.href = "/api/login"}
-              className="bg-rose-gold text-dark-primary px-3 py-1 rounded text-sm font-semibold"
-            >
-              Sign In
-            </button>
-          </div>
-        ),
-        duration: 8000,
-      });
-      return;
-    }
-    
     // Proceed with regular choice selection
     selectChoiceMutation.mutate(choice.id);
   };
@@ -529,14 +509,24 @@ export default function StoryReaderPages() {
 
                 {/* Choice Action Button */}
                 {choice.isPremium ? (
-                  <SpendButton
-                    cost={choice.eggplantCost || 0}
-                    currentBalance={(user as any)?.eggplants || 0}
-                    label={`Choose Option ${String.fromCharCode(65 + index)}`}
-                    disabled={selectChoiceMutation.isPending || (choice.isPremium && !isAuthenticated)}
-                    onConfirm={() => handleChoiceClick(choice)}
-                    className="w-full"
-                  />
+                  !isAuthenticated ? (
+                    <Button
+                      onClick={() => window.location.href = "/api/login"}
+                      disabled={selectChoiceMutation.isPending}
+                      className="w-full bg-gradient-to-r from-eggplant-600 to-eggplant-700 hover:from-eggplant-700 hover:to-eggplant-800 text-white font-semibold"
+                    >
+                      Sign In to Unlock ({choice.eggplantCost || 0} 🍆)
+                    </Button>
+                  ) : (
+                    <SpendButton
+                      cost={choice.eggplantCost || 0}
+                      currentBalance={(user as any)?.eggplants || 0}
+                      label={`Choose Option ${String.fromCharCode(65 + index)}`}
+                      disabled={selectChoiceMutation.isPending}
+                      onConfirm={() => handleChoiceClick(choice)}
+                      className="w-full"
+                    />
+                  )
                 ) : (
                   <Button
                     onClick={() => handleChoiceClick(choice)}
