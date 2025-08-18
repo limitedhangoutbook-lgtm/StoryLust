@@ -4,6 +4,7 @@ import Stripe from "stripe";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./auth";
 import { analytics } from "./analytics/EventTracker";
+import { premiumAnalytics } from './analytics/premium-analytics';
 
 import { db } from "./db";
 import { and, eq, gt, sql } from "drizzle-orm";
@@ -510,6 +511,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!choice) {
         return res.status(404).json({ message: "Choice not found" });
       }
+
+      const userId = req.isAuthenticated() ? (req as any).user.claims.sub : undefined;
+      const sessionId = req.sessionID;
+
+      // Track premium choice analytics if this is a premium choice
+      if (choice.isPremium && (choice.eggplantCost || 0) > 0) {
+        const user = userId ? await storage.getUser(userId) : null;
+        const userEggplants = user?.eggplants || 0;
+        
+        // Log premium choice tap event
+        await premiumAnalytics.trackPremiumTap({
+          userId,
+          sessionId,
+          storyId,
+          nodeId: choice.fromPageId,
+          choiceId,
+          userEggplants,
+          choiceCost: choice.eggplantCost || 0
+        });
+      }
       
       // Track if this was already owned for the response
       let alreadyPurchased = false;
@@ -549,9 +570,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
           
           if (userEggplants < cost) {
-            // Track insufficient funds attempts for fraud prevention
+            // Track insufficient funds attempts for fraud prevention  
             analytics.track({
-              type: 'insufficient_funds',
+              type: 'purchase_attempt',
               userId,
               storyId,
               choiceId,
@@ -601,6 +622,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
             storyId,
             choiceId,
             eggplantCost: cost
+          });
+
+          // Track successful purchase
+          await premiumAnalytics.trackPurchaseSuccess({
+            userId,
+            sessionId,
+            storyId,
+            nodeId: choice.fromPageId,
+            choiceId,
+            userEggplants: userEggplants - cost, // After purchase
+            choiceCost: cost
           });
         }
         // If already purchased, user can access it for free forever
@@ -1219,6 +1251,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error creating eggplant payment:", error);
       res.status(500).json({ message: "Error creating payment: " + error.message });
+    }
+  });
+
+  // === PREMIUM ANALYTICS ROUTES ===
+  app.get('/api/analytics/premium/:storyId', async (req, res) => {
+    try {
+      const { storyId } = req.params;
+      const { choiceId } = req.query;
+      
+      const analytics = await premiumAnalytics.getPremiumAnalytics(storyId, choiceId as string);
+      res.json({
+        storyId,
+        choiceId: choiceId || 'all',
+        analytics
+      });
+    } catch (error) {
+      console.error("Error fetching premium analytics:", error);
+      res.status(500).json({ message: "Failed to fetch premium analytics" });
+    }
+  });
+
+  // A/B Testing: Set user's initial eggplant balance
+  app.post('/api/ab-test/set-balance', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { balance, testGroup } = req.body;
+
+      if (typeof balance !== 'number' || balance < 0 || balance > 1000) {
+        return res.status(400).json({ message: "Invalid balance. Must be 0-1000." });
+      }
+
+      if (!testGroup || typeof testGroup !== 'string') {
+        return res.status(400).json({ message: "Test group required" });
+      }
+
+      await premiumAnalytics.setTestUserBalance(userId, balance, testGroup);
+      
+      res.json({ 
+        success: true,
+        userId,
+        balance,
+        testGroup,
+        message: `User assigned to ${testGroup} with ${balance} eggplants`
+      });
+    } catch (error) {
+      console.error("Error setting test user balance:", error);
+      res.status(500).json({ message: "Failed to set test balance" });
+    }
+  });
+
+  // Preview mode toggle for testing interest without payments
+  app.post('/api/preview-mode/:storyId', async (req, res) => {
+    try {
+      const { storyId } = req.params;
+      const userId = req.isAuthenticated() ? (req as any).user.claims.sub : undefined;
+      
+      if (userId) {
+        await premiumAnalytics.enablePreviewMode(userId, storyId);
+      }
+      
+      res.json({ 
+        success: true,
+        storyId,
+        userId: userId || 'guest',
+        message: "Preview mode enabled for premium choices"
+      });
+    } catch (error) {
+      console.error("Error enabling preview mode:", error);
+      res.status(500).json({ message: "Failed to enable preview mode" });
     }
   });
 

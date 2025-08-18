@@ -981,6 +981,19 @@ export class Storage {
       .limit(1);
     return node;
   }
+
+  // Analytics event logging
+  async logAnalyticsEvent(eventType: string, data: any): Promise<void> {
+    // For now, log to console - could extend to dedicated analytics table
+    console.log(`[ANALYTICS] ${eventType}:`, JSON.stringify(data, null, 2));
+  }
+
+  // Get premium choice analytics
+  async getPremiumChoiceAnalytics(storyId: string, choiceId?: string): Promise<any[]> {
+    // This would query an analytics table in production
+    // For now, return empty array - extend when implementing analytics storage
+    return [];
+  }
 }
 
 export const storage = new Storage();
