@@ -21,6 +21,8 @@ Graph Terminology: Standard "node" terminology is acceptable for technical graph
 - **Navigation System**: Completely rebuilt swipe navigation with improved sensitivity and reliability - both swipe and button navigation working properly
 - **Streamlined Story Navigation (V1.2)**: Replaced complex story maps with elegant jump menu system to maintain reader flow state and reduce cognitive load
 - **UX Philosophy**: Adopted "edging" flow state approach - breadcrumb navigation and compact jump menus prevent spoilers while enabling easy story exploration
+- **Premium Choice UX**: Enhanced premium choices with soft confirmation modals and "Sign In to Unlock" buttons for logged-out users, improving conversion flow
+- **Payment Processor Research**: Evaluated Epoch and SegPay as Stripe alternatives for adult content - keeping Stripe for now but migration plan ready if needed
 - External validation: ChatGPT assessment confirms modern tech stack and clean structure
 
 ### Frontend Architecture
