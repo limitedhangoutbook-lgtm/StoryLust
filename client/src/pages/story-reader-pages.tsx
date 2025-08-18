@@ -10,6 +10,7 @@ import { ChatMessageRenderer } from "@/components/chat-message-renderer";
 import StoryJumpMenu from "@/components/StoryJumpMenu";
 import { SpendButton } from "@/components/SpendButton";
 import { SimpleSpendButton } from "@/components/SimpleSpendButton";
+import { PremiumUnlockAnimation } from "@/components/PremiumUnlockAnimation";
 import type { StoryPage, Choice } from "@shared/types";
 
 export default function StoryReaderPages() {
@@ -514,7 +515,7 @@ export default function StoryReaderPages() {
                     <Button
                       onClick={() => window.location.href = "/api/login"}
                       disabled={selectChoiceMutation.isPending}
-                      className="w-full bg-gradient-to-r from-eggplant-600 to-eggplant-700 hover:from-eggplant-700 hover:to-eggplant-800 text-white font-semibold"
+                      className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold shadow-lg shadow-purple-500/25"
                     >
                       Sign In to Unlock ({choice.eggplantCost || 0} 🍆)
                     </Button>
@@ -522,7 +523,9 @@ export default function StoryReaderPages() {
                     <SimpleSpendButton
                       cost={choice.eggplantCost || 0}
                       currentBalance={(user as any)?.eggplants || 0}
-                      label={`Choose Option ${String.fromCharCode(65 + index)}`}
+                      label={purchasedPaths.some(p => p.choiceId === choice.id) 
+                        ? `Continue to ${String.fromCharCode(65 + index)}` 
+                        : `Unlock Path ${String.fromCharCode(65 + index)}`}
                       disabled={selectChoiceMutation.isPending}
                       onConfirm={() => handleChoiceClick(choice)}
                       className="w-full"

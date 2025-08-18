@@ -1,0 +1,61 @@
+Got it — here’s the revised **premium choice UX/UI package** (leaving out the confirm modal since you already have it, and dropping the “tease blur” idea to keep everything diegetic):
+
+---
+
+## 1. Visual Contrast
+
+* Free choices → styled simply, inline with story text.
+* Premium choices → bolder treatment without breaking immersion. For example:
+
+  ```tsx
+  <button className="px-4 py-2 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold shadow-lg">
+    Premium (5 🍆)
+  </button>
+  ```
+* The key is **contrast but not kitsch** — keep them part of the prose, but make them feel “charged.”
+
+---
+
+## 2. Micro-interactions
+
+* Add subtle **scale-up** on tap (+5%) and snap-back.
+* Trigger a **short vibration** on tap (mobile).
+
+  ```tsx
+  <motion.button whileTap={{ scale: 1.05 }}>Premium (5 🍆)</motion.button>
+  ```
+* Makes the choice *feel physical* instead of just a link.
+
+---
+
+## 3. Locked vs. Unlockable States
+
+* If user has enough eggplants → show as active.
+* If not enough → same button, but semi-transparent with small lock icon.
+* Important: keep the wording in the *story’s voice* (not UI-y). Example:
+
+  * Active: “You follow him into the tent (5 🍆)”
+  * Locked: “You reach for him… but the moment slips away (Needs 5 🍆)”
+
+---
+
+## 4. Reward Animation
+
+* When a premium choice is unlocked:
+
+  * Fade in the continuation text with a **gentle glow effect** around the edges.
+  * Optionally play a short “chime” or soft rumble (toggle in settings).
+* Reinforces the sense of “unlocking a hidden path” without breaking the diegetic flow.
+
+---
+
+## Summary for Replit
+
+> * Make premium buttons visually distinct with gradients/shadows, but still styled in-story.
+> * Add haptic + scale animation feedback on tap.
+> * Differentiate locked vs. unlockable states via transparency + lock icon (but worded in-story).
+> * Add subtle glow/chime animation when a premium path is revealed.
+
+---
+
+Would you like me to **draft the actual React/Tailwind component** for this premium choice button (active, locked, unlock animation) so you can drop it into your story engine?

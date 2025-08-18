@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
+import { Lock } from "lucide-react";
 
 interface SimpleSpendButtonProps {
   cost: number;
@@ -23,28 +25,51 @@ export function SimpleSpendButton({
   
   const handleClick = () => {
     if (disabled || !canAfford) return;
+    
+    // Haptic feedback on tap
+    if (navigator.vibrate) navigator.vibrate(8);
+    
     setShowConfirm(true);
   };
 
   const handleConfirm = () => {
     setShowConfirm(false);
     onConfirm();
-    // Subtle vibration feedback
-    if (navigator.vibrate) navigator.vibrate(12);
+    // Success vibration feedback
+    if (navigator.vibrate) navigator.vibrate([15, 50, 15]);
   };
 
   const resultingBalance = currentBalance - cost;
 
   return (
     <>
-      <Button
-        onClick={handleClick}
-        disabled={disabled || !canAfford}
-        className={`w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold ${className}`}
+      <motion.div
+        whileTap={canAfford ? { scale: 1.05 } : { scale: 0.98 }}
+        transition={{ duration: 0.1, ease: "easeOut" }}
+        className="w-full"
       >
-        {label} · {cost} 🍆
-        {!canAfford && ` (Need ${cost - currentBalance} more 🍆)`}
-      </Button>
+        <Button
+          onClick={handleClick}
+          disabled={disabled}
+          className={`
+            w-full font-semibold shadow-lg transition-all duration-200
+            ${canAfford 
+              ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-purple-500/25' 
+              : 'bg-gradient-to-r from-gray-500 to-gray-600 text-gray-200 opacity-70 shadow-gray-500/10'
+            }
+            ${className}
+          `}
+        >
+          <span className="flex items-center justify-center gap-2">
+            {!canAfford && <Lock size={16} />}
+            {canAfford ? (
+              <span>{label} ({cost} 🍆)</span>
+            ) : (
+              <span>The moment slips away... (Need {cost} 🍆)</span>
+            )}
+          </span>
+        </Button>
+      </motion.div>
 
       {/* Soft Premium Choice Confirmation Modal */}
       {showConfirm && (
