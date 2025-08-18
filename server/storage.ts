@@ -183,6 +183,15 @@ export class Storage {
       content: string;
       order: number;
       pageType: "story" | "choice";
+      endingCard?: {
+        cardTitle: string;
+        cardSubtitle: string;
+        cardDescription: string;
+        cardImageUrl: string;
+        rarity: "ember" | "flame" | "inferno";
+        emotionTag: string;
+        unlockCondition: string;
+      };
       choices?: Array<{
         id: string;
         text: string;
@@ -243,6 +252,26 @@ export class Storage {
               targetPageId: choice.targetPageId, // Store original page reference for new system
             });
           }
+        }
+      }
+    }
+
+    // Create ending cards for pages that have ending card data
+    for (const page of timelineData.pages) {
+      if (page.endingCard) {
+        const pageId = nodeMap.get(page.id);
+        if (pageId) {
+          await this.createEndingCard({
+            storyId: story.id,
+            pageId: pageId,
+            cardTitle: page.endingCard.cardTitle,
+            cardSubtitle: page.endingCard.cardSubtitle,
+            cardDescription: page.endingCard.cardDescription,
+            cardImageUrl: page.endingCard.cardImageUrl || '',
+            rarity: page.endingCard.rarity,
+            emotionTag: page.endingCard.emotionTag,
+            unlockCondition: page.endingCard.unlockCondition,
+          });
         }
       }
     }
@@ -1011,7 +1040,7 @@ export class Storage {
     cardSubtitle?: string;
     cardDescription: string;
     cardImageUrl?: string;
-    rarity?: "whisper" | "ember" | "flame" | "inferno";
+    rarity?: "ember" | "flame" | "inferno";
     emotionTag?: string;
     unlockCondition?: string;
     isSecret?: boolean;

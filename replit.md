@@ -24,7 +24,7 @@ Graph Terminology: Standard "node" terminology is acceptable for technical graph
 - **Premium Choice UX**: Enhanced premium choices with soft confirmation modals and "Sign In to Unlock" buttons for logged-out users, improving conversion flow
 - **Payment Processor Research**: Evaluated Epoch and SegPay as Stripe alternatives for adult content - keeping Stripe for now but migration plan ready if needed
 - **Advanced Analytics System**: Implemented comprehensive premium choice analytics tracking interest rates, purchase completion rates, A/B testing capabilities, and preview mode for testing without payments
-- **Collectible Ending Cards System (V1.3)**: Random card drops per story ending with themed rarities (Whisper, Ember, Flame, Inferno), weighted probability system, sharing functionality, and dedicated collection page
+- **Collectible Ending Cards System (V1.3)**: Random card drops per story ending with three-tier rarities (Ember, Flame, Inferno), weighted probability system, sharing functionality, dedicated collection page, and story builder title card creation tool
 - **Marketing-Friendly URLs**: Implemented typeable domain routes (wildbranch.com/desert, /campus, /wife) for video promotion campaigns with automatic story redirection
 - External validation: ChatGPT assessment confirms modern tech stack and clean structure
 

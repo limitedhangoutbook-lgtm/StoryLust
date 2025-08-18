@@ -432,6 +432,250 @@ export function VisualTimelineBuilder({ pages, onPagesChange }: VisualTimelineBu
                 </Select>
               </div>
               
+              {editingPage.pageType === "story" && editingPage.choices?.length === 0 && (
+                // Ending Card Editor for story pages with no choices (endings)
+                <div className="border border-dark-tertiary rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <Label className="text-text-primary font-medium">Ending Card (Optional)</Label>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        const updatedPages = pages.map(page => {
+                          if (page.id === editingPage.id) {
+                            return {
+                              ...page,
+                              endingCard: page.endingCard || {
+                                cardTitle: "",
+                                cardSubtitle: "",
+                                cardDescription: "",
+                                cardImageUrl: "",
+                                rarity: "ember" as const,
+                                emotionTag: "",
+                                unlockCondition: ""
+                              }
+                            };
+                          }
+                          return page;
+                        });
+                        onPagesChange(updatedPages);
+                        setEditingPage({
+                          ...editingPage,
+                          endingCard: editingPage.endingCard || {
+                            cardTitle: "",
+                            cardSubtitle: "",
+                            cardDescription: "",
+                            cardImageUrl: "",
+                            rarity: "ember" as const,
+                            emotionTag: "",
+                            unlockCondition: ""
+                          }
+                        });
+                      }}
+                      className="bg-gradient-to-r from-rose-500 to-amber-500 text-white border-none hover:from-rose-600 hover:to-amber-600"
+                    >
+                      {editingPage.endingCard ? "Edit Card" : "Add Title Card"}
+                    </Button>
+                  </div>
+                  
+                  {editingPage.endingCard && (
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="card-title" className="text-text-primary">Card Title</Label>
+                          <Input
+                            id="card-title"
+                            value={editingPage.endingCard.cardTitle}
+                            onChange={(e) => {
+                              const updatedPages = pages.map(page => {
+                                if (page.id === editingPage.id && page.endingCard) {
+                                  return {
+                                    ...page,
+                                    endingCard: { ...page.endingCard, cardTitle: e.target.value }
+                                  };
+                                }
+                                return page;
+                              });
+                              onPagesChange(updatedPages);
+                              setEditingPage({
+                                ...editingPage,
+                                endingCard: { ...editingPage.endingCard, cardTitle: e.target.value }
+                              });
+                            }}
+                            placeholder="e.g., Desert Prince"
+                            className="bg-dark-tertiary border-dark-tertiary text-text-primary"
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor="card-subtitle" className="text-text-primary">Card Subtitle</Label>
+                          <Input
+                            id="card-subtitle"
+                            value={editingPage.endingCard.cardSubtitle}
+                            onChange={(e) => {
+                              const updatedPages = pages.map(page => {
+                                if (page.id === editingPage.id && page.endingCard) {
+                                  return {
+                                    ...page,
+                                    endingCard: { ...page.endingCard, cardSubtitle: e.target.value }
+                                  };
+                                }
+                                return page;
+                              });
+                              onPagesChange(updatedPages);
+                              setEditingPage({
+                                ...editingPage,
+                                endingCard: { ...editingPage.endingCard, cardSubtitle: e.target.value }
+                              });
+                            }}
+                            placeholder="e.g., A Tale of Passion"
+                            className="bg-dark-tertiary border-dark-tertiary text-text-primary"
+                          />
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="card-description" className="text-text-primary">Card Description</Label>
+                        <Textarea
+                          id="card-description"
+                          value={editingPage.endingCard.cardDescription}
+                          onChange={(e) => {
+                            const updatedPages = pages.map(page => {
+                              if (page.id === editingPage.id && page.endingCard) {
+                                return {
+                                  ...page,
+                                  endingCard: { ...page.endingCard, cardDescription: e.target.value }
+                                };
+                              }
+                              return page;
+                            });
+                            onPagesChange(updatedPages);
+                            setEditingPage({
+                              ...editingPage,
+                              endingCard: { ...editingPage.endingCard, cardDescription: e.target.value }
+                            });
+                          }}
+                          placeholder="Future-tense epilogue line describing the outcome..."
+                          className="bg-dark-tertiary border-dark-tertiary text-text-primary min-h-[80px]"
+                        />
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="card-rarity" className="text-text-primary">Rarity</Label>
+                          <Select 
+                            value={editingPage.endingCard.rarity} 
+                            onValueChange={(value: "ember" | "flame" | "inferno") => {
+                              const updatedPages = pages.map(page => {
+                                if (page.id === editingPage.id && page.endingCard) {
+                                  return {
+                                    ...page,
+                                    endingCard: { ...page.endingCard, rarity: value }
+                                  };
+                                }
+                                return page;
+                              });
+                              onPagesChange(updatedPages);
+                              setEditingPage({
+                                ...editingPage,
+                                endingCard: { ...editingPage.endingCard, rarity: value }
+                              });
+                            }}
+                          >
+                            <SelectTrigger className="bg-dark-tertiary border-dark-tertiary text-text-primary">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="bg-dark-secondary border-dark-tertiary">
+                              <SelectItem value="ember">Ember (Common - 60%)</SelectItem>
+                              <SelectItem value="flame">Flame (Uncommon - 30%)</SelectItem>
+                              <SelectItem value="inferno">Inferno (Rare - 10%)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor="emotion-tag" className="text-text-primary">Emotion Tag</Label>
+                          <Input
+                            id="emotion-tag"
+                            value={editingPage.endingCard.emotionTag}
+                            onChange={(e) => {
+                              const updatedPages = pages.map(page => {
+                                if (page.id === editingPage.id && page.endingCard) {
+                                  return {
+                                    ...page,
+                                    endingCard: { ...page.endingCard, emotionTag: e.target.value }
+                                  };
+                                }
+                                return page;
+                              });
+                              onPagesChange(updatedPages);
+                              setEditingPage({
+                                ...editingPage,
+                                endingCard: { ...editingPage.endingCard, emotionTag: e.target.value }
+                              });
+                            }}
+                            placeholder="e.g., passionate, romantic, wild"
+                            className="bg-dark-tertiary border-dark-tertiary text-text-primary"
+                          />
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="unlock-condition" className="text-text-primary">Unlock Condition</Label>
+                        <Input
+                          id="unlock-condition"
+                          value={editingPage.endingCard.unlockCondition}
+                          onChange={(e) => {
+                            const updatedPages = pages.map(page => {
+                              if (page.id === editingPage.id && page.endingCard) {
+                                return {
+                                  ...page,
+                                  endingCard: { ...page.endingCard, unlockCondition: e.target.value }
+                                };
+                              }
+                              return page;
+                            });
+                            onPagesChange(updatedPages);
+                            setEditingPage({
+                              ...editingPage,
+                              endingCard: { ...editingPage.endingCard, unlockCondition: e.target.value }
+                            });
+                          }}
+                          placeholder="e.g., Choose the bold path with Prince Khalil"
+                          className="bg-dark-tertiary border-dark-tertiary text-text-primary"
+                        />
+                      </div>
+                      
+                      <div className="flex justify-end">
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            const updatedPages = pages.map(page => {
+                              if (page.id === editingPage.id) {
+                                const { endingCard, ...pageWithoutCard } = page;
+                                return pageWithoutCard;
+                              }
+                              return page;
+                            });
+                            onPagesChange(updatedPages);
+                            setEditingPage({
+                              ...editingPage,
+                              endingCard: undefined
+                            });
+                          }}
+                          className="text-red-400 border-red-400 hover:bg-red-400/10"
+                        >
+                          Remove Card
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {editingPage.pageType === "chat" ? (
                 // Chat message editor
                 <div>

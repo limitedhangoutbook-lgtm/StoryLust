@@ -388,7 +388,11 @@ export const insertUserEndingCardSchema = createInsertSchema(userEndingCards).om
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
 export type Story = typeof stories.$inferSelect;
-export type StoryPage = typeof storyPages.$inferSelect;
+export type StoryPage = typeof storyPages.$inferSelect & {
+  choices?: Choice[];
+  chatMessages?: ChatMessage[];
+  endingCard?: EndingCardData;
+};
 export type StoryChoice = typeof storyChoices.$inferSelect;
 export type ReadingProgress = typeof readingProgress.$inferSelect;
 export type InsertReadingProgress = typeof readingProgress.$inferInsert;
@@ -403,6 +407,32 @@ export type InsertAuthorMessage = typeof authorMessages.$inferInsert;
 export type EndingCard = typeof endingCards.$inferSelect;
 export type InsertEndingCard = typeof endingCards.$inferInsert;
 export type UserEndingCard = typeof userEndingCards.$inferSelect;
+
+// Additional types for frontend use
+export type Choice = {
+  id: string;
+  text: string;
+  isPremium: boolean;
+  eggplantCost: number;
+  targetPageId: string;
+};
+
+export type ChatMessage = {
+  id: string;
+  sender: string;
+  message: string;
+  isUser: boolean;
+};
+
+export type EndingCardData = {
+  cardTitle: string;
+  cardSubtitle: string;
+  cardDescription: string;
+  cardImageUrl: string;
+  rarity: "ember" | "flame" | "inferno";
+  emotionTag: string;
+  unlockCondition: string;
+};
 export type InsertUserEndingCard = typeof userEndingCards.$inferInsert;
 
 export type InsertStory = z.infer<typeof insertStorySchema>;
