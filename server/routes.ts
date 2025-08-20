@@ -5,6 +5,9 @@ import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./auth";
 import { analytics } from "./analytics/EventTracker";
 import { premiumAnalytics } from './analytics/premium-analytics';
+import { generalLimiter, premiumChoiceLimiter, authLimiter, sanitizeInput, premiumChoiceSchema } from "./security";
+import { transactionManager } from "./transaction-manager";
+import { advancedAnalytics } from "./analytics/advanced-analytics";
 
 import { db } from "./db";
 import { and, eq, gt, sql } from "drizzle-orm";
@@ -20,6 +23,22 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth setup
   await setupAuth(app);
+  
+  // Apply security middleware (conditionally in production)
+  if (process.env.NODE_ENV === 'production') {
+    app.use(generalLimiter);
+    app.use('/api/auth', authLimiter);
+  }
+  
+  // Initialize database optimization on startup
+  import('./database-optimization').then(({ dbOptimizer }) => {
+    dbOptimizer.createPerformanceIndexes().catch(console.error);
+  });
+  
+  // Register analytics routes
+  import('./analytics/analytics-routes').then(({ registerAnalyticsRoutes }) => {
+    registerAnalyticsRoutes(app);
+  });
 
 
 
@@ -170,7 +189,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log('Calling getStoryMapData with:', { storyId, ownedChoiceIds: ownedChoiceIds.size });
       let mapData = await storage.getStoryMapData(storyId, ownedChoiceIds);
-      console.log('Map data result:', { bubbleCount: mapData?.nodes?.length, choiceCount: mapData?.choices?.length });
+      console.log('Map data result:', { bubbleCount: mapData?.pageBubbles?.length, choiceCount: mapData?.choices?.length });
 
       // Apply AI layout optimization if requested
       if (useOptimizedLayout && mapData) {
@@ -210,7 +229,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ 
         mermaidCode,
         storyId,
-        pageCount: mapData.nodes.length,
+        pageCount: mapData.pageBubbles.length,
         choiceCount: mapData.choices.length
       });
     } catch (error) {
@@ -575,6 +594,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               type: 'purchase_attempt',
               userId,
               storyId,
+              pageId: choice.fromPageId,
               choiceId,
               timestamp: new Date(),
               metadata: {
@@ -615,14 +635,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
           });
           
-          // Deduct eggplants and record the purchase
-          await storage.updateUserEggplants(userId, userEggplants - cost);
-          await storage.purchasePremiumPath({
+          // Use atomic transaction for the purchase
+          const transactionResult = await transactionManager.purchasePremiumChoice({
             userId,
             storyId,
             choiceId,
+            pageId: choice.fromPageId,
             eggplantCost: cost
           });
+          
+          if (!transactionResult.success) {
+            return res.status(500).json({ 
+              message: "Transaction failed",
+              error: transactionResult.error
+            });
+          }
 
           // Track successful purchase
           await premiumAnalytics.trackPurchaseSuccess({
@@ -631,7 +658,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             storyId,
             nodeId: choice.fromPageId,
             choiceId,
-            userEggplants: userEggplants - cost, // After purchase
+            userEggplants: transactionResult.newEggplantBalance || 0,
             choiceCost: cost
           });
         }

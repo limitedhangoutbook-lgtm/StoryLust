@@ -13,12 +13,13 @@ Brand Name: Official brand is "WildBranch" (user owns wildbranch.app domain) - a
 
 ## System Architecture
 
-### Current State (V1.3 Collectible Cards & Marketing URLs)
-- **Production-ready core functionality** with solid technical foundation and complete codebase cleanup
-- **Phase 1 Complete**: Modular architecture integrated directly into V1.2 system
-- **Analytics Enhancement**: Choice purchasing and user actions now tracked with conversion metrics
-- **Architectural Improvement**: Added story engine abstraction while maintaining existing functionality
-- **Code Quality**: All debug statements removed, LSP errors resolved, production-ready error handling
+### Current State (V1.4 Security & Performance Hardening)
+- **Production-ready core functionality** with comprehensive security and performance optimizations
+- **Security Hardening**: Rate limiting, input sanitization, atomic transactions, session security
+- **Performance Optimization**: Database indexing, query optimization, memory usage improvements  
+- **Analytics Enhancement**: Advanced user behavior tracking, conversion metrics, A/B testing framework
+- **Data Integrity**: Atomic premium purchases with rollback protection, race condition prevention
+- **Code Quality**: All LSP errors resolved, comprehensive error handling, production security standards
 - **Navigation System**: Completely rebuilt swipe navigation with improved sensitivity and reliability - both swipe and button navigation working properly
 - **Streamlined Story Navigation (V1.2)**: Replaced complex story maps with elegant jump menu system to maintain reader flow state and reduce cognitive load
 - **UX Philosophy**: Adopted "edging" flow state approach - breadcrumb navigation and compact jump menus prevent spoilers while enabling easy story exploration
@@ -44,12 +45,14 @@ Brand Name: Official brand is "WildBranch" (user owns wildbranch.app domain) - a
 - **Runtime**: Node.js with Express.js
 - **Language**: TypeScript with ES modules
 - **Authentication**: Replit's OIDC authentication system with Passport.js
-- **Session Management**: express-session with PostgreSQL store
-- **Database ORM**: Drizzle ORM
-- **Database**: Neon serverless PostgreSQL
-- **API Design**: Clean, unified RESTful APIs.
-- **Storage**: Single-class storage layer with complete CRUD operations.
-- **File Structure**: Organized into `index.ts` (main server), `auth.ts` (authentication), `routes.ts` (API endpoints), `storage.ts` (database operations), `db.ts` (database connection), and `vite.ts` (development server).
+- **Session Management**: express-session with PostgreSQL store, secure configuration
+- **Database ORM**: Drizzle ORM with optimized indexing
+- **Database**: Neon serverless PostgreSQL with performance tuning
+- **Security**: Rate limiting, input sanitization, atomic transactions, IPv6-compatible
+- **Analytics**: Advanced user behavior tracking, conversion metrics, performance monitoring
+- **API Design**: Clean, unified RESTful APIs with security middleware
+- **Storage**: Single-class storage layer with atomic operations and race condition protection
+- **File Structure**: Organized into `index.ts`, `auth.ts`, `routes.ts`, `storage.ts`, `security.ts`, `transaction-manager.ts`, `analytics/`, and `db.ts`
 
 ### Key Components
 - **Database Schema**: Includes Users, Stories, Story Nodes, Story Choices, Reading Progress, User Choices, and Sessions.
