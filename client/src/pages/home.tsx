@@ -115,20 +115,8 @@ export default function Home() {
             <div className="w-8 h-8 gradient-rose-gold rounded-lg flex items-center justify-center">
               <BookOpen className="text-dark-primary text-sm" />
             </div>
-            <div className="flex flex-col">
+            <div>
               <h1 className="text-xl font-bold tracking-tight text-text-primary">WildBranch</h1>
-              <div className="flex items-center gap-2 mt-1">
-                <div className="relative overflow-hidden">
-                  <div className="px-3 py-1.5 bg-gradient-to-r from-purple-900 via-purple-700 to-rose-gold rounded-full border border-purple-600/30 shadow-lg quality-badge-shimmer">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[10px] font-bold tracking-wider text-white uppercase">
-                        100% Human Written Erotica
-                      </span>
-                      <span className="text-xs opacity-90">✍️</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
           <div className="flex items-center space-x-3">
@@ -172,6 +160,16 @@ export default function Home() {
           </div>
         </div>
       </header>
+
+      {/* Quality Badge Strip */}
+      <div className="bg-gradient-to-r from-purple-900/80 via-purple-700/80 to-rose-gold/80 py-2">
+        <div className="flex items-center justify-center gap-2">
+          <span className="text-[10px] font-bold tracking-wider text-white uppercase">
+            100% Human Written Erotica
+          </span>
+          <span className="text-xs opacity-90">✍️</span>
+        </div>
+      </div>
 
       {/* Main Content */}
       <main className="px-4 py-6 space-y-6">

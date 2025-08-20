@@ -26,19 +26,15 @@ export default function Landing() {
             Wild <span className="text-rose-gold">Branch</span>
           </h1>
 
-          {/* Enhanced Quality Badge for Landing Page */}
+          {/* Quality Badge for Landing Page */}
           <div className="flex justify-center mb-6">
-            <div className="relative overflow-hidden">
-              <div className="px-4 py-2 bg-gradient-to-r from-purple-900 via-purple-700 to-rose-gold rounded-full border border-purple-600/30 shadow-xl">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold tracking-wider text-white uppercase">
-                    100% Human Written Erotica
-                  </span>
-                  <span className="text-sm opacity-90">✍️</span>
-                </div>
+            <div className="px-4 py-2 bg-gradient-to-r from-purple-900 via-purple-700 to-rose-gold rounded-full border border-purple-600/30 shadow-lg">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold tracking-wider text-white uppercase">
+                  100% Human Written Erotica
+                </span>
+                <span className="text-sm opacity-90">✍️</span>
               </div>
-              {/* Gentle glow effect */}
-              <div className="absolute inset-0 rounded-full bg-gradient-to-r from-rose-gold/20 via-purple-500/20 to-rose-gold/20 animate-pulse" />
             </div>
           </div>
           
