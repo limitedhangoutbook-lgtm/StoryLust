@@ -218,28 +218,28 @@ export class Storage {
     });
 
     // Create all the pages as story pages
-    const nodeMap = new Map<string, string>(); // pageId -> pageId mapping
+    const pageMap = new Map<string, string>(); // pageId -> pageId mapping
     
     for (const page of timelineData.pages) {
-      const node = await this.createStoryPage({
+      const newPage = await this.createStoryPage({
         storyId: story.id,
         title: page.title,
         content: page.content,
         order: page.order,
         isStarting: page.order === 1,
       });
-      nodeMap.set(page.id, node.id);
+      pageMap.set(page.id, newPage.id);
     }
 
-    // Create all the choices with proper node references
+    // Create all the choices with proper page references
     for (const page of timelineData.pages) {
       if (page.choices && page.choices.length > 0) {
-        const fromPageId = nodeMap.get(page.id);
+        const fromPageId = pageMap.get(page.id);
         if (!fromPageId) continue;
 
         for (let i = 0; i < page.choices.length; i++) {
           const choice = page.choices[i];
-          const toPageId = nodeMap.get(choice.targetPageId);
+          const toPageId = pageMap.get(choice.targetPageId);
           
           if (toPageId) {
             await this.createStoryChoice({
@@ -259,7 +259,7 @@ export class Storage {
     // Create ending cards for pages that have ending card data
     for (const page of timelineData.pages) {
       if (page.endingCard) {
-        const pageId = nodeMap.get(page.id);
+        const pageId = pageMap.get(page.id);
         if (pageId) {
           await this.createEndingCard({
             storyId: story.id,
@@ -279,30 +279,30 @@ export class Storage {
     return story;
   }
 
-  async createStoryPage(nodeData: {
+  async createStoryPage(pageData: {
     storyId: string;
     title: string;
     content: string;
     order: number;
     isStarting?: boolean;
   }): Promise<StoryPage> {
-    const [node] = await db
+    const [page] = await db
       .insert(storyPages)
       .values({
-        ...nodeData,
-        isStarting: nodeData.isStarting || false,
+        ...pageData,
+        isStarting: pageData.isStarting || false,
       })
       .returning();
-    return node;
+    return page;
   }
 
   async updateStoryPage(pageId: string, updates: Partial<StoryPage>): Promise<StoryPage> {
-    const [node] = await db
+    const [page] = await db
       .update(storyPages)
       .set(updates)
       .where(eq(storyPages.id, pageId))
       .returning();
-    return node;
+    return page;
   }
 
   async deleteStoryPage(pageId: string): Promise<void> {

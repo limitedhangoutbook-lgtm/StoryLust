@@ -4,7 +4,7 @@ export interface PremiumChoiceEvent {
   userId?: string;
   sessionId?: string;
   storyId: string;
-  nodeId: string;
+  pageId: string;
   choiceId: string;
   eventType: 'view' | 'tap' | 'purchase_attempt' | 'purchase_success' | 'purchase_cancel';
   userEggplants: number;
@@ -20,7 +20,7 @@ export interface PremiumChoiceEvent {
 
 export interface PremiumAnalytics {
   storyId: string;
-  nodeId: string;
+  pageId: string;
   choiceId: string;
   totalReaders: number;
   premiumViews: number;
@@ -62,7 +62,7 @@ class PremiumAnalyticsService {
     userId?: string;
     sessionId?: string;
     storyId: string;
-    nodeId: string;
+    pageId: string;
     choiceId: string;
     userEggplants: number;
     choiceCost: number;
@@ -80,7 +80,7 @@ class PremiumAnalyticsService {
     userId?: string;
     sessionId?: string;
     storyId: string;
-    nodeId: string;
+    pageId: string;
     choiceId: string;
     userEggplants: number;
     choiceCost: number;
@@ -102,7 +102,7 @@ class PremiumAnalyticsService {
     userId: string;
     sessionId?: string;
     storyId: string;
-    nodeId: string;
+    pageId: string;
     choiceId: string;
     userEggplants: number;
     choiceCost: number;
@@ -124,7 +124,7 @@ class PremiumAnalyticsService {
     userId: string;
     sessionId?: string;
     storyId: string;
-    nodeId: string;
+    pageId: string;
     choiceId: string;
     userEggplants: number;
     choiceCost: number;
@@ -142,7 +142,7 @@ class PremiumAnalyticsService {
     userId?: string;
     sessionId?: string;
     storyId: string;
-    nodeId: string;
+    pageId: string;
     choiceId: string;
     userEggplants: number;
     choiceCost: number;

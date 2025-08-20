@@ -1,6 +1,6 @@
 // Define types for story layout generation
 interface StoryMapData {
-  nodes: Array<{
+  pageBubbles: Array<{
     id: string;
     pageNumber: number;
     title: string;
@@ -23,7 +23,7 @@ interface StoryMapData {
   }>;
 }
 
-interface MermaidNode {
+interface MermaidPage {
   id: string;
   label: string;
   type: 'page' | 'ending' | 'premium';
@@ -42,16 +42,16 @@ export class StoryLayoutGenerator {
    * Generate Mermaid.js flowchart definition from story data
    */
   generateMermaidDefinition(storyData: StoryMapData): string {
-    const nodes = this.extractNodes(storyData.nodes);
+    const pages = this.extractPages(storyData.pageBubbles);
     const edges = this.extractEdges(storyData.choices);
     
     let mermaidCode = 'flowchart TD\n';
     
-    // Add node definitions with styling
-    nodes.forEach(node => {
-      const style = this.getNodeStyle(node);
-      const icon = this.getNodeIcon(node);
-      mermaidCode += `    ${node.id}["${icon} Page ${node.pageNumber}<br/>${node.label}"]:::${style}\n`;
+    // Add page definitions with styling
+    pages.forEach(page => {
+      const style = this.getPageStyle(page);
+      const icon = this.getPageIcon(page);
+      mermaidCode += `    ${page.id}["${icon} Page ${page.pageNumber}<br/>${page.label}"]:::${style}\n`;
     });
     
     mermaidCode += '\n';
@@ -76,17 +76,17 @@ export class StoryLayoutGenerator {
    */
   generateOptimizedLayout(storyData: StoryMapData): StoryMapData {
     // Create a hierarchical layout based on story flow
-    const levels = this.calculateNodeLevels(storyData);
-    const positioned = this.positionNodesInLevels(storyData.nodes, levels);
+    const levels = this.calculatePageLevels(storyData);
+    const positioned = this.positionPagesInLevels(storyData.pageBubbles, levels);
     
     return {
       ...storyData,
-      nodes: positioned
+      pageBubbles: positioned
     };
   }
 
-  private extractNodes(nodes: any[]): MermaidNode[] {
-    return nodes.map((page: any) => ({
+  private extractPages(pages: any[]): MermaidPage[] {
+    return pages.map((page: any) => ({
       id: `page${page.pageNumber}`,
       label: page.title.split(' ').slice(0, 2).join(' '),
       type: page.type === 'ending' ? 'ending' : (page.isPremium ? 'premium' : 'page'),
@@ -105,16 +105,16 @@ export class StoryLayoutGenerator {
       }));
   }
 
-  private getNodeStyle(node: MermaidNode): string {
-    switch (node.type) {
+  private getPageStyle(page: MermaidPage): string {
+    switch (page.type) {
       case 'ending': return 'ending';
       case 'premium': return 'premium';
       default: return 'normal';
     }
   }
 
-  private getNodeIcon(node: MermaidNode): string {
-    switch (node.type) {
+  private getPageIcon(page: MermaidPage): string {
+    switch (page.type) {
       case 'ending': return '🎯';
       case 'premium': return '🍆';
       default: return '📖';
@@ -129,11 +129,11 @@ export class StoryLayoutGenerator {
     `;
   }
 
-  private calculateNodeLevels(storyData: StoryMapData): Map<string, number> {
+  private calculatePageLevels(storyData: StoryMapData): Map<string, number> {
     const levels = new Map<string, number>();
     const visited = new Set<string>();
     
-    // Find starting nodes (no incoming edges)
+    // Find starting pages (no incoming edges)
     const incomingCount = new Map<string, number>();
     storyData.choices.forEach(choice => {
       if (choice.toPageId) {
@@ -141,12 +141,12 @@ export class StoryLayoutGenerator {
       }
     });
     
-    const startNodes = storyData.nodes
+    const startPages = storyData.pageBubbles
       .filter((page: any) => !incomingCount.has(page.id))
       .map((page: any) => page.id);
     
     // BFS to assign levels
-    const queue: Array<{id: string, level: number}> = startNodes.map(id => ({id, level: 0}));
+    const queue: Array<{id: string, level: number}> = startPages.map(id => ({id, level: 0}));
     
     while (queue.length > 0) {
       const {id, level} = queue.shift()!;
@@ -170,26 +170,26 @@ export class StoryLayoutGenerator {
     return levels;
   }
 
-  private positionNodesInLevels(nodes: any[], levels: Map<string, number>): any[] {
-    const levelNodes = new Map<number, any[]>();
+  private positionPagesInLevels(pages: any[], levels: Map<string, number>): any[] {
+    const levelPages = new Map<number, any[]>();
     
-    // Group nodes by level
-    nodes.forEach((page: any) => {
+    // Group pages by level
+    pages.forEach((page: any) => {
       const level = levels.get(page.id) || 0;
-      if (!levelNodes.has(level)) {
-        levelNodes.set(level, []);
+      if (!levelPages.has(level)) {
+        levelPages.set(level, []);
       }
-      levelNodes.get(level)!.push(page);
+      levelPages.get(level)!.push(page);
     });
     
-    // Position nodes within each level
+    // Position pages within each level
     const positioned: any[] = [];
-    levelNodes.forEach((levelNodeList, level) => {
+    levelPages.forEach((levelPageList, level) => {
       const yPos = level * 2; // Vertical spacing
-      levelNodeList.forEach((node: any, index: number) => {
-        const xPos = (index - levelNodeList.length / 2) * 2; // Center horizontally
+      levelPageList.forEach((page: any, index: number) => {
+        const xPos = (index - levelPageList.length / 2) * 2; // Center horizontally
         positioned.push({
-          ...node,
+          ...page,
           x: xPos,
           y: yPos
         });
