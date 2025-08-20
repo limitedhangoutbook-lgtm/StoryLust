@@ -25,6 +25,22 @@ export default function Landing() {
           <h1 className="text-4xl font-bold text-text-primary mb-4 leading-tight">
             Wild <span className="text-rose-gold">Branch</span>
           </h1>
+
+          {/* Enhanced Quality Badge for Landing Page */}
+          <div className="flex justify-center mb-6">
+            <div className="relative overflow-hidden">
+              <div className="px-4 py-2 bg-gradient-to-r from-purple-900 via-purple-700 to-rose-gold rounded-full border border-purple-600/30 shadow-xl">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold tracking-wider text-white uppercase">
+                    100% Human Written Erotica
+                  </span>
+                  <span className="text-sm opacity-90">✍️</span>
+                </div>
+              </div>
+              {/* Gentle glow effect */}
+              <div className="absolute inset-0 rounded-full bg-gradient-to-r from-rose-gold/20 via-purple-500/20 to-rose-gold/20 animate-pulse" />
+            </div>
+          </div>
           
           <p className="text-lg text-text-secondary mb-8 leading-relaxed max-w-sm mx-auto">
             Choose your own adventure in immersive, interactive stories where every decision matters.

@@ -117,11 +117,17 @@ export default function Home() {
             </div>
             <div className="flex flex-col">
               <h1 className="text-xl font-bold tracking-tight text-text-primary">WildBranch</h1>
-              <div className="flex items-center gap-1 -mt-1">
-                <span className="text-xs bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent font-semibold">
-                  100% human written erotica
-                </span>
-                <span className="text-xs">✍️</span>
+              <div className="flex items-center gap-2 mt-1">
+                <div className="relative overflow-hidden">
+                  <div className="px-3 py-1.5 bg-gradient-to-r from-purple-900 via-purple-700 to-rose-gold rounded-full border border-purple-600/30 shadow-lg quality-badge-shimmer">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] font-bold tracking-wider text-white uppercase">
+                        100% Human Written Erotica
+                      </span>
+                      <span className="text-xs opacity-90">✍️</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

@@ -682,10 +682,18 @@ export function VisualTimelineBuilder({ pages, onPagesChange }: VisualTimelineBu
 
                               {/* Content */}
                               <div className="relative z-10 p-5 h-full flex flex-col">
-                                {/* Header with NEW badge */}
-                                <div className="flex justify-start items-start mb-4">
+                                {/* Header with NEW badge and Quality Seal */}
+                                <div className="flex justify-between items-start mb-4">
                                   <div className="px-3 py-1.5 bg-purple-600/80 backdrop-blur-sm rounded text-sm font-medium text-white">
                                     NEW
+                                  </div>
+                                  <div className="w-10 h-10 bg-gradient-to-br from-purple-900 to-rose-gold rounded-full border border-purple-600/30 shadow-lg flex flex-col items-center justify-center">
+                                    <span className="text-[6px] font-bold tracking-wider text-white uppercase text-center leading-tight">
+                                      100%
+                                      <br />
+                                      Human
+                                    </span>
+                                    <span className="text-[8px] opacity-90">✍️</span>
                                   </div>
                                 </div>
 
