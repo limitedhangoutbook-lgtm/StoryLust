@@ -164,11 +164,8 @@ export default function Home() {
       {/* Quality Badge Strip */}
       <div className="bg-gradient-to-r from-purple-900 via-purple-800 to-rose-gold py-2.5 shadow-sm">
         <div className="flex items-center justify-center gap-2">
-          <span className="text-[10px] font-black tracking-widest text-white uppercase" style={{ fontFamily: 'Inter, system-ui, sans-serif', fontStretch: 'condensed' }}>
-            100% HUMAN
-          </span>
-          <span className="text-[10px] font-light tracking-wide text-white/90 uppercase">
-            WRITTEN EROTICA
+          <span className="text-[10px] font-light tracking-wide text-white uppercase">
+            100% Human Written Erotica
           </span>
           <span className="text-xs opacity-90 ml-1">✍️</span>
         </div>

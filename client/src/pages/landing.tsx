@@ -30,11 +30,8 @@ export default function Landing() {
           <div className="flex justify-center mb-6">
             <div className="px-5 py-2.5 bg-gradient-to-r from-purple-900 via-purple-800 to-rose-gold rounded-full border border-purple-600/30 shadow-lg">
               <div className="flex items-center gap-2">
-                <span className="text-xs font-black tracking-widest text-white uppercase" style={{ fontFamily: 'Inter, system-ui, sans-serif', fontStretch: 'condensed' }}>
-                  100% HUMAN
-                </span>
-                <span className="text-xs font-light tracking-wide text-white/90 uppercase">
-                  WRITTEN EROTICA
+                <span className="text-xs font-light tracking-wide text-white uppercase">
+                  100% Human Written Erotica
                 </span>
                 <span className="text-sm opacity-90 ml-1">✍️</span>
               </div>

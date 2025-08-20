@@ -688,10 +688,10 @@ export function VisualTimelineBuilder({ pages, onPagesChange }: VisualTimelineBu
                                     NEW
                                   </div>
                                   <div className="w-10 h-10 bg-gradient-to-br from-purple-900 to-rose-gold rounded-full border border-purple-600/30 shadow-lg flex flex-col items-center justify-center">
-                                    <span className="text-[5px] font-black tracking-wider text-white uppercase text-center leading-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif', fontStretch: 'condensed' }}>
+                                    <span className="text-[5px] font-light tracking-wider text-white uppercase text-center leading-tight">
                                       100%
                                       <br />
-                                      HUMAN
+                                      Human
                                     </span>
                                     <span className="text-[7px] opacity-90">✍️</span>
                                   </div>
